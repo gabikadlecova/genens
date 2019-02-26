@@ -13,8 +13,14 @@ from abc import ABC, abstractmethod
 
 class GpTreeIndividual:
     """Represents a tree individual used in the GP.
+    The individual is a tree encoded in a list of ``GpPrimitive`` nodes.
+
+    The list represents a pre-order traversal of the tree. The tree can be
+    uniquely reconstructed by using the arity of the primitives.
     """
-    pass
+    # TODO validate arity etc
+    def __init__(self, primlist):
+        self.primitives = primlist
 
 
 class GpPrimitive(ABC):
@@ -80,7 +86,7 @@ class GpTerminal(GpPrimitive):
     def __init__(self, out_func, node_type):
         # TODO validate type
         super().__init__(None, out_func, node_type, 0)
-        
+
     def run_primitive(self, inputs):
         # TODO handle possible errors
         return self.out_func(inputs)
