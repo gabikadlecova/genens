@@ -9,6 +9,8 @@ The primitives defined in this file are
     2) terminals - leaves of the tree, provide constant output.
 """
 
+import random
+import functools
 from abc import ABC, abstractmethod
 
 class GpTreeIndividual:
@@ -52,6 +54,11 @@ class GpPrimitive(ABC):
         self.node_type = node_type
         self.arity = arity
 
+    class PrimType:
+        def __init__(self, type_ar, arity):
+            self.type_ar = type_ar
+            self.arity = arity
+
     @abstractmethod
     def run_primitive(self, inputs):
         """Transforms inputs to produce node output.
@@ -90,3 +97,55 @@ class GpTerminal(GpPrimitive):
     def run_primitive(self, inputs):
         # TODO handle possible errors
         return self.out_func(inputs)
+
+
+class TypeArity:
+    """Represents variable arity.
+    """
+    def __init__(self, prim_type, arity_range):
+        """Arity range (from, to), to can be 'n' (up to current maximal arity)
+        """
+        self.prim_type = prim_type
+        self.arity_range = arity_range
+        
+    def choose_arity(self, max_arity):
+        # TODO validate the range
+        a_from, a_to = self.arity_range
+        
+        if a_to == 'n' or a_to > max_arity:
+            a_to = max_arity
+            
+        return random.randint(a_from, a_to)
+        
+
+class PrimitiveTemplate:
+    """Represents a template of a GpPrimitive with variable arities of inputs.
+    
+    TODO explain (type arities is sth like (type, max arity))
+    """
+    def __init__(self, in_func, out_func, type_arities, out_type):
+        self.in_func = in_func
+        self.out_func = out_func
+        self.type_arities = type_arities
+        self.out_type
+        
+    def create_primitive(self, max_arity):
+        """Creates a GpPrimitive from the template.
+        Creates a primitive according to the template.
+        
+        The ``in_func`` and ``out_func`` parameters remain the same.
+        Type and arity is created from the list of possible arities per type.
+        
+        TODO example of type creation
+        TODO describe arities
+        """
+        def create_type(self, t_a):
+            arity = t_a.choose_arity(max_arity)
+            return GpPrimitive.PrimType(t_a, arity)
+        
+        in_type = [create_type(t_a) for t_a in self.type_arities]
+        arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)
+        
+        return GpPrimitive(self.in_func, self.out_func,
+                           (in_type, self.out_type), arity_sum)
+        
