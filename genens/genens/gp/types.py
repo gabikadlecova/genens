@@ -34,7 +34,7 @@ class GpPrimitive(ABC):
     """
 
     # TODO check validity
-    def __init__(self, in_func, out_func, node_type, arity):
+    def __init__(self, name, in_func, out_func, node_type, arity):
         """Sets up the GP primitive.
 
         Args:
@@ -51,6 +51,7 @@ class GpPrimitive(ABC):
                 Arity of ``in_func``, which also means it is the arity of
                 the corresponding tree node.
         """
+        self.name = name
         self.in_func = in_func
         self.out_func = out_func
         self.node_type = node_type
@@ -78,9 +79,9 @@ class GpFunction(GpPrimitive):
     Its ``arity`` is greater than 0 and ``node_type`` is
     (inputs, output).
     """
-    def __init__(self, in_func, out_func, node_type, arity):
+    def __init__(self, name, in_func, out_func, node_type, arity):
         # TODO check arity
-        super().__init__(in_func, out_func, node_type, arity)
+        super().__init__(name, in_func, out_func, node_type, arity)
 
     def run_primitive(self, inputs):
         # TODO handle possible errors
@@ -95,9 +96,9 @@ class GpTerminal(GpPrimitive):
 
     Its ``arity`` is set to 0 and ``node_type`` is (, output).
     """
-    def __init__(self, out_func, node_type):
+    def __init__(self, name, out_func, node_type):
         # TODO validate type
-        super().__init__(None, out_func, node_type, 0)
+        super().__init__(name, None, out_func, node_type, 0)
 
     def run_primitive(self, inputs):
         # TODO handle possible errors
@@ -123,16 +124,17 @@ class TypeArity:
         return random.randint(a_from, a_to)
         
 
-class PrimitiveTemplate:
+class FunctionTemplate:
     """Represents a template of a GpPrimitive with variable arities of inputs.
     
     TODO explain (type arities is sth like (type, max arity))
     """
-    def __init__(self, in_func, out_func, type_arities, out_type):
+    def __init__(self, name, in_func, out_func, type_arities, out_type):
+        self.name = name
         self.in_func = in_func
         self.out_func = out_func
         self.type_arities = type_arities
-        self.out_type
+        self.out_type = out_type
         
     def create_primitive(self, max_arity):
         """Creates a GpPrimitive from the template.
@@ -144,13 +146,13 @@ class PrimitiveTemplate:
         TODO example of type creation
         TODO describe arities
         """
-        def create_type(self, t_a):
-            arity = t_a.choose_arity(max_arity)
-            return GpPrimitive.PrimType(t_a, arity)
+        def create_type(t):
+            arity = t.choose_arity(max_arity)
+            return GpPrimitive.PrimType(t, arity)
         
         in_type = [create_type(t_a) for t_a in self.type_arities]
         arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)
         
-        return GpPrimitive(self.in_func, self.out_func,
+        return GpFunction(self.name, self.in_func, self.out_func,
                            (in_type, self.out_type), arity_sum)
         
