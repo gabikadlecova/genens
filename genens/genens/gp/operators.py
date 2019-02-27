@@ -29,25 +29,27 @@ def genTree(full_dict, term_dict, max_height, max_arity):
     while len(type_stack):
         next_type, ar, h = type_stack.pop()
         
-        for i in range(0, ar):
-            if h < max_height:
-                choose_from = full_dict[next_type]
-            else:
-                choose_from = term_dict[next_type]
-                term = random.choice(choose_from)
-                tree_list.append(term)
-                continue
-            
-            # template of the next primitive
-            next_prim_t = random.choice(choose_from)
-            
-            prim = next_prim_t.create_primitive(max_arity)
-            
-            if prim.arity > 0:
-                for child_type in prim.node_type[0]:
-                    name = child_type.get_name()
-                    type_stack.append((name, child_type.arity, h + 1))
-    
-            tree_list.append(prim)
+        if (ar - 1 > 0):
+            type_stack.append((next_type, ar - 1, h))
+        
+        if h < max_height:
+            choose_from = full_dict[next_type]
+        else:
+            choose_from = term_dict[next_type]
+            term = random.choice(choose_from)
+            tree_list.append(term)
+            continue
+        
+        # template of the next primitive
+        next_prim_t = random.choice(choose_from)
+        
+        prim = next_prim_t.create_primitive(max_arity)
+        
+        if prim.arity > 0:
+            for child_type in prim.node_type[0]:
+                name = child_type.get_name()
+                type_stack.append((name, child_type.arity, h + 1))
+
+        tree_list.append(prim)
     
     return tree_list

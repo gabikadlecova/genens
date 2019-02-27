@@ -3,8 +3,10 @@
 """Test file for GP tree initialization.
 """
 
-from genens.gp.types import FunctionTemplate, TypeArity, GpTerminal
+from genens.gp.types import FunctionTemplate, TypeArity, GpTerminal, GpTreeIndividual
 from genens.gp.operators import genFull
+
+import genens.render.graph as graph
 
 def gen_trees():
     
@@ -41,7 +43,9 @@ def gen_trees():
     return genFull(func_dict, term_dict, 6, 4)
     
 if __name__ == "__main__":
-    for i in range(0, 15):
+    for i in range(0, 5):
         res = gen_trees()
-        [print(r.name) for r in res]
+        [print("{}, {}".format(r.name, r.arity)) for r in res]
         print()
+        
+        graph.create_graph(GpTreeIndividual(res), "tree{}.png".format(i))
