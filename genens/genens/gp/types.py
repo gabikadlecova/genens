@@ -9,6 +9,8 @@ The primitives defined in this file are
     2) terminals - leaves of the tree, provide constant output.
 """
 
+# TODO check docs if it's still valid
+
 import random
 import functools
 from abc import ABC, abstractmethod
@@ -18,7 +20,7 @@ class GpTreeIndividual:
     The individual is a tree encoded in a list of ``GpPrimitive`` nodes.
 
     The list represents a pre-order traversal of the tree. The tree can be
-    uniquely reconstructed by using the arity of the primitives.
+    uniquely reconstructed by using the arity of primitives.
     """
     # TODO validate arity etc
     def __init__(self, primlist):
@@ -58,6 +60,9 @@ class GpPrimitive(ABC):
         def __init__(self, type_ar, arity):
             self.type_ar = type_ar
             self.arity = arity
+            
+        def get_name(self):
+            return self.type_ar.prim_type
 
     @abstractmethod
     def run_primitive(self, inputs):
