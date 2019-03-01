@@ -14,20 +14,19 @@ def gen_trees():
     
     out = []
     
-    bag = FunctionTemplate('bagging', None, None,
+    bag = FunctionTemplate('bagging', None,
                             [TypeArity('out', (2,'n'))], 'ens')
     
-    boost = FunctionTemplate('boosting', None, None,
+    boost = FunctionTemplate('boosting', None,
                             [TypeArity('out', (2,'n'))], 'ens')
     
     clf1 = GpTerminal('clf1', None, (None, 'ens'))
     clf2 = GpTerminal('clf2', None, (None, 'ens'))
     clf3 = GpTerminal('clf3', None, (None, 'ens'))
-    
-    
+
     dummy = GpTerminal('dummy', None, (None, 'out'))
     
-    cEns = FunctionTemplate('C', None, None,
+    cEns = FunctionTemplate('C', None,
                             [TypeArity('ens', (1,1))], 'out')
     
     func_dict = {
@@ -41,11 +40,12 @@ def gen_trees():
     }
     
     return genFull(func_dict, term_dict, 6, 4)
-    
+
+
 if __name__ == "__main__":
     for i in range(0, 5):
         res = gen_trees()
         [print("{}, {}".format(r.name, r.arity)) for r in res]
         print()
         
-        graph.create_graph(GpTreeIndividual(res), "tree{}.png".format(i))
+        graph.create_graph2(GpTreeIndividual(res, 0), "tree{}.png".format(i))

@@ -6,6 +6,7 @@ import random
 
 # TODO need a primitive set, templates to create GpPrims
 
+
 def genRampedHalfNHalf(pop_size, func_dict, term_dict, max_height, max_arity):
     for i in range(0, pop_size / 2):
         yield genGrow(func_dict, term_dict, max_height, max_arity)
@@ -47,8 +48,7 @@ def genTree(full_dict, term_dict, max_height, max_arity):
         
         if prim.arity > 0:
             for child_type in prim.node_type[0]:
-                name = child_type.get_name()
-                type_stack.append((name, child_type.arity, h + 1))
+                type_stack.append((child_type.name, child_type.arity, h + 1))
 
         tree_list.append(prim)
     
