@@ -4,7 +4,7 @@
 """
 
 from genens.gp.types import FunctionTemplate, TypeArity, GpTerminal, GpTreeIndividual
-from genens.gp.operators import genFull
+from genens.gp.operators import gen_full
 
 import genens.render.graph as graph
 

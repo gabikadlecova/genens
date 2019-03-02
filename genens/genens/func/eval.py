@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import inspect
 from abc import ABC, abstractmethod
 
 
@@ -26,8 +27,11 @@ class WorkflowNodeBase(ABC):
         pass
 
 
+# TODO check for obj None everywhere
+
+
 class EnsembleExecNode(WorkflowNodeBase):
-    def __init__(self, child_list):
+    def __init__(self, child_list, obj=None):
         super().__init__('out')
 
         self.ens = None
@@ -56,8 +60,9 @@ class EnsembleExecNode(WorkflowNodeBase):
         return self.ens.predict(processed)
 
 
+
 class UnionExecNode(WorkflowNodeBase):
-    def __init__(self, child_list):
+    def __init__(self, child_list, obj=None):
         super().__init__('data')
 
         self.union = None
@@ -87,7 +92,7 @@ class UnionExecNode(WorkflowNodeBase):
 
 
 class EnsembleNode(WorkflowNodeBase):
-    def __init__(self, obj, child_list):
+    def __init__(self, child_list, obj=None):
         super().__init__('ens')
 
         if not all(isinstance(child, WorkflowNodeBase) and child.out_type == 'out' for child in child_list):
@@ -104,7 +109,7 @@ class EnsembleNode(WorkflowNodeBase):
 
 
 class UnionNode(WorkflowNodeBase):
-    def __init__(self, obj, child_list):
+    def __init__(self, child_list, obj=None):
         super().__init__('union')
 
         if not all(isinstance(child, WorkflowNodeBase) and child.out_type == 'data' for child in child_list):
@@ -120,11 +125,28 @@ class UnionNode(WorkflowNodeBase):
         return self.obj.predict(X)
 
 
+class ModelNode(WorkflowNodeBase):
+    def __init__(self, child_list, obj=None):
+        super().__init__('ens')
+
+        # TODO list
+        self.model = obj
+
+    def fit(self, X, y, sample_weight=None):
+        if 'sample_weight' in inspect.signature(self.model.fit).parameters:
+            return self.model.fit(X, y, sample_weight=sample_weight)
+        return self.model.fit(X, y)
+
+    def predict(self, X):
+        return self.model.predict(X)
+
+
 class DataProcessNode(WorkflowNodeBase):
-    def __init__(self, obj, child_list):
+    def __init__(self, child_list, obj=None):
         super().__init__('data')
 
         self.sub_data_p = None
+
         for prep in child_list:
             if self.sub_data_p is not None:
                 raise ValueError("Invalid child node.")  # TODO specific exception
@@ -136,16 +158,20 @@ class DataProcessNode(WorkflowNodeBase):
 
         self.obj = obj
 
+
     def fit(self, X, y, sample_weight=None):
         data = X
         if self.sub_data_p is not None:
             data = self.sub_data_p.fit(X, y, sample_weight)
 
-        return self.obj.fit_transform(data, y)
+        return self.obj.fit_transform(data, y)  # TODO does it copy?
 
     def predict(self, X):
         return self.obj.transform(X, copy=True)  # TODO copy or not?
 
 
-def make_workflow(gp_tree, model_dict):
-    pass
+def make_workflow(gp_tree, model_config):
+    def get_workflow_node(node, child_list):
+        return model_config.create_wf_node(node.name, node.obj_kwargs, child_list)
+
+    return gp_tree.run_tree(get_workflow_node)

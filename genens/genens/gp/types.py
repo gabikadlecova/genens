@@ -53,7 +53,7 @@ class GpPrimitive(ABC):
     """
 
     # TODO check validity
-    def __init__(self, name, obj, node_type, arity, obj_kwargs = None):
+    def __init__(self, name, node_type, arity, obj_kwargs = None):
         """Sets up the GP primitive.
 
         Args:
@@ -67,7 +67,6 @@ class GpPrimitive(ABC):
                 the corresponding tree node.
         """
         self.name = name
-        self.obj = obj
         self.obj_kwargs = obj_kwargs
         self.node_type = node_type
         self.arity = arity
@@ -86,9 +85,9 @@ class GpFunction(GpPrimitive):
     Its ``arity`` is greater than 0 and ``node_type`` is
     (inputs, output).
     """
-    def __init__(self, name, obj, node_type, arity, obj_kwargs = None):
+    def __init__(self, name, node_type, arity, obj_kwargs = None):
         # TODO check arity
-        super().__init__(name, obj, node_type, arity, obj_kwargs)
+        super().__init__(name,  node_type, arity, obj_kwargs)
 
 
 class GpTerminal(GpPrimitive):
@@ -98,9 +97,9 @@ class GpTerminal(GpPrimitive):
 
     Its ``arity`` is set to 0 and ``node_type`` is (, output).
     """
-    def __init__(self, name, obj, node_type, obj_kwargs = None):
+    def __init__(self, name, node_type, obj_kwargs = None):
         # TODO validate type
-        super().__init__(name, obj, node_type, 0, obj_kwargs)
+        super().__init__(name, node_type, 0, obj_kwargs)
 
 
 class TypeArity:
@@ -127,9 +126,8 @@ class FunctionTemplate:
     
     TODO explain (type arities is sth like (type, max arity))
     """
-    def __init__(self, name, obj, type_arities, out_type, kwargs_possible = None):
+    def __init__(self, name, type_arities, out_type, kwargs_possible = None):
         self.name = name
-        self.obj = obj
         self.kwargs_possible = kwargs_possible
         self.type_arities = type_arities
         self.out_type = out_type
@@ -153,7 +151,7 @@ class FunctionTemplate:
         in_type = [create_type(t_a) for t_a in self.type_arities]
         arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)
         
-        return GpFunction(self.name, self.obj, (in_type, self.out_type), arity_sum, prim_kwargs)
+        return GpFunction(self.name, (in_type, self.out_type), arity_sum, prim_kwargs)
 
 
 def _choose_kwargs(kwargs_dict):
