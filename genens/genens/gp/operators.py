@@ -7,30 +7,30 @@ import random
 # TODO need a primitive set, templates to create GpPrims
 
 
-def genRampedHalfNHalf(pop_size, func_dict, term_dict, max_height, max_arity):
+def gen_half(pop_size, func_dict, term_dict, max_height, max_arity):
     for i in range(0, pop_size / 2):
-        yield genGrow(func_dict, term_dict, max_height, max_arity)
+        yield gen_grow(func_dict, term_dict, max_height, max_arity)
     
     for i in range(pop_size / 2, pop_size):
-        yield genFull(func_dict, term_dict, max_height, max_arity)
+        yield gen_full(func_dict, term_dict, max_height, max_arity)
 
 
-def genGrow(func_dict, term_dict, max_height, max_arity):
-    return genTree(func_dict + term_dict, term_dict, max_height, max_arity)
+def gen_grow(func_dict, term_dict, max_height, max_arity):
+    return gen_tree(func_dict + term_dict, term_dict, max_height, max_arity)
 
 
-def genFull(func_dict, term_dict, max_height, max_arity):
-    return genTree(func_dict, term_dict, max_height, max_arity)
+def gen_full(func_dict, term_dict, max_height, max_arity):
+    return gen_tree(func_dict, term_dict, max_height, max_arity)
 
 
-def genTree(full_dict, term_dict, max_height, max_arity):
+def gen_tree(full_dict, term_dict, max_height, max_arity):
     tree_list = []
     type_stack = [('out', 1, 1)]
     
     while len(type_stack):
         next_type, ar, h = type_stack.pop()
         
-        if (ar - 1 > 0):
+        if ar - 1 > 0:
             type_stack.append((next_type, ar - 1, h))
         
         if h < max_height:

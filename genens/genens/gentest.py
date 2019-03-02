@@ -8,6 +8,7 @@ from genens.gp.operators import genFull
 
 import genens.render.graph as graph
 
+
 def gen_trees():
     
     types = ['out', 'ens', 'data', 'union']
@@ -48,4 +49,4 @@ if __name__ == "__main__":
         [print("{}, {}".format(r.name, r.arity)) for r in res]
         print()
         
-        graph.create_graph2(GpTreeIndividual(res, 0), "tree{}.png".format(i))
+        graph.create_graph(GpTreeIndividual(res, 0), "tree{}.png".format(i))

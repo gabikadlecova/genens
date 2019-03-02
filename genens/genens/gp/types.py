@@ -46,7 +46,6 @@ class GpTreeIndividual:
         return stack.pop()
 
 
-
 class GpPrimitive(ABC):
     """Represents a primitive in the GP tree.
     This is the minimal definition of a primitive which can be used in the GP
@@ -54,7 +53,7 @@ class GpPrimitive(ABC):
     """
 
     # TODO check validity
-    def __init__(self, name, obj, node_type, arity):
+    def __init__(self, name, obj, node_type, arity, obj_kwargs = None):
         """Sets up the GP primitive.
 
         Args:
@@ -69,6 +68,7 @@ class GpPrimitive(ABC):
         """
         self.name = name
         self.obj = obj
+        self.obj_kwargs = obj_kwargs
         self.node_type = node_type
         self.arity = arity
 
@@ -86,9 +86,9 @@ class GpFunction(GpPrimitive):
     Its ``arity`` is greater than 0 and ``node_type`` is
     (inputs, output).
     """
-    def __init__(self, name, obj, node_type, arity):
+    def __init__(self, name, obj, node_type, arity, obj_kwargs = None):
         # TODO check arity
-        super().__init__(name, obj, node_type, arity)
+        super().__init__(name, obj, node_type, arity, obj_kwargs)
 
 
 class GpTerminal(GpPrimitive):
@@ -98,9 +98,9 @@ class GpTerminal(GpPrimitive):
 
     Its ``arity`` is set to 0 and ``node_type`` is (, output).
     """
-    def __init__(self, name, obj, node_type):
+    def __init__(self, name, obj, node_type, obj_kwargs = None):
         # TODO validate type
-        super().__init__(name, obj, node_type, 0)
+        super().__init__(name, obj, node_type, 0, obj_kwargs)
 
 
 class TypeArity:
@@ -127,9 +127,10 @@ class FunctionTemplate:
     
     TODO explain (type arities is sth like (type, max arity))
     """
-    def __init__(self, name, obj, type_arities, out_type):
+    def __init__(self, name, obj, type_arities, out_type, kwargs_possible = None):
         self.name = name
         self.obj = obj
+        self.kwargs_possible = kwargs_possible
         self.type_arities = type_arities
         self.out_type = out_type
         
@@ -143,6 +144,8 @@ class FunctionTemplate:
         TODO example of type creation
         TODO describe arities
         """
+        prim_kwargs = _choose_kwargs(self.kwargs_possible)
+
         def create_type(t):
             arity = t.choose_arity(max_arity)
             return GpPrimitive.PrimType(t.prim_type, arity)
@@ -150,4 +153,17 @@ class FunctionTemplate:
         in_type = [create_type(t_a) for t_a in self.type_arities]
         arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)
         
-        return GpFunction(self.name, self.obj, (in_type, self.out_type), arity_sum)
+        return GpFunction(self.name, self.obj, (in_type, self.out_type), arity_sum, prim_kwargs)
+
+
+def _choose_kwargs(kwargs_dict):
+    if kwargs_dict is None:
+        return None
+
+    chosen_kwargs = {}
+
+    for keyword, arg_list in enumerate(kwargs_dict):
+        arg = random.choice(arg_list)
+        chosen_kwargs[keyword] = arg
+
+    return chosen_kwargs
