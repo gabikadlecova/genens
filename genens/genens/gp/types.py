@@ -128,7 +128,7 @@ class FunctionTemplate:
     """
     def __init__(self, name, type_arities, out_type, kwargs_possible = None):
         self.name = name
-        self.kwargs_possible = kwargs_possible
+        self.kwargs_possible = kwargs_possible  # TODO move to config perhaps
         self.type_arities = type_arities
         self.out_type = out_type
         

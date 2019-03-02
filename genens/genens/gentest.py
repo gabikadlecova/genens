@@ -3,6 +3,14 @@
 """Test file for GP tree initialization.
 """
 
+from sklearn.svm import SVC
+from sklearn.tree import DecisionTreeClassifier
+from sklearn.neighbors import KNeighborsClassifier
+from sklearn.ensemble import AdaBoostClassifier
+
+from genens.workflow.builtins import default_config
+from genens.workflow.eval import make_workflow
+
 from genens.gp.types import FunctionTemplate, TypeArity, GpTerminal, GpTreeIndividual
 from genens.gp.operators import gen_full
 
@@ -15,38 +23,49 @@ def gen_trees():
     
     out = []
     
-    bag = FunctionTemplate('bagging', None,
+    """bag = FunctionTemplate('bagging', None,
                             [TypeArity('out', (2,'n'))], 'ens')
     
     boost = FunctionTemplate('boosting', None,
-                            [TypeArity('out', (2,'n'))], 'ens')
-    
-    clf1 = GpTerminal('clf1', None, (None, 'ens'))
-    clf2 = GpTerminal('clf2', None, (None, 'ens'))
-    clf3 = GpTerminal('clf3', None, (None, 'ens'))
+                            [TypeArity('out', (2,'n'))], 'ens')"""
 
-    dummy = GpTerminal('dummy', None, (None, 'out'))
+    config = default_config()
+    config.add_sklearn_ensemble('Ada', AdaBoostClassifier)
+    config.add_model('svc', SVC)
+    config.add_model('knn', KNeighborsClassifier)
+    config.add_model('dt', DecisionTreeClassifier)
+
+    boost = FunctionTemplate('Ada', [TypeArity('out', (1,1))], 'ens')
     
-    cEns = FunctionTemplate('C', None,
-                            [TypeArity('ens', (1,1))], 'out')
+    clf1 = GpTerminal('svc', (None, 'ens'))
+    clf2 = GpTerminal('knn', (None, 'ens'))
+    clf3 = GpTerminal('dt', (None, 'ens'))
+
+    dummy = GpTerminal('dummy', (None, 'out'))
+    
+    cEns = FunctionTemplate('_cEns', [TypeArity('ens', (1,1))], 'out')
     
     func_dict = {
             'out' : [ cEns ],
-            'ens' : [ bag, boost ]
+            'ens' : [ boost ]
     }
     
     term_dict = {
             'ens' : [clf1, clf2, clf3],
             'out' : [dummy]
     }
-    
-    return genFull(func_dict, term_dict, 6, 4)
+
+    tree = GpTreeIndividual(gen_full(func_dict, term_dict, 6, 4),0)
+    wf = make_workflow(tree, config)
+
+    return tree, wf
 
 
 if __name__ == "__main__":
     for i in range(0, 5):
-        res = gen_trees()
-        [print("{}, {}".format(r.name, r.arity)) for r in res]
+        res, wf = gen_trees()
+
+        [print("{}, {}".format(r.name, r.arity)) for r in res.primitives]
         print()
         
-        graph.create_graph(GpTreeIndividual(res, 0), "tree{}.png".format(i))
+        graph.create_graph(res, "tree{}.png".format(i))

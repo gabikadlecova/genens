@@ -60,7 +60,6 @@ class EnsembleExecNode(WorkflowNodeBase):
         return self.ens.predict(processed)
 
 
-
 class UnionExecNode(WorkflowNodeBase):
     def __init__(self, child_list, obj=None):
         super().__init__('data')
@@ -157,7 +156,6 @@ class DataProcessNode(WorkflowNodeBase):
             self.sub_data_p = prep
 
         self.obj = obj
-
 
     def fit(self, X, y, sample_weight=None):
         data = X
