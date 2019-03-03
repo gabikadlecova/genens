@@ -33,11 +33,18 @@ def create_estimator(est_cls, const_kwargs, child_list, evolved_kwargs):
     # create pipeline list
     estimator = est_cls(**const_kwargs, **evolved_kwargs)
     if not len(child_list):
-        return [estimator]
+        return estimator
 
     # append pipeline step
     child_list.append(estimator)
     return child_list
+
+
+def create_empty_pipe(child_list, evolved_kwargs):
+    if len(child_list):
+        raise ValueError("Empty pipe can be created only from a terminal.")
+
+    return []
 
 
 def create_pipeline(child_list, evolved_kwargs):

@@ -13,7 +13,6 @@ The primitives defined in this file are
 
 import random
 import functools
-from abc import ABC, abstractmethod
 
 
 class GpTreeIndividual:
@@ -45,14 +44,14 @@ class GpTreeIndividual:
         return stack.pop()
 
 
-class GpPrimitive(ABC):
+class GpPrimitive:
     """Represents a primitive in the GP tree.
     This is the minimal definition of a primitive which can be used in the GP
     tree.
     """
 
     # TODO check validity
-    def __init__(self, name, node_type, arity, obj_kwargs = None):
+    def __init__(self, name, node_type, arity, obj_kwargs):
         """Sets up the GP primitive.
 
         Args:
@@ -76,16 +75,31 @@ class GpPrimitive(ABC):
             self.arity = arity
 
 
-class GpTerminalTemplate(GpPrimitive):
+class GpTerminalTemplate:
     """Represents a leaf of the GP tree.
     This object encapsulates a constant, which provides output to a parent
     inner node.
 
     Its ``arity`` is set to 0 and ``node_type`` is (, output).
     """
-    def __init__(self, name, out_type, obj_kwargs = None):
-        # TODO validate type
-        super().__init__(name, (None, out_type), 0, obj_kwargs)
+    def __init__(self, name, out_type):
+        self.name = name
+        self.out_type = out_type
+
+    def create_primitive(self, max_arity, kwargs_dict):
+        """Creates a GpPrimitive from the template.
+        Creates a primitive according to the template.
+
+        The ``in_func`` and ``out_func`` parameters remain the same.
+        Type and arity is created from the list of possible arities per type.
+
+        TODO rewrite
+        """
+        prim_kwargs = _choose_kwargs(kwargs_dict)
+
+        prim_type = (None, self.out_type)
+
+        return GpPrimitive(self.name, prim_type, 0, prim_kwargs)
 
 
 class TypeArity:
@@ -98,6 +112,9 @@ class TypeArity:
         self.arity_range = arity_range
         
     def choose_arity(self, max_arity):
+        if not isinstance(self.arity_range, tuple):
+            return self.arity_range
+
         # TODO validate the range
         a_from, a_to = self.arity_range
         
@@ -112,13 +129,12 @@ class GpFunctionTemplate:
     
     TODO explain (type arities is sth like (type, max arity))
     """
-    def __init__(self, name, type_arities, out_type, kwargs_possible=None):
+    def __init__(self, name, type_arities, out_type):
         self.name = name
-        self.kwargs_possible = kwargs_possible  # TODO move to config perhaps
         self.type_arities = type_arities
         self.out_type = out_type
         
-    def create_primitive(self, max_arity):
+    def create_primitive(self, max_arity, kwargs_dict):
         """Creates a GpPrimitive from the template.
         Creates a primitive according to the template.
         
@@ -128,7 +144,7 @@ class GpFunctionTemplate:
         TODO example of type creation
         TODO describe arities
         """
-        prim_kwargs = _choose_kwargs(self.kwargs_possible)
+        prim_kwargs = _choose_kwargs(kwargs_dict)
 
         def create_type(t):
             arity = t.choose_arity(max_arity)
@@ -142,7 +158,7 @@ class GpFunctionTemplate:
 
 def _choose_kwargs(kwargs_dict):
     if kwargs_dict is None:
-        return None
+        return {}
 
     chosen_kwargs = {}
 
