@@ -31,7 +31,6 @@ class GpTreeIndividual:
     def run_tree(self, node_func):
         stack = []
 
-        # TODO height only 1
         for node in reversed(self.primitives):
             if node.arity == 0:
                 stack.append(node_func(node, []))
@@ -41,7 +40,7 @@ class GpTreeIndividual:
 
                 stack.append(node_func(node, args))
 
-        # TODO error
+        # TODO errors
 
         return stack.pop()
 
@@ -77,29 +76,16 @@ class GpPrimitive(ABC):
             self.arity = arity
 
 
-class GpFunction(GpPrimitive):
-    """Represents an inner node of the GP tree.
-    This object encapsulates a function, which transforms inputs
-    to output. It is an inner node of the GP tree.
-
-    Its ``arity`` is greater than 0 and ``node_type`` is
-    (inputs, output).
-    """
-    def __init__(self, name, node_type, arity, obj_kwargs = None):
-        # TODO check arity
-        super().__init__(name,  node_type, arity, obj_kwargs)
-
-
-class GpTerminal(GpPrimitive):
+class GpTerminalTemplate(GpPrimitive):
     """Represents a leaf of the GP tree.
     This object encapsulates a constant, which provides output to a parent
     inner node.
 
     Its ``arity`` is set to 0 and ``node_type`` is (, output).
     """
-    def __init__(self, name, node_type, obj_kwargs = None):
+    def __init__(self, name, out_type, obj_kwargs = None):
         # TODO validate type
-        super().__init__(name, node_type, 0, obj_kwargs)
+        super().__init__(name, (None, out_type), 0, obj_kwargs)
 
 
 class TypeArity:
@@ -121,12 +107,12 @@ class TypeArity:
         return random.randint(a_from, a_to)
         
 
-class FunctionTemplate:
+class GpFunctionTemplate:
     """Represents a template of a GpPrimitive with variable arities of inputs.
     
     TODO explain (type arities is sth like (type, max arity))
     """
-    def __init__(self, name, type_arities, out_type, kwargs_possible = None):
+    def __init__(self, name, type_arities, out_type, kwargs_possible=None):
         self.name = name
         self.kwargs_possible = kwargs_possible  # TODO move to config perhaps
         self.type_arities = type_arities
@@ -151,7 +137,7 @@ class FunctionTemplate:
         in_type = [create_type(t_a) for t_a in self.type_arities]
         arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)
         
-        return GpFunction(self.name, (in_type, self.out_type), arity_sum, prim_kwargs)
+        return GpPrimitive(self.name, (in_type, self.out_type), arity_sum, prim_kwargs)
 
 
 def _choose_kwargs(kwargs_dict):

@@ -3,6 +3,7 @@
 import genens.workflow.eval as wfe
 from sklearn.base import BaseEstimator
 
+
 class ModelConfig:
     def __init__(self, node_dict=None, model_dict=None):
         self.node_dict = node_dict if node_dict is not None else {}
@@ -55,46 +56,6 @@ def wrap_sklearn_ensemble(ens):
 
     ens.accept_list = accept_list
     return ens
-
-
-"""class SklearnEnsembleWrapper(BaseEstimator):
-    def __init__(self, cls, **arg_dict):
-        self.cls = cls
-        self.arg_dict = arg_dict
-        self.ens = None
-
-    def accept_list(self, child_list):
-        if not len(child_list):
-            raise ValueError("No base estimator provided to the ensemble.")  # TODO specific
-
-        # TODO check for absence of parameters (suitable exception)
-
-        if len(child_list) == 1:
-            self.ens = self.cls(**self.arg_dict, base_estimator=child_list[0])
-            return
-
-        self.ens = self.cls(**self.arg_dict, estimators=child_list)
-
-    def fit(self, X, y, sample_weight=None):
-        if self.ens is None:
-            raise ValueError("No base estimators provided")  # TODO specific
-
-        return self.ens.fit(X, y, sample_weight)
-
-    def predict(self, X):
-        if self.ens is None:
-            raise ValueError("No base estimators provided")  # TODO specific
-
-        return self.ens.predict(X)
-
-    def get_params(self, deep=False):
-        ens_params = self.ens.get_params(deep)
-        return {**super().get_params(deep), **ens_params}
-
-    def set_params(self, **params):
-        self.ens.set_params(**params)
-        super().set_params(**params)
-        return self"""
 
 
 def default_config():
