@@ -2,6 +2,8 @@
 
 """Test file for GP tree initialization.
 """
+from sklearn.datasets import load_iris
+from sklearn.model_selection import train_test_split
 
 from sklearn.svm import SVC
 from sklearn.tree import DecisionTreeClassifier
@@ -30,15 +32,15 @@ def gen_trees():
                             [TypeArity('out', (2,'n'))], 'ens')"""
 
     config = default_config()
-    config.add_sklearn_ensemble('Ada', AdaBoostClassifier)
+    config.add_sklearn_ensemble('Ada', AdaBoostClassifier, algorithm='SAMME')
     config.add_model('svc', SVC)
-    config.add_model('knn', KNeighborsClassifier)
+    # config.add_model('knn', KNeighborsClassifier)
     config.add_model('dt', DecisionTreeClassifier)
 
     boost = FunctionTemplate('Ada', [TypeArity('out', (1,1))], 'ens')
     
     clf1 = GpTerminal('svc', (None, 'ens'))
-    clf2 = GpTerminal('knn', (None, 'ens'))
+    # clf2 = GpTerminal('knn', (None, 'ens'))
     clf3 = GpTerminal('dt', (None, 'ens'))
 
     dummy = GpTerminal('dummy', (None, 'out'))
@@ -51,7 +53,7 @@ def gen_trees():
     }
     
     term_dict = {
-            'ens' : [clf1, clf2, clf3],
+            'ens' : [clf1, clf3],
             'out' : [dummy]
     }
 
@@ -64,6 +66,13 @@ def gen_trees():
 if __name__ == "__main__":
     for i in range(0, 5):
         res, wf = gen_trees()
+
+        data, target = load_iris(return_X_y=True)
+        X_train, X_test, y_train, y_test = train_test_split(data, target,
+                                                            test_size = 0.33, random_state = 42)
+
+        wf.fit(X_train, y_train)
+        pred = wf.predict(X_test)
 
         [print("{}, {}".format(r.name, r.arity)) for r in res.primitives]
         print()

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import genens.workflow.eval as wfe
-
+from sklearn.base import BaseEstimator
 
 class ModelConfig:
     def __init__(self, node_dict=None, model_dict=None):
@@ -23,20 +23,41 @@ class ModelConfig:
 
         return node_cls(child_list, model)
 
-    def add_sklearn_ensemble(self, ens_name, ens_cls):
+    def add_sklearn_ensemble(self, ens_name, ens_cls, **kwargs):
+        # TODO check if cls is in kwargs
+
         self.node_dict[ens_name] = wfe.EnsembleNode
-        self.model_dict[ens_name] = (SklearnEnsembleWrapper, {'cls' : ens_cls})
+        ens_cls = wrap_sklearn_ensemble(ens_cls)
 
-    def add_model(self, model_name, model_cls):
+        self.model_dict[ens_name] = (ens_cls, kwargs)
+
+    def add_model(self, model_name, model_cls, **kwargs):
         self.node_dict[model_name] = wfe.ModelNode
-        self.model_dict[model_name] = (model_cls, None)
+        self.model_dict[model_name] = (model_cls, kwargs)
 
-    def add_data_processor(self, prep_name, prep_cls):
+    def add_data_processor(self, prep_name, prep_cls, **kwargs):
         self.node_dict[prep_name] = wfe.DataProcessNode
-        self.model_dict[prep_name] = (prep_cls, None)
+        self.model_dict[prep_name] = (prep_cls, kwargs)
 
 
-class SklearnEnsembleWrapper:
+def wrap_sklearn_ensemble(ens):
+    def accept_list(self, child_list):
+        if not len(child_list):
+            raise ValueError("No base estimator provided to the ensemble.")  # TODO specific
+
+        # TODO check for absence of parameters (suitable exception)
+
+        if len(child_list) == 1:
+            self.base_estimator = child_list[0]
+            return
+
+        self.estimators = child_list
+
+    ens.accept_list = accept_list
+    return ens
+
+
+"""class SklearnEnsembleWrapper(BaseEstimator):
     def __init__(self, cls, **arg_dict):
         self.cls = cls
         self.arg_dict = arg_dict
@@ -65,6 +86,15 @@ class SklearnEnsembleWrapper:
             raise ValueError("No base estimators provided")  # TODO specific
 
         return self.ens.predict(X)
+
+    def get_params(self, deep=False):
+        ens_params = self.ens.get_params(deep)
+        return {**super().get_params(deep), **ens_params}
+
+    def set_params(self, **params):
+        self.ens.set_params(**params)
+        super().set_params(**params)
+        return self"""
 
 
 def default_config():

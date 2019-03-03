@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import inspect
-from abc import ABC, abstractmethod
+from sklearn.base import BaseEstimator
 
 
 class Workflow:
@@ -14,15 +14,15 @@ class Workflow:
         pass
 
 
-class WorkflowNodeBase(ABC):
-    def __init__(self, out_type):
+class WorkflowNodeBase(BaseEstimator):
+    def __init__(self, out_type, child_list, obj=None):
         self.out_type = out_type
+        self.child_list = child_list
+        self.obj = obj
 
-    @abstractmethod
     def fit(self, X, y, sample_weight=None):
         pass
 
-    @abstractmethod
     def predict(self, X):
         pass
 
@@ -32,7 +32,7 @@ class WorkflowNodeBase(ABC):
 
 class EnsembleExecNode(WorkflowNodeBase):
     def __init__(self, child_list, obj=None):
-        super().__init__('out')
+        super().__init__('out', child_list, obj)
 
         self.ens = None
         self.data_p = None
@@ -49,20 +49,32 @@ class EnsembleExecNode(WorkflowNodeBase):
                 self.data_p = child
                 continue
 
-            raise ValueError("Invalid child nodes.") # TODO specific exception
+            raise ValueError("Invalid child nodes.")  # TODO specific exception
 
     def fit(self, X, y, sample_weight=None):
-        processed = self.data_p.fit(X, y, sample_weight)
-        return self.ens.fit(processed, y, sample_weight)
+        data = X
+        if self.data_p is not None:
+            data = self.data_p.fit(X, y, sample_weight)
+        return self.ens.fit(data, y, sample_weight)
 
     def predict(self, X):
-        processed = self.data_p.predict(X)
-        return self.ens.predict(processed)
+        data = X
+        if self.data_p is not None:
+            data = self.data_p.predict(X)
+        return self.ens.predict(data)
+
+    def __getattribute__(self, item):
+        try:
+            return super().__getattribute__(item)
+        except AttributeError:
+            ens_attr = getattr(self.ens, item)
+            setattr(self, item, ens_attr)
+            return ens_attr
 
 
 class UnionExecNode(WorkflowNodeBase):
     def __init__(self, child_list, obj=None):
-        super().__init__('data')
+        super().__init__('data', child_list, obj)
 
         self.union = None
         self.data_p = None
@@ -92,30 +104,42 @@ class UnionExecNode(WorkflowNodeBase):
 
 class EnsembleNode(WorkflowNodeBase):
     def __init__(self, child_list, obj=None):
-        super().__init__('ens')
+        super().__init__('ens', child_list, obj)
 
         if not all(isinstance(child, WorkflowNodeBase) and child.out_type == 'out' for child in child_list):
             raise ValueError("Invalid child node.")  # TODO specific exception
 
         obj.accept_list(child_list)
-        self.obj = obj
 
     def fit(self, X, y, sample_weight=None):
-        return self.obj.fit(X, y, sample_weight)
+        if sample_weight is not None:
+            if 'sample_weight' not in inspect.signature(self.obj.fit).parameters:
+                raise ValueError("Sample weight not supported.")
+            return self.obj.fit(X, y, sample_weight=sample_weight)
+
+        return self.obj.fit(X, y)
 
     def predict(self, X):
         return self.obj.predict(X)
 
+    def __getattribute__(self, item):
+        try:
+            return super().__getattribute__(item)
+        except AttributeError:
+            obj_attr = getattr(self.obj, item)
+            setattr(self, item, obj_attr)
+            return obj_attr
+
 
 class UnionNode(WorkflowNodeBase):
     def __init__(self, child_list, obj=None):
-        super().__init__('union')
+        super().__init__('union', child_list, obj)
 
-        if not all(isinstance(child, WorkflowNodeBase) and child.out_type == 'data' for child in child_list):
+        if not all(isinstance(child, WorkflowNodeBase) and
+                   (child.out_type == 'data' or  child.out_type == 'out') for child in child_list):
             raise ValueError("Invalid child node.")  # TODO specific exception
 
         obj.accept_list(child_list)
-        self.obj = obj
 
     def fit(self, X, y, sample_weight=None):
         return self.obj.fit(X, y, sample_weight)
@@ -126,23 +150,34 @@ class UnionNode(WorkflowNodeBase):
 
 class ModelNode(WorkflowNodeBase):
     def __init__(self, child_list, obj=None):
-        super().__init__('ens')
+        super().__init__('ens', child_list, obj)
 
         # TODO list
         self.model = obj
 
     def fit(self, X, y, sample_weight=None):
-        if 'sample_weight' in inspect.signature(self.model.fit).parameters:
+        if sample_weight is not None:
+            if 'sample_weight' not in inspect.signature(self.model.fit).parameters:
+                raise ValueError("Sample weight not supported.")
             return self.model.fit(X, y, sample_weight=sample_weight)
+
         return self.model.fit(X, y)
 
     def predict(self, X):
         return self.model.predict(X)
 
+    def __getattribute__(self, item):
+        try:
+            return super().__getattribute__(item)
+        except AttributeError:
+            model_attr = getattr(self.model, item)
+            setattr(self, item, model_attr)
+            return model_attr
+
 
 class DataProcessNode(WorkflowNodeBase):
     def __init__(self, child_list, obj=None):
-        super().__init__('data')
+        super().__init__('data', child_list, obj)
 
         self.sub_data_p = None
 
@@ -154,8 +189,6 @@ class DataProcessNode(WorkflowNodeBase):
                 raise ValueError("Invalid child node.")  # TODO specific exception
 
             self.sub_data_p = prep
-
-        self.obj = obj
 
     def fit(self, X, y, sample_weight=None):
         data = X
