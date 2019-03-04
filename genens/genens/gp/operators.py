@@ -3,18 +3,27 @@
 """This file defines genetic operators used in the evolution.
 """
 import random
+from genens.gp.types import GpTreeIndividual
 
 # TODO need a primitive set, templates to create GpPrims
 
 
 def gen_half(pop_size, full_dict, grow_dict, term_dict, kwargs_dict, max_height, max_arity):
+    terminals = {}
+    for k, v in grow_dict.items():
+        terminals[k] = term_dict[k] + v
+
+    grow_d = {}
+    for k, v in grow_dict.items():
+        grow_d[k] = full_dict[k] + v
+
     # grow
-    for i in range(0, pop_size / 2):
-        yield gen_tree({**full_dict, **grow_dict}, term_dict, max_height, max_arity, kwargs_dict)
+    for i in range(0, pop_size // 2):
+        yield gen_tree(grow_d, terminals, max_height, max_arity, kwargs_dict)
 
     # full
-    for i in range(pop_size / 2, pop_size):
-        yield gen_tree(full_dict, term_dict, max_height, max_arity, kwargs_dict)
+    for i in range(pop_size // 2, pop_size):
+        yield gen_tree(full_dict, terminals, max_height, max_arity, kwargs_dict)
 
 
 def gen_tree(full_dict, term_dict, max_height, max_arity, kwargs_dict):
@@ -35,7 +44,7 @@ def gen_tree(full_dict, term_dict, max_height, max_arity, kwargs_dict):
         # template of the next primitive
         next_prim_t = random.choice(choose_from)
         
-        prim = next_prim_t.create_primitive(max_arity, kwargs_dict)
+        prim = next_prim_t.create_primitive(max_arity, kwargs_dict[next_prim_t.name])
         
         if prim.arity > 0:
             for child_type in prim.node_type[0]:
@@ -43,4 +52,4 @@ def gen_tree(full_dict, term_dict, max_height, max_arity, kwargs_dict):
 
         tree_list.append(prim)
     
-    return tree_list
+    return GpTreeIndividual(tree_list, 0)

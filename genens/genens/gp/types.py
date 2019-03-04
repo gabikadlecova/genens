@@ -148,9 +148,14 @@ class GpFunctionTemplate:
 
         def create_type(t):
             arity = t.choose_arity(max_arity)
+            if arity == 0:
+                return None
+
             return GpPrimitive.PrimType(t.prim_type, arity)
         
         in_type = [create_type(t_a) for t_a in self.type_arities]
+        in_type = [t for t in in_type if t is not None]
+
         arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)
         
         return GpPrimitive(self.name, (in_type, self.out_type), arity_sum, prim_kwargs)
@@ -162,7 +167,7 @@ def _choose_kwargs(kwargs_dict):
 
     chosen_kwargs = {}
 
-    for keyword, arg_list in enumerate(kwargs_dict):
+    for keyword, arg_list in kwargs_dict.items():
         arg = random.choice(arg_list)
         chosen_kwargs[keyword] = arg
 

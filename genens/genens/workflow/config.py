@@ -8,7 +8,7 @@ from functools import partial
 
 func_config = {
     'cPipe': mc.create_pipeline,
-    'dUnion': mc.create_data_union,
+    # 'dUnion': mc.create_data_union, #  todo handle data terminal
     'dTerm': mc.create_empty_pipe
 }
 
@@ -16,21 +16,30 @@ func_config = {
 full_config = {
     'out': [GpFunctionTemplate('cPipe', [TypeArity('ens', 1), TypeArity('data', (0,1))], 'out')],
     'data': [
-        GpFunctionTemplate('dUnion', [TypeArity('data', (2,'n'))], 'data'),
+        # GpFunctionTemplate('dUnion', [TypeArity('data', (2,'n'))], 'data'),  # todo handle dTerm
         GpTerminalTemplate('dTerm', 'data')
-    ]
+    ],
+    'ens': []
 }
 
-grow_config = {}
-term_config = {}
+grow_config = {
+    'out': [],
+    'data': [],
+    'ens': []
+}
+term_config = {
+    'out': [],
+    'data': [GpTerminalTemplate('dTerm', 'data')],
+    'ens': []
+}
 
 
 def estimator_func(est_cls, **kwargs):
-    return partial(mc.create_estimator, est_cls=est_cls, const_kwargs=kwargs)
+    return partial(mc.create_estimator, est_cls, kwargs)
 
 
 def ensemble_func(ens_cls, **kwargs):
-    return partial(mc.create_ensemble, ens_cls=ens_cls, const_kwargs=kwargs)
+    return partial(mc.create_ensemble, ens_cls, kwargs)
 
 
 def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens'):
