@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import random
-import genens.workflow.config as cf
+import genens.config.utils as cf
 import genens.workflow.model_creation as mc
 import genens.render.graph as graph
 
@@ -248,10 +248,9 @@ def create_test_config():
             pred = wf.predict(X_test)
         except Exception as e:
             print(e)
+            continue
 
         print("Score {}: {}".format(i, accuracy_score(y_test, pred)))
-
-
 
 
 if __name__ == "__main__":
