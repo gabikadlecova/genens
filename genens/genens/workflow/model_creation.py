@@ -31,24 +31,15 @@ def create_ensemble(ens_cls, const_kwargs, child_list, evolved_kwargs):
 
 
 def create_estimator(est_cls, const_kwargs, child_list, evolved_kwargs):
-    if len(child_list) > 1:
+    if len(child_list) > 0:
         raise ValueError("Estimator cannot have sub-estimators.")  # TODO specific
 
     # create pipeline list
-    estimator = est_cls(**const_kwargs, **evolved_kwargs)
-    if not len(child_list):
-        return estimator
-
-    # append pipeline step
-    child_list[0].append(estimator)
-    return child_list[0]
+    return est_cls(**const_kwargs, **evolved_kwargs)
 
 
-def create_empty_pipe(child_list, evolved_kwargs):
-    if len(child_list):
-        raise ValueError("Empty pipe can be created only from a terminal.")
-
-    return []
+def create_transform_list(child_list, evolved_kwargs):
+    return child_list
 
 
 class WeightedPipeline(BaseEstimator):
