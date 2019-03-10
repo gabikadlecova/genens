@@ -60,6 +60,22 @@ class GpTreeIndividual:
 
         return stack.pop()
 
+    def subtree(self, root_ind):
+        curr = self.primitives[root_ind]
+
+        arity_rem = curr.arity
+        init_h = curr.height
+        max_h = init_h
+
+        while arity_rem > 0:
+            root_ind = root_ind - 1
+            curr = self.primitives[root_ind]
+            max_h = max(max_h, curr.height)
+
+            arity_rem = arity_rem - 1 + curr.arity
+
+        return root_ind, (max_h - init_h)
+
 
 class GpPrimitive:
     """

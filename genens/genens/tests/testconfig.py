@@ -5,7 +5,7 @@ import genens.config.clf_default as defcf
 import genens.workflow.model_creation as mc
 import genens.render.graph as graph
 
-from genens.gp.operators import gen_half
+from genens.gp.operators import gen_population
 
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
@@ -37,7 +37,7 @@ def create_test_config():
     random.seed(42)
     config = defcf.create_config(data.shape[1])
 
-    it = gen_half(20, config, 5, 4)
+    it = gen_population(20, config, 5, 4)
     for i, res_tree in enumerate(it):
         graph.create_graph(res_tree, "tree{}.png".format(i))
         wf = mc.create_workflow(res_tree, config.func_config)
