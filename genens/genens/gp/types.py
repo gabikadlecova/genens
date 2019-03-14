@@ -106,6 +106,10 @@ class GpPrimitive:
         self.arity = arity
         self.height = height
 
+    @property
+    def out_type(self):
+        return self.node_type[1]
+
     class PrimType:
         """
         Represents the input type which must match the output type of

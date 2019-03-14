@@ -34,7 +34,7 @@ def create_test_config():
     X_train, X_test, y_train, y_test = train_test_split(data, target,
                                                         test_size=0.33, random_state=42)
 
-    random.seed(42)
+    random.seed(420)
     config = defcf.create_config(data.shape[1])
 
     it = gen_population(20, config, 5, 4)
