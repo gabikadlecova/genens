@@ -171,7 +171,7 @@ def create_config(feat_size):
     func_dict = {**ensembles_func, **clf_func, **transform_func}
     kwargs_dict = {**ensemble_kwargs, **clf_kwargs, **transform_kwargs}
 
-    config.add_func(func_dict, kwargs_dict)
+    config.add_functions_args(func_dict, kwargs_dict)
 
     # PRIMITIVES
 

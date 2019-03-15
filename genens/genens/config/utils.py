@@ -42,7 +42,7 @@ class GenensConfig:
             out_list = self.term_config.setdefault(prim.out_type, [])
             out_list.append(prim)
 
-    def add_func(self, func_dict, kwarg_dict):
+    def add_functions_args(self, func_dict, kwarg_dict):
         for key, val in func_dict.items():
             if key in self.func_config.keys():
                 raise ValueError("Cannot insert to func - duplicate value.")  # TODO specific

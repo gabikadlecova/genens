@@ -8,12 +8,13 @@ import random
 from genens.gp.types import GpTreeIndividual
 
 
-def gen_population(pop_size, config, max_height, max_arity):
+def gen_population(toolbox, pop_size, max_height, max_arity):
     for i in range(0, pop_size):
-        yield gen_tree(config.full_config, config.term_config, max_height, max_arity, config.kwargs_config)
+        # TODO random values of height and arity
+        yield toolbox.individual(max_height, max_arity)
 
 
-def gen_tree(full_dict, term_dict, max_height, max_arity, kwargs_dict, first_type='out'):
+def gen_tree(toolbox, config, max_height, max_arity, first_type='out'):
     tree_list = []
     type_stack = [(first_type, 1, 1)]
     max_h = 0
@@ -26,14 +27,14 @@ def gen_tree(full_dict, term_dict, max_height, max_arity, kwargs_dict, first_typ
             type_stack.append((next_type, ar - 1, h))
 
         if h < max_height:
-            choose_from = full_dict[next_type]
+            choose_from = config.full_config[next_type]
         else:
-            choose_from = term_dict[next_type]
+            choose_from = config.term_config[next_type]
 
         # template of the next primitive
         next_prim_t = random.choice(choose_from)
 
-        prim = next_prim_t.create_primitive(h, max_arity, kwargs_dict[next_prim_t.name])
+        prim = next_prim_t.create_primitive(h, max_arity, config.kwargs_config[next_prim_t.name])
 
         if prim.arity > 0:
             for child_type in prim.node_type[0]:
@@ -41,7 +42,7 @@ def gen_tree(full_dict, term_dict, max_height, max_arity, kwargs_dict, first_typ
 
         tree_list.append(prim)
 
-    return GpTreeIndividual(list(reversed(tree_list)), max_h)
+    return toolbox.TreeIndividual(list(reversed(tree_list)), max_h)
 
 
 def mutate_subtree(gp_tree, config, max_arity, eps=2):

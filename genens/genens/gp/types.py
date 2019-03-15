@@ -18,6 +18,7 @@ The primitive templates defined in this file are
 
 import random
 import functools
+from copy import deepcopy
 
 
 class GpTreeIndividual:
@@ -36,6 +37,16 @@ class GpTreeIndividual:
         # TODO check validity
         self.primitives = prim_list
         self.max_height = max_height
+
+    def __deepcopy__(self, memo=None):
+        if memo is None:
+            memo = {}
+
+        new = object.__new__(type(self))
+        memo[id(self)] = new
+        new.__dict__.update(deepcopy(self.__dict__, memo))
+
+        return new
 
     def run_tree(self, node_func):
         """
@@ -105,6 +116,16 @@ class GpPrimitive:
         self.node_type = node_type
         self.arity = arity
         self.height = height
+
+    def __deepcopy__(self, memo=None):
+        if memo is None:
+            memo = {}
+
+        new = object.__new__(type(self))
+        memo[id(self)] = new
+        new.__dict__.update(deepcopy(self.__dict__, memo))
+
+        return new
 
     @property
     def out_type(self):
