@@ -60,21 +60,16 @@ def mutate_subtree(gp_tree, config, max_arity, eps=2):
     mut_end_point = random.randrange(len(gp_tree.primitives))
     root_height = gp_tree.primitives[mut_end_point].height
 
-    mut_begin_point, subtree_height = gp_tree.subtree(mut_end_point)
+    _, subtree_height = gp_tree.subtree(mut_end_point)
     new_height = random.randint(1, subtree_height + eps)  # generate a smaller or a bigger subtree
 
     new_tree = gen_tree(config.full_config, config.term_config, new_height,
                         max_arity, config.kwargs_config,
                         first_type=gp_tree.primitives[mut_end_point].out_type)
 
-    for prim in new_tree.primitives:
-        prim.height += root_height
+    off, _ = _swap_subtrees(gp_tree, new_tree, mut_end_point, keep_2=False)
 
-    # replace subtree, update height
-    gp_tree.primitives[mut_begin_point: (mut_end_point + 1)] = new_tree.primitives
-    gp_tree.max_height = max(gp_tree.max_height, root_height + new_tree.max_height)
-
-    return gp_tree
+    return off
 
 
 def crossover_one_point(gp_tree_1, gp_tree_2):
@@ -97,33 +92,45 @@ def crossover_one_point(gp_tree_1, gp_tree_2):
     cx_1 = random.choice(eligible_1)
     cx_2 = random.choice(eligible_2)
 
+    return _swap_subtrees(gp_tree_1, gp_tree_2, cx_1, cx_2)
 
-def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_off2=True):
+
+def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
+    """
+    Swaps subtrees of argument trees. Subtree position is determined by
+    ``ind_1`` and ``ind_2``.
+
+    If ``keep_2`` is False, the subtree from
+    ``tree_1`` is not inserted into ``tree_2`` and only the first tree
+    is returned.
+
+    :param GpTreeIndividual tree_1: First tree.
+    :param GpTreeIndividual tree_2: Second tree.
+    :param int ind_1: Index of the subtree of the first subtree.
+    :param int ind_2: Index of the subtree of the second tree.
+    :param bool keep_2: Indicates whether the second modified tree would be returned.
+    :return (GpTreeIndividual, GpTreeIndividual) or (GpTreeIndividual,):
+        Returns both trees with swapped subtrees or only the first tree with
+        a subtree inserted from ``tree_2`` (according to ``keep_2``).
     """
 
-    :param GpTreeIndividual tree_1:
-    :param GpTreeIndividual tree_2:
-    :param int ind_1:
-    :param int ind_2:
-    :return:
-    """
-
+    # update node heights
     root_height_1 = tree_1.primitives[ind_1].height
     root_height_2 = tree_1.primitives[ind_2].height
     height_diff = root_height_1 - root_height_2
 
+    def move_node(prim, diff):
+        prim.height = prim.height + diff
+        return prim
+
+    # subtree indices
     ind_begin_1, _ = tree_1.subtree(ind_1)
     ind_begin_2, _ = tree_1.subtree(ind_2)
 
     ind_end_1 = ind_1 + 1
     ind_end_2 = ind_2 + 1
 
-    # updates height
-    def move_node(prim, diff):
-        prim.height = prim.height + diff
-        return prim
-
-    # insert into tree_1=
+    # insert into tree_1
     subtree_2 = (move_node(prim, height_diff)
                  for prim in tree_2.primitives[ind_begin_2 : ind_end_2])
 
@@ -131,7 +138,7 @@ def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_off2=True):
     tree_1.max_height = max(prim.height for prim in tree_1.primitives)  # update height
 
     # insert into tree_2
-    if keep_off2:
+    if keep_2:
         subtree_1 = (move_node(prim, -height_diff)
                      for prim in tree_1.primitives[ind_begin_1: ind_end_1])
 
