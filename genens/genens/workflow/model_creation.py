@@ -17,6 +17,7 @@ def create_ensemble(ens_cls, const_kwargs, child_list, evolved_kwargs):
     if not len(child_list):
         raise ValueError("No base estimator provided to the ensemble.")  # TODO specific
 
+    # TODO WRONG!!!! inspect signature!!!
     if len(child_list) == 1:
         ens = ens_cls(**const_kwargs, **evolved_kwargs, base_estimator=child_list[0])
     else:

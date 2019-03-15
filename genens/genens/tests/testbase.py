@@ -18,4 +18,6 @@ if __name__ == "__main__":
     config = clf_default.create_config(data.shape[1])
 
     bs = GenensBase(config)
+    bs.fit(X_train, y_train)
+
     pass

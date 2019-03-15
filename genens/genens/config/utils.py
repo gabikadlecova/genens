@@ -23,13 +23,16 @@ from functools import partial
 
 
 class GenensConfig:
-    def __init__(self, func, full, term, kwargs_config):
+    def __init__(self, func, full, term, kwargs_config, max_height, max_arity=10):
         self.func_config = func
 
         self.full_config = full
         self.term_config = term
 
         self.kwargs_config = kwargs_config
+
+        self.max_height = max_height
+        self.max_arity = max_arity
 
     def add_primitive(self, prim, term_only=False):
         # TODO warn if both not
@@ -82,7 +85,9 @@ def get_default_config():
         'ens': []
     }
 
-    return GenensConfig(func_config, full_config, term_config, kwargs_config)
+    # TODO BIG TODO height param!!!!
+
+    return GenensConfig(func_config, full_config, term_config, kwargs_config, 7)
 
 
 def get_n_components(feat_size, feat_fractions=None):
