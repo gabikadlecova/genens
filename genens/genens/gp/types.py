@@ -69,6 +69,9 @@ class GpTreeIndividual:
 
                 stack.append(node_func(node, args))
 
+        if len(stack) > 1:
+            raise ValueError("Bad tree")
+
         return stack.pop()
 
     def subtree(self, root_ind):
@@ -85,7 +88,7 @@ class GpTreeIndividual:
 
             arity_rem = arity_rem - 1 + curr.arity
 
-        return root_ind, (max_h - init_h)
+        return root_ind, (max_h - init_h + 1)
 
 
 class GpPrimitive:

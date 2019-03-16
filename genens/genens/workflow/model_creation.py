@@ -43,6 +43,13 @@ def create_transform_list(child_list, evolved_kwargs):
     return child_list
 
 
+def create_empty_data(child_list, evolved_kwargs):
+    if len(child_list) > 0:
+        raise ValueError("This can be assigned only to terminals.")
+
+    return []
+
+
 class WeightedPipeline(BaseEstimator):
     def __init__(self, pipe):
         self.pipe = pipe
@@ -65,7 +72,7 @@ def create_pipeline(child_list, evolved_kwargs):
 
     predictor = child_list[0]
 
-    if len(child_list) > 1:
+    if len(child_list) > 1 and len(child_list[1]) > 0:
         step_names = ['step' + str(i) for i in range(0, len(child_list[1]))]
         steps = list(zip(step_names, child_list[1]))
         steps.append(('predictor', predictor))

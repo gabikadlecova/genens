@@ -66,21 +66,22 @@ def mutate_subtree(toolbox, gp_tree, eps=2):
         must not be greater than this value.
     :return: The mutated tree.
     """
-    mut_end_point = random.randrange(len(gp_tree.primitives))
-    root_height = gp_tree.primitives[mut_end_point].height
+    mut_end_point = random.randrange(len(gp_tree.primitives) - 1)
 
     _, subtree_height = gp_tree.subtree(mut_end_point)
     new_height = random.randint(1, subtree_height + eps)  # generate a smaller or a bigger subtree
 
     new_tree = toolbox.individual(max_height=new_height,
                                   first_type=gp_tree.primitives[mut_end_point].out_type)
+    new_root_point = len(new_tree.primitives) - 1
 
-    off, _ = _swap_subtrees(gp_tree, new_tree, mut_end_point, keep_2=False)
+    offs = _swap_subtrees(toolbox, gp_tree, new_tree, mut_end_point, new_root_point, keep_2=False)
 
-    return off
+    return offs[0]
 
 
-def crossover_one_point(gp_tree_1, gp_tree_2):
+# TODO remove toolbox
+def crossover_one_point(toolbox, gp_tree_1, gp_tree_2):
     """
 
 
@@ -100,10 +101,11 @@ def crossover_one_point(gp_tree_1, gp_tree_2):
     cx_1 = random.choice(eligible_1)
     cx_2 = random.choice(eligible_2)
 
-    return _swap_subtrees(gp_tree_1, gp_tree_2, cx_1, cx_2)
+    return _swap_subtrees(toolbox, gp_tree_1, gp_tree_2, cx_1, cx_2)
 
 
-def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
+# TODO remove toolbox
+def _swap_subtrees(toolbox, tree_1, tree_2, ind_1, ind_2, keep_2=True):
     """
     Swaps subtrees of argument trees. Subtree position is determined by
     ``ind_1`` and ``ind_2``.
@@ -138,12 +140,9 @@ def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
     ind_end_1 = ind_1 + 1
     ind_end_2 = ind_2 + 1
 
-    # insert into tree_1
-    subtree_2 = (move_node(prim, height_diff)
-                 for prim in tree_2.primitives[ind_begin_2 : ind_end_2])
-
-    tree_1.primitives[ind_begin_1 : ind_end_1] = subtree_2
-    tree_1.max_height = max(prim.height for prim in tree_1.primitives)  # update height
+    # insert into tree_1 - copy subtree from tree_2
+    subtree_2 = [move_node(prim, height_diff)
+                 for prim in tree_2.primitives[ind_begin_2: ind_end_2]]
 
     # insert into tree_2
     if keep_2:
@@ -152,9 +151,16 @@ def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
 
         tree_2.primitives[ind_begin_2 : ind_end_2] = subtree_1
         tree_2.max_height = max(prim.height for prim in tree_2.primitives)  # update height
-        return tree_1, tree_2
 
-    return tree_1,
+    # insert into tree_1 - insert subtree
+    tree_1.primitives[ind_begin_1: ind_end_1] = subtree_2
+    tree_1.max_height = max(prim.height for prim in tree_1.primitives)  # update height
+
+    # TODO remove
+    toolbox.compile(tree_1)
+    toolbox.compile(tree_2)
+
+    return tree_1, tree_2 if keep_2 else tree_1,
 
 
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
@@ -165,6 +171,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
         ind.fitness.values = score
 
     for g in range(n_gen):
+        print("Gen {}".format(g))
+
         for i, tree in enumerate(population):
             graph.create_graph(tree, "gen{}-tree{}.png".format(g, i))
 

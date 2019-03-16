@@ -63,11 +63,13 @@ def get_default_config():
         'cPipe': mc.create_pipeline,
         # 'dUnion': mc.create_data_union, #  todo handle data terminal
         'cData': mc.create_transform_list,
+        'dTerm': mc.create_empty_data
     }
 
     kwargs_config = {
         'cPipe': {},
-        'cData': {}
+        'cData': {},
+        'dTerm': {}
     }
 
     full_config = {
@@ -81,7 +83,9 @@ def get_default_config():
 
     term_config = {
         'out': [],
-        'data': [],
+        'data': [
+            GpTerminalTemplate('dTerm', 'data')
+        ],
         'ens': []
     }
 

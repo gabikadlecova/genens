@@ -16,7 +16,7 @@ import genens.gp.operators as ops
 
 
 class GenensBase(BaseEstimator):
-    def __init__(self, config, cx_pb=0.5, mut_pb=0.01, scorer=None, default_score=0.0):
+    def __init__(self, config, cx_pb=0.5, mut_pb=0.1, scorer=None, default_score=0.0):
         """
 
         :param config:
@@ -51,7 +51,7 @@ class GenensBase(BaseEstimator):
 
         self._toolbox.register("select", tools.selNSGA2)
         self._toolbox.register("mutate_subtree", ops.mutate_subtree, self._toolbox)
-        self._toolbox.register("cx_one_point", ops.crossover_one_point)
+        self._toolbox.register("cx_one_point", ops.crossover_one_point, self._toolbox)  # TODO remove tb
 
         self._toolbox.register("compile", create_workflow, config_dict=self.config.func_config)
         self._toolbox.register("evaluate", self._eval_tree_individual)  # TODO maybe more params
