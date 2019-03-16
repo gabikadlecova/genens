@@ -76,7 +76,7 @@ def get_default_config():
     full_config = {
         'out': [GpFunctionTemplate('cPipe', [TypeArity('ens', 1), TypeArity('data', (0,1))], 'out')],
         'data': [
-            GpFunctionTemplate('dUnion', [TypeArity('data', (2,'n'))], 'data'),
+            GpFunctionTemplate('dUnion', [TypeArity('data', (2,3))], 'data'), # todo fix arity
             GpFunctionTemplate('cData', [TypeArity('featsel', 1), TypeArity('scale', 1)], 'data')
         ],
         'ens': []

@@ -75,7 +75,7 @@ def mutate_subtree(toolbox, gp_tree, eps=4):
                                   first_type=gp_tree.primitives[mut_end_point].out_type)
     new_root_point = len(new_tree.primitives) - 1
 
-    offs = _swap_subtrees(toolbox, gp_tree, new_tree, mut_end_point, new_root_point, keep_2=False)
+    offs = _swap_subtrees(gp_tree, new_tree, mut_end_point, new_root_point, keep_2=False)
 
     return offs[0]
 
