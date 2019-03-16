@@ -61,7 +61,7 @@ class GenensConfig:
 def get_default_config():
     func_config = {
         'cPipe': mc.create_pipeline,
-        # 'dUnion': mc.create_data_union, #  todo handle data terminal
+        'dUnion': mc.create_data_union,
         'cData': mc.create_transform_list,
         'dTerm': mc.create_empty_data
     }
@@ -69,13 +69,14 @@ def get_default_config():
     kwargs_config = {
         'cPipe': {},
         'cData': {},
+        'dUnion': {},
         'dTerm': {}
     }
 
     full_config = {
         'out': [GpFunctionTemplate('cPipe', [TypeArity('ens', 1), TypeArity('data', (0,1))], 'out')],
         'data': [
-            # GpFunctionTemplate('dUnion', [TypeArity('data', (2,'n'))], 'data'),  # todo handle dTerm
+            GpFunctionTemplate('dUnion', [TypeArity('data', (2,'n'))], 'data'),
             GpFunctionTemplate('cData', [TypeArity('featsel', 1), TypeArity('scale', 1)], 'data')
         ],
         'ens': []

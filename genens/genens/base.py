@@ -51,7 +51,7 @@ class GenensBase(BaseEstimator):
 
         self._toolbox.register("select", tools.selNSGA2)
         self._toolbox.register("mutate_subtree", ops.mutate_subtree, self._toolbox)
-        self._toolbox.register("cx_one_point", ops.crossover_one_point, self._toolbox)  # TODO remove tb
+        self._toolbox.register("cx_one_point", ops.crossover_one_point)
 
         self._toolbox.register("compile", create_workflow, config_dict=self.config.func_config)
         self._toolbox.register("evaluate", self._eval_tree_individual)  # TODO maybe more params
@@ -59,7 +59,7 @@ class GenensBase(BaseEstimator):
     def _eval_tree_individual(self, gp_tree):
 
         wf = self._toolbox.compile(gp_tree)
-        return self._fitness_eval.score(wf, self.scorer, self.default_score)
+        return self._fitness_eval.score(wf, self.scorer)
 
     def fit(self, train_X, train_Y):
         self._fitness_eval.fit(train_X, train_Y)
@@ -74,6 +74,8 @@ def eval_time(fn):
         start_time = time.time()
 
         res = fn(*args, **kwargs)
+        if res is None:
+            return None
 
         elapsed_time = time.time() - start_time
         return res, elapsed_time
@@ -91,7 +93,7 @@ class FitnessEvaluator:
         self.train_Y = train_Y
 
     @eval_time
-    def score(self, workflow, scorer=None, default_score=0.0):
+    def score(self, workflow, scorer=None):
         # TODO not fitted
 
         try:
@@ -105,5 +107,4 @@ class FitnessEvaluator:
         # TODO think of a better exception handling
         except Exception as e:
             # TODO log exception
-
-            return default_score
+            return None

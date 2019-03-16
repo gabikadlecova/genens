@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import inspect
+import operator
+from functools import reduce
 
 from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline, make_union
@@ -17,16 +19,19 @@ def create_ensemble(ens_cls, const_kwargs, child_list, evolved_kwargs):
     if not len(child_list):
         raise ValueError("No base estimator provided to the ensemble.")  # TODO specific
 
-    # TODO WRONG!!!! inspect signature!!!
-    if len(child_list) == 1:
+    if 'base_estimator' in inspect.signature(ens_cls).parameters:
+        if len(child_list) != 1:
+            raise ValueError("Incorrect number of base estimators.")
+
         ens = ens_cls(**const_kwargs, **evolved_kwargs, base_estimator=child_list[0])
-    else:
+    elif 'estimators' in inspect.signature(ens_cls).parameters:
+
         est_names = ['clf' + str(i) for i in range(0, len(child_list))]
         est_list = list(zip(est_names, child_list))
 
         ens = ens_cls(**const_kwargs, **evolved_kwargs, estimators=est_list)
-
-    # TODO check for absence of parameters (suitable exception)
+    else:
+        raise ValueError("Invalid ensemble - missing constructor parameters.")
 
     return ens
 
@@ -92,6 +97,8 @@ def create_data_union(child_list, evolved_kwargs):
     if not len(child_list):
         raise ValueError("No base estimator provided to the feature union.")  # TODO specific
 
-    # TODO handle terminal data
+    reduced = reduce(operator.concat, child_list, [])
+    if not len(reduced):
+        return []
 
-    return make_union(*child_list, **evolved_kwargs)
+    return [make_union(*reduced, **evolved_kwargs)]

@@ -54,7 +54,7 @@ def gen_tree(config, max_height=None, first_type='out'):
     return creator.TreeIndividual(list(reversed(tree_list)), tree_height)
 
 
-def mutate_subtree(toolbox, gp_tree, eps=2):
+def mutate_subtree(toolbox, gp_tree, eps=4):
     """
     Replaces a random subtree with a new random tree. The height of the generated subtree
     is between 1 and previous subtree height + ``eps``.
@@ -80,8 +80,7 @@ def mutate_subtree(toolbox, gp_tree, eps=2):
     return offs[0]
 
 
-# TODO remove toolbox
-def crossover_one_point(toolbox, gp_tree_1, gp_tree_2):
+def crossover_one_point(gp_tree_1, gp_tree_2):
     """
 
 
@@ -101,11 +100,10 @@ def crossover_one_point(toolbox, gp_tree_1, gp_tree_2):
     cx_1 = random.choice(eligible_1)
     cx_2 = random.choice(eligible_2)
 
-    return _swap_subtrees(toolbox, gp_tree_1, gp_tree_2, cx_1, cx_2)
+    return _swap_subtrees(gp_tree_1, gp_tree_2, cx_1, cx_2)
 
 
-# TODO remove toolbox
-def _swap_subtrees(toolbox, tree_1, tree_2, ind_1, ind_2, keep_2=True):
+def _swap_subtrees( tree_1, tree_2, ind_1, ind_2, keep_2=True):
     """
     Swaps subtrees of argument trees. Subtree position is determined by
     ``ind_1`` and ``ind_2``.
@@ -156,9 +154,6 @@ def _swap_subtrees(toolbox, tree_1, tree_2, ind_1, ind_2, keep_2=True):
     tree_1.primitives[ind_begin_1: ind_end_1] = subtree_2
     tree_1.max_height = max(prim.height for prim in tree_1.primitives)  # update height
 
-    # TODO remove
-    toolbox.compile(tree_1)
-    toolbox.compile(tree_2)
 
     return tree_1, tree_2 if keep_2 else tree_1,
 
@@ -167,8 +162,13 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
     scores = toolbox.map(toolbox.evaluate, population)
 
     for ind, score in zip(population, scores):
-        # TODO maybe skip things that threw exceptions
+        if score is None:
+            continue
+
         ind.fitness.values = score
+
+    # remove individuals which threw exceptions
+    population[:] = [ind for ind in population if ind.fitness.valid]
 
     for g in range(n_gen):
         print("Gen {}".format(g))
@@ -194,9 +194,14 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
 
         scores = toolbox.map(toolbox.evaluate, offs_to_eval)
         for off, score in zip(offs_to_eval, scores):
-            # TODO see above
+            if score is None:
+                continue
+
             off.fitness.values = score
 
-        # next population is selected from the previous one and from produced offspring
+        # remove offspring which threw exceptions
+        offspring[:] = [ind for ind in offspring if ind.fitness.valid]
+
+        # TODO
         # population[:] = toolbox.select(population + offspring, pop_size)
         population[:] = toolbox.select(offspring, pop_size)
