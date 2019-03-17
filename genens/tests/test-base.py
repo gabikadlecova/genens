@@ -17,7 +17,7 @@ if __name__ == "__main__":
     random.seed(420)
     config = clf_default.create_config(data.shape[1])
 
-    bs = GenensBase(config)
+    bs = GenensBase(config, pop_size=20)
     bs.fit(X_train, y_train)
 
     pass
