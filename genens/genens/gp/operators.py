@@ -103,7 +103,7 @@ def crossover_one_point(gp_tree_1, gp_tree_2):
     return _swap_subtrees(gp_tree_1, gp_tree_2, cx_1, cx_2)
 
 
-def _swap_subtrees( tree_1, tree_2, ind_1, ind_2, keep_2=True):
+def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
     """
     Swaps subtrees of argument trees. Subtree position is determined by
     ``ind_1`` and ``ind_2``.
@@ -154,7 +154,6 @@ def _swap_subtrees( tree_1, tree_2, ind_1, ind_2, keep_2=True):
     tree_1.primitives[ind_begin_1: ind_end_1] = subtree_2
     tree_1.max_height = max(prim.height for prim in tree_1.primitives)  # update height
 
-
     return tree_1, tree_2 if keep_2 else tree_1,
 
 
@@ -202,6 +201,6 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
         # remove offspring which threw exceptions
         offspring[:] = [ind for ind in offspring if ind.fitness.valid]
 
-        # TODO
+        # TODO + or , ?
         # population[:] = toolbox.select(population + offspring, pop_size)
         population[:] = toolbox.select(offspring, pop_size)

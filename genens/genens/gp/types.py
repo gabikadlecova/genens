@@ -34,9 +34,10 @@ class GpTreeIndividual:
 
         :param list of GpPrimitive prim_list: Post-order representation of the tree.
         """
-        # TODO check validity
         self.primitives = prim_list
         self.max_height = max_height
+
+        self.validate_tree()
 
     def __deepcopy__(self, memo=None):
         if memo is None:
@@ -47,6 +48,15 @@ class GpTreeIndividual:
         new.__dict__.update(deepcopy(self.__dict__, memo))
 
         return new
+
+    def __eq__(self, other):
+        if not isinstance(other, GpTreeIndividual):
+            return False
+
+        if self.primitives != other.primitives:
+            return False
+
+        return True
 
     def run_tree(self, node_func):
         """
@@ -70,7 +80,7 @@ class GpTreeIndividual:
                 stack.append(node_func(node, args))
 
         if len(stack) > 1:
-            raise ValueError("Bad tree")
+            raise ValueError("Bad tree")  # TODO specific
 
         return stack.pop()
 
@@ -89,6 +99,34 @@ class GpTreeIndividual:
             arity_rem = arity_rem - 1 + curr.arity
 
         return root_ind, (max_h - init_h + 1)
+
+    def validate_tree(self):
+        """
+        Validates the tree, raises an exception if its children are invalid.
+        """
+
+        def validate_node(node, child_list):
+            if node.arity != len(child_list):
+                raise ValueError("Invalid number of children.")  # TODO specific
+
+            child_id = 0
+            for in_type in node.node_type[0]:
+                for i in range(in_type.arity):
+                    child = child_list[child_id + i]
+                    if child.node_type[1] != in_type.name:
+                        raise ValueError("Invalid child type.")  # TODO specific
+
+                    if child.height != node.height + 1:
+                        raise ValueError("Invalid child height.")  # TODO specific
+
+                child_id += in_type.arity
+
+            return node
+
+        self.run_tree(validate_node)
+
+        if self.max_height != max(prim.height for prim in self.primitives):
+            raise ValueError("Invalid tree height.")
 
 
 class GpPrimitive:
@@ -130,6 +168,21 @@ class GpPrimitive:
 
         return new
 
+    def __eq__(self, other):
+        if not isinstance(other, GpPrimitive):
+            return False
+
+        if self.name != other.name:
+            return False
+
+        if self.arity != other.arity or self.node_type != other.node_type:
+            return False
+
+        if self.obj_kwargs != other.obj_kwargs:
+            return False
+
+        return True
+
     @property
     def out_type(self):
         return self.node_type[1]
@@ -148,6 +201,15 @@ class GpPrimitive:
             """
             self.name = name
             self.arity = arity
+
+        def __eq__(self, other):
+            if not isinstance(other, GpPrimitive.PrimType):
+                return False
+
+            if self.name != other.name or self.arity != other.arity:
+                return False
+
+            return True
 
 
 class GpTerminalTemplate:
@@ -202,8 +264,16 @@ class TypeArity:
             without a specified upper bound (in the case of (int, 'n')).
         """
         self.prim_type = prim_type
-        # TODO arity validity
         self.arity_range = arity_range
+
+        if isinstance(self.arity_range, tuple):
+            if self.arity_range[1] != 'n' and self.arity_range[0] > self.arity_range[1]:
+                raise ValueError("Invalid arity range.")
+        elif isinstance(self.arity_range, int):
+            if self.arity_range <= 0:
+                raise ValueError("Arity must be greater than 0.")
+        else:
+            raise ValueError("Invalid arity type.")
         
     def choose_arity(self, max_arity):
         """
@@ -279,7 +349,6 @@ class GpFunctionTemplate:
 
         # ordered list of final typed arities
         in_type = [create_type(t_a) for t_a in self.type_arities]
-        # TODO check all nonempty (warning)
         in_type = [t for t in in_type if t is not None]
 
         # sum of all arities

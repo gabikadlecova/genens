@@ -16,7 +16,7 @@ import genens.gp.operators as ops
 
 
 class GenensBase(BaseEstimator):
-    def __init__(self, config, cx_pb=0.5, mut_pb=0.1, scorer=None, default_score=0.0):
+    def __init__(self, config, cx_pb=0.5, mut_pb=0.1, scorer=None, hof_size=5):
         """
 
         :param config:
@@ -32,10 +32,9 @@ class GenensBase(BaseEstimator):
         self.mut_pb = mut_pb
 
         self.scorer = scorer
-        self.default_score = default_score
 
         self._fitness_eval = FitnessEvaluator()
-        self._hof = tools.HallOfFame(5)  # TODO similar, size
+        self._hof = tools.HallOfFame(hof_size)  # TODO similar
         self._setup_toolbox()
 
     def _setup_toolbox(self):

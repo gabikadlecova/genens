@@ -15,15 +15,16 @@ of other wrapper functions applied on child nodes and ``kwarg_dict`` is a dictio
 arguments.
 """
 
+import math
+from warnings import warn
+from functools import partial
+
 import genens.workflow.model_creation as mc
 from genens.gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
 
-import math
-from functools import partial
-
 
 class GenensConfig:
-    def __init__(self, func, full, term, kwargs_config, max_height, max_arity=10):
+    def __init__(self, func, full, term, kwargs_config, max_height=7, max_arity=10):
         self.func_config = func
 
         self.full_config = full
@@ -35,7 +36,8 @@ class GenensConfig:
         self.max_arity = max_arity
 
     def add_primitive(self, prim, term_only=False):
-        # TODO warn if both not
+        if term_only and not isinstance(prim, GpTerminalTemplate):
+            warn("Primitive is added neither to function nor terminal set.")
 
         if not term_only:
             out_list = self.full_config.setdefault(prim.out_type, [])
@@ -90,9 +92,7 @@ def get_default_config():
         'ens': []
     }
 
-    # TODO BIG TODO height param!!!!
-
-    return GenensConfig(func_config, full_config, term_config, kwargs_config, 7)
+    return GenensConfig(func_config, full_config, term_config, kwargs_config)
 
 
 def get_n_components(feat_size, feat_fractions=None):
