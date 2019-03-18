@@ -21,7 +21,7 @@ def create_ensemble(ens_cls, const_kwargs, child_list, evolved_kwargs):
 
     if 'base_estimator' in inspect.signature(ens_cls).parameters:
         if len(child_list) != 1:
-            raise ValueError("Incorrect number of base estimators.")
+            raise ValueError("Incorrect number of base estimators.")  # TODO specific
 
         ens = ens_cls(**const_kwargs, **evolved_kwargs, base_estimator=child_list[0])
     elif 'estimators' in inspect.signature(ens_cls).parameters:
@@ -31,7 +31,7 @@ def create_ensemble(ens_cls, const_kwargs, child_list, evolved_kwargs):
 
         ens = ens_cls(**const_kwargs, **evolved_kwargs, estimators=est_list)
     else:
-        raise ValueError("Invalid ensemble - missing constructor parameters.")
+        raise ValueError("Invalid ensemble - missing constructor parameters.")  # TODO specific
 
     return ens
 
@@ -50,7 +50,7 @@ def create_transform_list(child_list, evolved_kwargs):
 
 def create_empty_data(child_list, evolved_kwargs):
     if len(child_list) > 0:
-        raise ValueError("This can be assigned only to terminals.")
+        raise ValueError("This can be assigned only to terminals.")  # TODO specific
 
     return []
 
@@ -73,7 +73,7 @@ class WeightedPipeline(BaseEstimator):
 
 def create_pipeline(child_list, evolved_kwargs):
     if len(child_list) > 2 or not len(child_list):
-        raise ValueError("Invalid child list for pipeline.")
+        raise ValueError("Invalid child list for pipeline.")  # TODO specific
 
     predictor = child_list[0]
 

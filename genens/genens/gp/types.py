@@ -126,7 +126,7 @@ class GpTreeIndividual:
         self.run_tree(validate_node)
 
         if self.max_height != max(prim.height for prim in self.primitives):
-            raise ValueError("Invalid tree height.")
+            raise ValueError("Invalid tree height.")  # TODO specific
 
 
 class GpPrimitive:
@@ -268,12 +268,12 @@ class TypeArity:
 
         if isinstance(self.arity_range, tuple):
             if self.arity_range[1] != 'n' and self.arity_range[0] > self.arity_range[1]:
-                raise ValueError("Invalid arity range.")
+                raise ValueError("Invalid arity range.")  # TODO specific
         elif isinstance(self.arity_range, int):
             if self.arity_range <= 0:
-                raise ValueError("Arity must be greater than 0.")
+                raise ValueError("Arity must be greater than 0.")  # TODO specific
         else:
-            raise ValueError("Invalid arity type.")
+            raise ValueError("Invalid arity type.")  # TODO specific
         
     def choose_arity(self, max_arity):
         """

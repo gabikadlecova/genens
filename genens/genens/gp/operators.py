@@ -13,10 +13,9 @@ from deap import creator
 # TODO write docstrings
 
 
-def gen_population(toolbox, pop_size):
-    for i in range(0, pop_size):
-        # TODO random values of height and arity
-        yield toolbox.individual()
+def gen_population(toolbox):
+    # TODO random values of height and ? arity
+    return toolbox.individual()  # keyword args max_height and first_type
 
 
 def gen_tree(config, max_height=None, first_type='out'):
@@ -168,6 +167,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
 
     # remove individuals which threw exceptions
     population[:] = [ind for ind in population if ind.fitness.valid]
+    toolbox.log(population, 0)
 
     for g in range(n_gen):
         print("Gen {}".format(g))
@@ -204,3 +204,5 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
         # TODO + or , ?
         # population[:] = toolbox.select(population + offspring, pop_size)
         population[:] = toolbox.select(offspring, pop_size)
+
+        toolbox.log(population, g)
