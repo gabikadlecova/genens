@@ -71,10 +71,10 @@ class GenensBase(BaseEstimator):
         self._mstats.register("min", np.min)
         self._mstats.register("max", np.max)
 
-        self._logbook = tools.Logbook()
+        self.logbook = tools.Logbook()
 
-        self._logbook.header = "gen", "score"
-        self._logbook.chapters["score"].header = "min", "avg", "max"
+        self.logbook.header = "gen", "score"
+        self.logbook.chapters["score"].header = "min", "avg", "max"
 
     def _eval_tree_individual(self, gp_tree):
 
@@ -85,7 +85,7 @@ class GenensBase(BaseEstimator):
         self._pareto.update(population)
 
         record = self._mstats.compile(population)
-        self._logbook.record(gen=gen_id, **record)
+        self.logbook.record(gen=gen_id, **record)
 
     def fit(self, train_X, train_Y):
         self._fitness_eval.fit(train_X, train_Y)
@@ -98,13 +98,14 @@ class GenensBase(BaseEstimator):
 def eval_time(fn):
     @wraps(fn)
     def with_time(*args, **kwargs):
-        start_time = time.time_ns()
+        start_time = time.time()
 
         res = fn(*args, **kwargs)
         if res is None:
             return None
 
-        elapsed_time = math.log(time.time_ns() - start_time)
+        # TODO modify time computation
+        elapsed_time = np.log(time.time() - start_time + np.finfo(float).eps)
         return res, elapsed_time
 
     return with_time
