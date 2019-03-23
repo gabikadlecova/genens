@@ -46,7 +46,7 @@ def create_config(feat_size):
             "FA": cf.estimator_func(decomposition.FactorAnalysis),
             "FastICA": cf.estimator_func(decomposition.FastICA),
             "PCA": cf.estimator_func(decomposition.PCA),
-            "KernelPCA" : cf.estimator_func(decomposition.KernelPCA),
+            #"KernelPCA" : cf.estimator_func(decomposition.KernelPCA),
             "kBest": cf.estimator_func(feature_selection.SelectKBest),
             "MaxAbsScaler": cf.estimator_func(preprocessing.MaxAbsScaler),
             "MinMaxScaler":cf.estimator_func(preprocessing.MinMaxScaler),
@@ -154,10 +154,10 @@ def create_config(feat_size):
             'n_components': cf.get_n_components(feat_size),
             'whiten': [False, True],
         },
-        'KernelPCA': {
-            'n_components': cf.get_n_components(feat_size),
-            'kernel': ['linear', 'poly', 'rbf', 'sigmoid', 'cosine']
-        },
+        #'KernelPCA': {
+        #    'n_components': cf.get_n_components(feat_size),
+        #   'kernel': ['linear', 'poly', 'rbf', 'sigmoid', 'cosine']
+        #},
         'kBest': {
             'k': cf.get_n_components(feat_size),
             'score_func': [feature_selection.chi2, feature_selection.f_classif]
@@ -196,7 +196,7 @@ def create_config(feat_size):
     config.add_primitive(cf.transformer_primitive("FA", 'featsel'))
     config.add_primitive(cf.transformer_primitive("FastICA", 'featsel'))
     config.add_primitive(cf.transformer_primitive("PCA", 'featsel'))
-    config.add_primitive(cf.transformer_primitive("KernelPCA", 'featsel'))
+    #config.add_primitive(cf.transformer_primitive("KernelPCA", 'featsel'))
     config.add_primitive(cf.transformer_primitive("kBest", 'featsel'))
 
     config.add_primitive(cf.transformer_primitive("MaxAbsScaler", 'scale'))

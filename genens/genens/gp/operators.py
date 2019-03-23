@@ -4,11 +4,13 @@
 This module defines genetic operators used in the evolution.
 """
 
+import gc
+
 import random
 from genens.gp.types import GpTreeIndividual
 from genens.render import graph
 
-from deap import creator
+from deap import creator, tools
 
 # TODO write docstrings
 
@@ -65,6 +67,9 @@ def mutate_subtree(toolbox, gp_tree, eps=4):
         must not be greater than this value.
     :return: The mutated tree.
     """
+    if len(gp_tree.primitives) < 2:
+        return gp_tree
+
     mut_end_point = random.randrange(len(gp_tree.primitives) - 1)
 
     _, subtree_height = gp_tree.subtree(mut_end_point)
@@ -139,21 +144,44 @@ def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
 
     # insert into tree_1 - copy subtree from tree_2
     subtree_2 = [move_node(prim, height_diff)
-                 for prim in tree_2.primitives[ind_begin_2: ind_end_2]]
+                 for prim in tree_2.primitives[ind_begin_2 : ind_end_2]]
 
     # insert into tree_2
     if keep_2:
         subtree_1 = (move_node(prim, -height_diff)
-                     for prim in tree_1.primitives[ind_begin_1: ind_end_1])
+                     for prim in tree_1.primitives[ind_begin_1 : ind_end_1])
 
         tree_2.primitives[ind_begin_2 : ind_end_2] = subtree_1
         tree_2.max_height = max(prim.height for prim in tree_2.primitives)  # update height
+
+        # TODO remove
+        tree_2.validate_tree()
 
     # insert into tree_1 - insert subtree
     tree_1.primitives[ind_begin_1: ind_end_1] = subtree_2
     tree_1.max_height = max(prim.height for prim in tree_1.primitives)  # update height
 
+    # TODO remove
+    tree_1.validate_tree()
+
     return tree_1, tree_2 if keep_2 else tree_1,
+
+
+def gen_valid(toolbox, timeout=1000):
+    i = 0
+
+    while True:
+        if i >= timeout:
+            raise ValueError("Couldn't generate a valid individual.")  # TODO specific
+
+        ind = toolbox.individual()
+        score = toolbox.evaluate(ind)
+
+        if score is not None:
+            ind.fitness.values = score
+            return ind
+
+        i += 1
 
 
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
@@ -167,15 +195,20 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
 
     # remove individuals which threw exceptions
     population[:] = [ind for ind in population if ind.fitness.valid]
+
+    for i in range(pop_size - len(population)):
+        population.append(gen_valid(toolbox))
+
     toolbox.log(population, 0)
 
+    population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
+
     for g in range(n_gen):
+
         print("Gen {}".format(g))
 
-        for i, tree in enumerate(population):
-            graph.create_graph(tree, "gen{}-tree{}.png".format(g, i))
-
-        offspring = toolbox.clone(population)
+        population[:] = tools.selTournamentDCD(population, pop_size)
+        offspring = list(toolbox.map(toolbox.clone, population))
 
         for ch1, ch2 in zip(offspring[::2], offspring[1::2]):
             if random.random() < cx_pb:
@@ -201,8 +234,9 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
         # remove offspring which threw exceptions
         offspring[:] = [ind for ind in offspring if ind.fitness.valid]
 
-        # TODO + or , ?
-        # population[:] = toolbox.select(population + offspring, pop_size)
-        population[:] = toolbox.select(offspring, pop_size)
+        for i in range(pop_size - len(offspring)):
+            offspring.append(gen_valid(toolbox))
+
+        population[:] = toolbox.select(population + offspring, pop_size)
 
         toolbox.log(population, g)

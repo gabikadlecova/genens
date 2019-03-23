@@ -38,7 +38,7 @@ class GenensBase(BaseEstimator):
         self.scorer = scorer
 
         self._fitness_eval = FitnessEvaluator()
-        self._pareto = tools.ParetoFront()
+        self.pareto = tools.ParetoFront()
 
         self._setup_log()
         self._setup_toolbox()
@@ -82,14 +82,16 @@ class GenensBase(BaseEstimator):
         return self._fitness_eval.score(wf, self.scorer)
 
     def _log_pop_stats(self, population, gen_id):
-        self._pareto.update(population)
+        self.pareto.update(population)
 
         record = self._mstats.compile(population)
         self.logbook.record(gen=gen_id, **record)
 
+        # TODO if test_X and test_Y provided, compute these as well
+
     def fit(self, train_X, train_Y):
         self._fitness_eval.fit(train_X, train_Y)
-        self._pareto.clear()
+        self.pareto.clear()
 
         pop = self._toolbox.population(n=self.pop_size)
         ops.ea_run(pop, self._toolbox, self.n_gen, self.pop_size, self.cx_pb, self.mut_pb)

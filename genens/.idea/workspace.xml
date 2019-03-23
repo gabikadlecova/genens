@@ -4,9 +4,10 @@
     <list default="true" id="c66519e1-475a-4ad4-bc94-22d789418865" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/genens/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/genens/config/clf_default.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/config/clf_default.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/genens/gp/operators.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/gp/operators.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genens/gp/types.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/gp/types.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genens/workflow/model_creation.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/workflow/model_creation.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test-base.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/test-base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/test-similarity.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -21,8 +22,23 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tests/test-base.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="272">
-                  <caret line="22" selection-start-line="22" selection-end-line="22" />
+                <state relative-caret-position="357">
+                  <caret line="21" lean-forward="true" selection-start-line="21" selection-end-line="21" />
+                  <folding>
+                    <element signature="e#25#31#0" expanded="true" />
+                  </folding>
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/genens/gp/types.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="278">
+                  <caret line="344" selection-start-line="344" selection-end-line="344" />
+                  <folding>
+                    <element signature="e#735#748#0" expanded="true" />
+                  </folding>
                 </state>
               </provider>
             </entry>
@@ -30,17 +46,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/genens/gp/operators.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="589">
-                  <caret line="207" selection-start-line="207" selection-end-line="207" />
-                  <folding>
-                    <element signature="e#95#108#0" expanded="true" />
-                    <marker date="1552852331705" expanded="true" signature="1919:1924" ph="..." />
-                    <marker date="1552852331705" expanded="true" signature="2606:2607" ph="..." />
-                    <marker date="1552852331705" expanded="true" signature="2606:2611" ph="..." />
-                    <marker date="1552852331705" expanded="true" signature="5270:5271" ph="..." />
-                    <marker date="1552852331705" expanded="true" signature="5270:5275" ph="..." />
-                    <marker date="1552852331705" expanded="true" signature="5270:5607" ph="..." />
-                  </folding>
+                <state relative-caret-position="261">
+                  <caret line="45" selection-start-line="45" selection-end-line="45" />
                 </state>
               </provider>
             </entry>
@@ -48,21 +55,12 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/genens/base.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="661">
-                  <caret line="87" column="49" selection-start-line="87" selection-start-column="49" selection-end-line="87" selection-end-column="49" />
+                <state relative-caret-position="747">
+                  <caret line="132" lean-forward="true" selection-start-line="132" selection-end-line="132" />
                   <folding>
                     <element signature="e#25#52#0" expanded="true" />
-                    <marker date="1552915669319" expanded="true" signature="3386:3391" ph="..." />
+                    <marker date="1553267043875" expanded="true" signature="3501:3506" ph="..." />
                   </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file pinned="false" current-in-tab="false">
-            <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/deap/tools/support.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="294">
-                  <caret line="614" selection-start-line="614" selection-end-line="614" />
                 </state>
               </provider>
             </entry>
@@ -70,8 +68,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/genens/config/clf_default.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="3043">
-                  <caret line="193" column="9" selection-start-line="193" selection-start-column="7" selection-end-line="193" selection-end-column="9" />
+                <state relative-caret-position="3366">
+                  <caret line="198" column="5" selection-start-line="198" selection-start-column="5" selection-end-line="198" selection-end-column="5" />
                   <folding>
                     <element signature="e#0#32#0" expanded="true" />
                   </folding>
@@ -80,10 +78,19 @@
             </entry>
           </file>
           <file pinned="false" current-in-tab="false">
+            <entry file="file://$PROJECT_DIR$/tests/test-config.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="187">
+                  <caret line="20" column="4" selection-start-line="20" selection-start-column="4" selection-end-line="20" selection-end-column="4" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/genens/config/utils.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="272">
-                  <caret line="16" selection-start-line="16" selection-end-line="16" />
+                <state relative-caret-position="623">
+                  <caret line="72" column="20" selection-start-line="72" selection-start-column="20" selection-end-line="72" selection-end-column="20" />
                   <folding>
                     <element signature="e#738#749#0" expanded="true" />
                   </folding>
@@ -94,8 +101,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/genens/render/graph.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="442">
-                  <caret line="26" selection-start-line="26" selection-end-line="26" />
+                <state relative-caret-position="408">
+                  <caret line="24" selection-start-line="24" selection-end-line="24" />
                 </state>
               </provider>
             </entry>
@@ -107,17 +114,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/genens/gp/operators.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="589">
-                  <caret line="207" selection-start-line="207" selection-end-line="207" />
-                  <folding>
-                    <element signature="e#95#108#0" expanded="true" />
-                    <marker date="1552852331705" expanded="true" signature="1919:1924" ph="..." />
-                    <marker date="1552852331705" expanded="true" signature="2606:2607" ph="..." />
-                    <marker date="1552852331705" expanded="true" signature="2606:2611" ph="..." />
-                    <marker date="1552852331705" expanded="true" signature="5270:5271" ph="..." />
-                    <marker date="1552852331705" expanded="true" signature="5270:5275" ph="..." />
-                    <marker date="1552852331705" expanded="true" signature="5270:5607" ph="..." />
-                  </folding>
+                <state relative-caret-position="317">
+                  <caret line="189" column="41" selection-start-line="189" selection-start-column="41" selection-end-line="189" selection-end-column="41" />
                 </state>
               </provider>
             </entry>
@@ -135,10 +133,6 @@
   </component>
   <component name="FindInProjectRecents">
     <findStrings>
-      <find>sample_w</find>
-      <find>geta</find>
-      <find>__ini</find>
-      <find>ens</find>
       <find>self.obj</find>
       <find>stri</find>
       <find>list</find>
@@ -156,7 +150,6 @@
       <find>self.</find>
       <find>max_ar</find>
       <find>indivi</find>
-      <find>inspect</find>
       <find>type</find>
       <find>max(</find>
       <find>warn</find>
@@ -165,6 +158,11 @@
       <find>create_pr</find>
       <find>ValueError</find>
       <find>raise</find>
+      <find>clone</find>
+      <find>toolbox.map</find>
+      <find>random.se</find>
+      <find>random</find>
+      <find>inspect</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -185,25 +183,25 @@
         <option value="$PROJECT_DIR$/genens/config/__init__.py" />
         <option value="$PROJECT_DIR$/genens/workflow/__init__.py" />
         <option value="$PROJECT_DIR$/genens/__init__.py" />
-        <option value="$PROJECT_DIR$/genens/config/clf_default.py" />
         <option value="$PROJECT_DIR$/genens/tests/testconfig.py" />
         <option value="$PROJECT_DIR$/genens/tests/testbase.py" />
         <option value="$PROJECT_DIR$/genens/render/graph.py" />
         <option value="$PROJECT_DIR$/genens/config/utils.py" />
+        <option value="$PROJECT_DIR$/genens/workflow/model_creation.py" />
         <option value="$PROJECT_DIR$/tests/test-similarity.py" />
         <option value="$PROJECT_DIR$/genens/gp/types.py" />
-        <option value="$PROJECT_DIR$/genens/workflow/model_creation.py" />
-        <option value="$PROJECT_DIR$/tests/test-base.py" />
+        <option value="$PROJECT_DIR$/genens/config/clf_default.py" />
         <option value="$PROJECT_DIR$/genens/gp/operators.py" />
         <option value="$PROJECT_DIR$/genens/base.py" />
+        <option value="$PROJECT_DIR$/tests/test-base.py" />
       </list>
     </option>
   </component>
   <component name="ProjectFrameBounds" extendedState="6">
-    <option name="x" value="-343" />
-    <option name="y" value="-8" />
-    <option name="width" value="1936" />
-    <option name="height" value="1186" />
+    <option name="x" value="386" />
+    <option name="y" value="-17" />
+    <option name="width" value="974" />
+    <option name="height" value="1056" />
   </component>
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="ProjectView">
@@ -211,7 +209,6 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
-      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -242,16 +239,33 @@
               <item name="genens" type="462c0819:PsiDirectoryNode" />
               <item name="render" type="462c0819:PsiDirectoryNode" />
             </path>
+            <path>
+              <item name="genens" type="b2602c69:ProjectViewProjectNode" />
+              <item name="genens" type="462c0819:PsiDirectoryNode" />
+              <item name="tests" type="462c0819:PsiDirectoryNode" />
+            </path>
           </expand>
           <select />
         </subPane>
       </pane>
+      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
     <property name="last_opened_file_path" value="$PROJECT_DIR$" />
-    <property name="settings.editor.selected.configurable" value="com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable" />
+    <property name="settings.editor.selected.configurable" value="configurable.group.tools" />
+  </component>
+  <component name="PyConsoleOptionsProvider">
+    <option name="myPythonConsoleState">
+      <console-settings module-name="genens" is-module-sdk="true">
+        <option name="myUseModuleSdk" value="true" />
+        <option name="myModuleName" value="genens" />
+      </console-settings>
+    </option>
+  </component>
+  <component name="PyDebuggerOptionsProvider">
+    <option name="mySupportQtDebugging" value="false" />
   </component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
@@ -386,11 +400,11 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.testconfig" />
-      <item itemvalue="Python.testbase" />
-      <item itemvalue="Python.testbase (1)" />
-      <item itemvalue="Python.test-similarity" />
       <item itemvalue="Python.test-base" />
+      <item itemvalue="Python.test-similarity" />
+      <item itemvalue="Python.testbase (1)" />
+      <item itemvalue="Python.testbase" />
+      <item itemvalue="Python.testconfig" />
     </list>
     <recent_temporary>
       <list>
@@ -428,13 +442,13 @@
     <frame x="-8" y="-8" width="1936" height="1186" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.1548999" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.1548999" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32953465" />
-      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49947312" weight="0.328585" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49947312" visible="true" weight="0.27920228" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49947312" weight="0.32763532" />
+      <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49947312" weight="0.2782526" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32953465" />
@@ -458,55 +472,112 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/tests/test-base.py</url>
-          <line>22</line>
-          <option name="timeStamp" value="6" />
+          <line>29</line>
+          <option name="timeStamp" value="8" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
-          <line>207</line>
-          <option name="timeStamp" value="7" />
+          <line>213</line>
+          <option name="timeStamp" value="21" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
+          <line>220</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/types.py</url>
+          <line>296</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/types.py</url>
+          <line>373</line>
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
+          <line>43</line>
+          <option name="timeStamp" value="26" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
+          <line>104</line>
+          <option name="timeStamp" value="27" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
+          <line>103</line>
+          <option name="timeStamp" value="28" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
+          <line>72</line>
+          <option name="timeStamp" value="29" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
+          <line>75</line>
+          <option name="timeStamp" value="30" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
+          <line>98</line>
+          <option name="timeStamp" value="31" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
-    <watches-manager>
-      <configuration name="PythonConfigurationType">
-        <watch expression="gp_tree.primitives[0]" />
-        <watch expression="child_list[0].node_type[1]" />
-        <watch expression="child_list" />
-      </configuration>
-    </watches-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="evaluateCodeFragment">
       <expression>
-        <expression-string>(list(map(lambda x: x.fitness.values, population)),
-list(map(lambda x: x.fitness.values, offspring)))</expression-string>
+        <expression-string>[ind for i, ind in enumerate(offspring) if ind in offspring[:i] + offspring[i+1:]]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>(list(map(lambda x: x.fitness.values, population)),
-list(map(lambda x: x.fitness.values, population)))</expression-string>
+        <expression-string>[ind for i, ind in enumerate(population) if ind in population[:i] + population[i+1:]]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>list(map(lambda x: x.fitness.values, population))</expression-string>
+        <expression-string>set(population)</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[ind for i, ind in enumerate(population) if ind in population[-i]]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[ind for i, ind in enumerate(population) for j, ind2 in enumerate(population) if i != j and ind is ind2]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[i for i in population for j in population if i is j]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[ind for ind in population if len(ind.primitives) &gt; 21]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[ind for ind in population if len(ind.primitives) &gt; 20]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>[k.validate_tree() for k in population]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/genens/tests/tree8.png" />
-    <entry file="file://$PROJECT_DIR$/genens/tests/tree5.png" />
-    <entry file="file://$PROJECT_DIR$/genens/tests/tree12.png" />
-    <entry file="file://$PROJECT_DIR$/genens/tests/tree9.png" />
-    <entry file="file://$PROJECT_DIR$/genens/tests/tree2.png" />
-    <entry file="file://$PROJECT_DIR$/genens/tests/tree1.png" />
-    <entry file="file://$PROJECT_DIR$/genens/tests/tree0.png" />
-    <entry file="file://$PROJECT_DIR$/genens/tests/tree15.png" />
-    <entry file="file://$PROJECT_DIR$/genens/tests/tree14.png" />
     <entry file="file://$PROJECT_DIR$/genens/tests/tree13.png" />
     <entry file="file://$PROJECT_DIR$/genens/tests/tree16.png" />
     <entry file="file://$PROJECT_DIR$/genens/gp/__init__.py">
@@ -543,20 +614,6 @@ list(map(lambda x: x.fitness.values, population)))</expression-string>
     <entry file="file://C:/Anaconda/Lib/site-packages/sklearn/ensemble/base.py" />
     <entry file="file://C:/Anaconda/Lib/copy.py" />
     <entry file="file://C:/Anaconda/Lib/site-packages/sklearn/decomposition/kernel_pca.py" />
-    <entry file="file://$PROJECT_DIR$/tests/test-config.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="25" column="60" selection-start-line="24" selection-start-column="4" selection-end-line="25" selection-end-column="60" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="289">
-          <caret line="17" selection-start-line="17" selection-end-line="17" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Anaconda/Lib/codecs.py" />
     <entry file="file://C:/Anaconda/Lib/site-packages/sklearn/base.py" />
     <entry file="file://C:/Anaconda/Lib/warnings.py" />
@@ -597,97 +654,6 @@ list(map(lambda x: x.fitness.values, population)))</expression-string>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/genens/gp/types.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="325">
-          <caret line="119" column="29" selection-start-line="119" selection-start-column="24" selection-end-line="119" selection-end-column="29" />
-          <folding>
-            <element signature="e#735#748#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/genens/workflow/model_creation.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="380">
-          <caret line="75" column="77" selection-start-line="75" selection-start-column="77" selection-end-line="75" selection-end-column="77" />
-          <folding>
-            <element signature="e#25#39#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test-similarity.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="5" column="25" lean-forward="true" selection-start-line="5" selection-start-column="25" selection-end-line="5" selection-end-column="25" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/utils/extmath.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="243">
-          <caret line="172" selection-start-line="172" selection-end-line="172" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="2635">
-          <caret line="165" selection-start-line="165" selection-end-line="165" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/genens/config/clf_default.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="3043">
-          <caret line="193" column="9" selection-start-line="193" selection-start-column="7" selection-end-line="193" selection-end-column="9" />
-          <folding>
-            <element signature="e#0#32#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/genens/config/utils.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="16" selection-start-line="16" selection-end-line="16" />
-          <folding>
-            <element signature="e#738#749#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/genens/render/graph.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="442">
-          <caret line="26" selection-start-line="26" selection-end-line="26" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test-base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="272">
-          <caret line="22" selection-start-line="22" selection-end-line="22" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/genens/gp/operators.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="589">
-          <caret line="207" selection-start-line="207" selection-end-line="207" />
-          <folding>
-            <element signature="e#95#108#0" expanded="true" />
-            <marker date="1552852331705" expanded="true" signature="1919:1924" ph="..." />
-            <marker date="1552852331705" expanded="true" signature="2606:2607" ph="..." />
-            <marker date="1552852331705" expanded="true" signature="2606:2611" ph="..." />
-            <marker date="1552852331705" expanded="true" signature="5270:5271" ph="..." />
-            <marker date="1552852331705" expanded="true" signature="5270:5275" ph="..." />
-            <marker date="1552852331705" expanded="true" signature="5270:5607" ph="..." />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/deap/tools/support.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="294">
@@ -695,14 +661,170 @@ list(map(lambda x: x.fitness.values, population)))</expression-string>
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test-similarity.py" />
+    <entry file="file://$USER_HOME$/AppData/Local/JetBrains/Toolbox/apps/PyCharm-C/ch-0/191.6183.9.vmoptions">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="204">
+          <caret line="12" selection-start-line="12" selection-end-line="12" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/utils/validation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="244">
+          <caret line="231" selection-start-line="231" selection-end-line="231" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/enum.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-317">
+          <caret line="528" selection-start-line="528" selection-end-line="528" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="236">
+          <caret line="156" selection-start-line="156" selection-end-line="156" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$APPLICATION_HOME_DIR$/helpers/pydev/_pydev_imps/_pydev_execfile.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="289">
+          <caret line="17" selection-start-line="17" selection-end-line="17" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/numpy/lib/arraysetops.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="244">
+          <caret line="312" selection-start-line="312" selection-end-line="312" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/linear_model/logistic.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="850">
+          <caret line="76" selection-start-line="76" selection-end-line="76" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/utils/extmath.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="244">
+          <caret line="172" selection-start-line="172" selection-end-line="172" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/genens/render/graph.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="408">
+          <caret line="24" selection-start-line="24" selection-end-line="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/externals/joblib/parallel.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3298">
+          <caret line="224" selection-start-line="224" selection-end-line="224" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/pipeline.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="4318">
+          <caret line="266" selection-start-line="266" selection-end-line="266" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/deap/tools/emo.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2924">
+          <caret line="178" selection-start-line="178" selection-end-line="178" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/random.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="369">
+          <caret line="763" column="19" lean-forward="true" selection-start-line="763" selection-start-column="19" selection-end-line="763" selection-end-column="19" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test-config.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="187">
+          <caret line="20" column="4" selection-start-line="20" selection-start-column="4" selection-end-line="20" selection-end-column="4" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/genens/gp/types.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="278">
+          <caret line="344" selection-start-line="344" selection-end-line="344" />
+          <folding>
+            <element signature="e#735#748#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/genens/config/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="623">
+          <caret line="72" column="20" selection-start-line="72" selection-start-column="20" selection-end-line="72" selection-end-column="20" />
+          <folding>
+            <element signature="e#738#749#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/genens/config/clf_default.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="3366">
+          <caret line="198" column="5" selection-start-line="198" selection-start-column="5" selection-end-line="198" selection-end-column="5" />
+          <folding>
+            <element signature="e#0#32#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/test-base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="357">
+          <caret line="21" lean-forward="true" selection-start-line="21" selection-end-line="21" />
+          <folding>
+            <element signature="e#25#31#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/genens/workflow/model_creation.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1547">
+          <caret line="91" lean-forward="true" selection-start-line="91" selection-end-line="91" />
+          <folding>
+            <element signature="e#25#39#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/genens/base.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="661">
-          <caret line="87" column="49" selection-start-line="87" selection-start-column="49" selection-end-line="87" selection-end-column="49" />
+        <state relative-caret-position="747">
+          <caret line="132" lean-forward="true" selection-start-line="132" selection-end-line="132" />
           <folding>
             <element signature="e#25#52#0" expanded="true" />
-            <marker date="1552915669319" expanded="true" signature="3386:3391" ph="..." />
+            <marker date="1553267043875" expanded="true" signature="3501:3506" ph="..." />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/genens/gp/operators.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="317">
+          <caret line="189" column="41" selection-start-line="189" selection-start-column="41" selection-end-line="189" selection-end-column="41" />
         </state>
       </provider>
     </entry>
