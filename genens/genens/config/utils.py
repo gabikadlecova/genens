@@ -24,7 +24,7 @@ from genens.gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
 
 
 class GenensConfig:
-    def __init__(self, func, full, term, kwargs_config, max_height=7, max_arity=10):
+    def __init__(self, func, full, term, kwargs_config, max_height=5, max_arity=3):
         self.func_config = func
 
         self.full_config = full

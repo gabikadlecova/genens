@@ -17,8 +17,8 @@ import genens.gp.operators as ops
 
 
 class GenensBase(BaseEstimator):
-    def __init__(self, config, cx_pb=0.5, mut_pb=0.1, scorer=None, hof_size=5, pop_size=100,
-                 n_gen=10):
+    def __init__(self, config, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, scorer=None,
+                 pop_size=100, n_gen=10):
         """
 
         :param config:
@@ -32,6 +32,8 @@ class GenensBase(BaseEstimator):
 
         self.cx_pb = cx_pb
         self.mut_pb = mut_pb
+        self.mut_args_pb = mut_args_pb
+
         self.pop_size = pop_size
         self.n_gen = n_gen
 
@@ -56,6 +58,7 @@ class GenensBase(BaseEstimator):
 
         self._toolbox.register("select", tools.selNSGA2)
         self._toolbox.register("mutate_subtree", ops.mutate_subtree, self._toolbox)
+        self._toolbox.register("mutate_node", ops.mutate_node_args, self._toolbox, self.config)
         self._toolbox.register("cx_one_point", ops.crossover_one_point)
 
         self._toolbox.register("compile", create_workflow, config_dict=self.config.func_config)
@@ -95,6 +98,14 @@ class GenensBase(BaseEstimator):
 
         pop = self._toolbox.population(n=self.pop_size)
         ops.ea_run(pop, self._toolbox, self.n_gen, self.pop_size, self.cx_pb, self.mut_pb)
+
+        return self
+
+    def predict(self, test_X):
+        workflow = self.pareto[0]
+
+        res = workflow.predict(test_X)
+        return res
 
 
 def eval_time(fn):

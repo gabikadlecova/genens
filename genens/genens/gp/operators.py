@@ -15,18 +15,23 @@ from deap import creator, tools
 # TODO write docstrings
 
 
-def gen_population(toolbox):
-    # TODO random values of height and ? arity
-    return toolbox.individual()  # keyword args max_height and first_type
+def gen_population(toolbox, config, out_type='out'):
+    arity = random.randint(2, config.max_arity)
+    height = random.randint(1, config.max_height)
+
+    return toolbox.individual(max_height=height, max_arity=arity, first_type=out_type)
 
 
-def gen_tree(config, max_height=None, first_type='out'):
+def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
     tree_list = []
     type_stack = [(first_type, 1, 1)]
     tree_height = 0
 
     if max_height is None:
         max_height = config.max_height
+
+    if max_arity is None:
+        max_arity = config.max_arity
 
     while len(type_stack):
         next_type, ar, h = type_stack.pop()
@@ -43,7 +48,7 @@ def gen_tree(config, max_height=None, first_type='out'):
         # template of the next primitive
         next_prim_t = random.choice(choose_from)
 
-        prim = next_prim_t.create_primitive(h, config.max_arity,
+        prim = next_prim_t.create_primitive(h, max_arity,
                                             config.kwargs_config[next_prim_t.name])
 
         if prim.arity > 0:
@@ -82,6 +87,70 @@ def mutate_subtree(toolbox, gp_tree, eps=4):
     offs = _swap_subtrees(gp_tree, new_tree, mut_end_point, new_root_point, keep_2=False)
 
     return offs[0]
+
+
+def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
+    """
+    Mutates a random argument of a node from the GP tree. If ``hc_repeat`` is greater
+    than zero, performs a hill-climbing mutation of the argument.
+
+    :param toolbox: GP toolbox.
+    :param config: Configuration of the evolution.
+    :param gp_tree: Individual to be mutated.
+    :param hc_repeat:
+    If equal to n = 0, mutates a single argument and returns the mutated individual.
+    If equal to n > 0, performs a hill-climbing mutation of n iterations, keeping the best
+    individual.
+    :param bool keep_last:
+    If True, returns the last mutant even if the best individual was the original individual.
+    :return: The mutated individual.
+    """
+    mut_ind = random.randint(len(gp_tree.primitives))
+
+    mut_node = gp_tree.primitives[mut_ind]
+    mut_arg = random.choice(list(mut_node.obj_kwargs.keys()))
+
+    if hc_repeat < 1:
+        _mut_args(config, mut_node, mut_arg)
+        return gp_tree
+
+    # hill-climbing initial fitness
+    if not gp_tree.fitness.valid:
+        score = toolbox.evaluate(gp_tree)
+
+        # mutate only valid individuals
+        if score is None:
+            return gp_tree
+        gp_tree.fitness.values = score
+
+    has_mutated = False
+    for i in range(hc_repeat):
+        mutant = toolbox.clone(gp_tree)
+        mut_node = mutant.primitives[mut_ind]
+
+        _mut_args(config, mut_node, mut_arg)
+
+        score = toolbox.evaluate(mutant)
+        # skip invalid mutants
+        if score is None:
+            continue
+
+        # the mutant is better, keep it
+        if score > gp_tree.fitness.values:
+            mutant.fitness.values = score
+            gp_tree = mutant
+
+            has_mutated = True
+        else:
+            # return the last one if there were no mutation
+            if keep_last and i == hc_repeat - 1 and not has_mutated:
+                return mutant
+
+    return gp_tree
+
+
+def _mut_args(config, node, key):
+    node.obj_kwargs[key] = random.choice(config.kwargs_config[key])
 
 
 def crossover_one_point(gp_tree_1, gp_tree_2):
@@ -212,14 +281,14 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
 
         for ch1, ch2 in zip(offspring[::2], offspring[1::2]):
             if random.random() < cx_pb:
-                toolbox.cx_one_point(ch1, ch2)
+                ch1, ch2 = toolbox.cx_one_point(ch1, ch2)
                 del ch1.fitness.values
                 del ch2.fitness.values
                 # mutation
 
         for mut in offspring:
             if random.random() < mut_pb:
-                toolbox.mutate_subtree(mut)
+                mut = toolbox.mutate_subtree(mut)
                 del mut.fitness.values
 
         offs_to_eval = [ind for ind in offspring if not ind.fitness.valid]
