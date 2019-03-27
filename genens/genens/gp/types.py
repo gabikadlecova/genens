@@ -20,6 +20,8 @@ import random
 import functools
 from copy import deepcopy
 
+from deap import base
+
 
 class GpTreeIndividual:
     """Represents a tree individual used in the GP.
@@ -127,6 +129,20 @@ class GpTreeIndividual:
 
         if self.max_height != max(prim.height for prim in self.primitives):
             raise ValueError("Invalid tree height.")  # TODO specific
+
+
+class DeapTreeIndividual(GpTreeIndividual):
+    """
+    Represents an individual which contains deap defined fitness.
+    """
+    def __init__(self, prim_list, max_height):
+        super().__init__(prim_list, max_height)
+        self.fitness = DeapTreeIndividual.Fitness()
+
+    class Fitness(base.Fitness):
+        def __init__(self, values=()):
+            self.weights = (1.0, -1.0)
+            super().__init__(values)
 
 
 class GpPrimitive:
@@ -274,7 +290,22 @@ class TypeArity:
                 raise ValueError("Arity must be greater than 0.")  # TODO specific
         else:
             raise ValueError("Invalid arity type.")  # TODO specific
-        
+
+    def is_valid_arity(self, arity):
+        if isinstance(self.arity_range, tuple):
+            if arity < self.arity_range[0]:
+                return False
+
+            if self.arity_range[1] != 'n' and arity > self.arity_range[1]:
+                return False
+
+            return True
+
+        if isinstance(self.arity_range, int):
+            return self.arity_range == arity
+
+        raise ValueError("Invalid arity object.")  # TODO specific
+
     def choose_arity(self, max_arity):
         """
         Chooses an integer arity from the arity range or
@@ -334,6 +365,10 @@ class GpFunctionTemplate:
         :param int curr_height: Height at which the node is generated
         :param int max_arity: Maximum arity value which can be chosen for a single TypeArity.
         :param dict kwargs_dict: Dictionary which contains possible keyword argument values.
+        :param match_arity:
+        If true, arity of the resulting primitive matches exactly `max_arity`. Raises and
+        exception if it is not possible to create a primitive with this value.
+
         :return: A new instance of GpPrimitive
         """
         prim_kwargs = _choose_kwargs(kwargs_dict)

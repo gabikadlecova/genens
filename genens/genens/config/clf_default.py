@@ -196,7 +196,7 @@ def create_config(feat_size):
     config.add_primitive(cf.transformer_primitive("FA", 'featsel'))
     config.add_primitive(cf.transformer_primitive("FastICA", 'featsel'))
     config.add_primitive(cf.transformer_primitive("PCA", 'featsel'))
-    #onfig.add_primitive(cf.transformer_primitive("KernelPCA", 'featsel'))
+    #config.add_primitive(cf.transformer_primitive("KernelPCA", 'featsel'))
     config.add_primitive(cf.transformer_primitive("kBest", 'featsel'))
 
     config.add_primitive(cf.transformer_primitive("MaxAbsScaler", 'scale'))

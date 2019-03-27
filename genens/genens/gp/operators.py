@@ -4,13 +4,13 @@
 This module defines genetic operators used in the evolution.
 """
 
-import gc
 
 import random
-from genens.gp.types import GpTreeIndividual
-from genens.render import graph
+from genens.gp.types import GpTreeIndividual, DeapTreeIndividual
 
 from deap import creator, tools
+from itertools import chain
+from joblib import Parallel, delayed
 
 # TODO write docstrings
 
@@ -57,7 +57,8 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
 
         tree_list.append(prim)
 
-    return creator.TreeIndividual(list(reversed(tree_list)), tree_height)
+    # return creator.TreeIndividual(list(reversed(tree_list)), tree_height)
+    return DeapTreeIndividual(list(reversed(tree_list)), tree_height)
 
 
 def mutate_subtree(toolbox, gp_tree, eps=4):
@@ -70,6 +71,7 @@ def mutate_subtree(toolbox, gp_tree, eps=4):
     :param int eps:
         Difference between the height of the new subtree and the previous subtree
         must not be greater than this value.
+
     :return: The mutated tree.
     """
     if len(gp_tree.primitives) < 2:
@@ -101,13 +103,20 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
     If equal to n = 0, mutates a single argument and returns the mutated individual.
     If equal to n > 0, performs a hill-climbing mutation of n iterations, keeping the best
     individual.
+
     :param bool keep_last:
     If True, returns the last mutant even if the best individual was the original individual.
+
     :return: The mutated individual.
     """
-    mut_ind = random.randint(len(gp_tree.primitives))
+    mut_ind = random.randint(0, len(gp_tree.primitives) - 1)
 
     mut_node = gp_tree.primitives[mut_ind]
+
+    # no parameters to mutate
+    if not len(mut_node.obj_kwargs):
+        return gp_tree
+
     mut_arg = random.choice(list(mut_node.obj_kwargs.keys()))
 
     if hc_repeat < 1:
@@ -137,20 +146,21 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
 
         # the mutant is better, keep it
         if score > gp_tree.fitness.values:
-            mutant.fitness.values = score
-            gp_tree = mutant
+            gp_tree[mut_ind] = mut_node  # copy value to the mutated tree
+            gp_tree.fitness.values = score
 
             has_mutated = True
         else:
             # return the last one if there were no mutation
             if keep_last and i == hc_repeat - 1 and not has_mutated:
-                return mutant
+                gp_tree[mut_ind] = mut_node
+                gp_tree.fitness.values = score
 
     return gp_tree
 
 
 def _mut_args(config, node, key):
-    node.obj_kwargs[key] = random.choice(config.kwargs_config[key])
+    node.obj_kwargs[key] = random.choice(config.kwargs_config[node.name][key])
 
 
 def crossover_one_point(gp_tree_1, gp_tree_2):
@@ -253,59 +263,84 @@ def gen_valid(toolbox, timeout=1000):
         i += 1
 
 
-def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb):
-    scores = toolbox.map(toolbox.evaluate, population)
+def _compute_score(toolbox, ind):
+    return toolbox.evaluate(ind)
 
-    for ind, score in zip(population, scores):
-        if score is None:
-            continue
 
-        ind.fitness.values = score
+def _perform_cx(cx_func, cx_pb, ch1, ch2):
+    if random.random() < cx_pb:
+        ch1, ch2 = cx_func(ch1, ch2)
+        del ch1.fitness.values
+        del ch2.fitness.values
 
-    # remove individuals which threw exceptions
-    population[:] = [ind for ind in population if ind.fitness.valid]
+    return ch1, ch2
 
-    for i in range(pop_size - len(population)):
-        population.append(gen_valid(toolbox))
 
-    toolbox.log(population, 0)
+def _perform_mut(mut_func, mut_pb, mut):
+    if random.random() < mut_pb:
+        mut = mut_func(mut)
+        del mut.fitness.values
 
-    population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
+    return mut
 
-    for g in range(n_gen):
 
-        print("Gen {}".format(g))
+def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_jobs=1):
+    with Parallel(n_jobs=n_jobs) as parallel:
 
-        population[:] = tools.selTournamentDCD(population, pop_size)
-        offspring = list(toolbox.map(toolbox.clone, population))
+        scores = parallel(delayed(_compute_score)(toolbox, ind) for ind in population)
+        # scores = toolbox.map(_compute_score, population, parallel=parallel)
 
-        for ch1, ch2 in zip(offspring[::2], offspring[1::2]):
-            if random.random() < cx_pb:
-                ch1, ch2 = toolbox.cx_one_point(ch1, ch2)
-                del ch1.fitness.values
-                del ch2.fitness.values
-                # mutation
-
-        for mut in offspring:
-            if random.random() < mut_pb:
-                mut = toolbox.mutate_subtree(mut)
-                del mut.fitness.values
-
-        offs_to_eval = [ind for ind in offspring if not ind.fitness.valid]
-
-        scores = toolbox.map(toolbox.evaluate, offs_to_eval)
-        for off, score in zip(offs_to_eval, scores):
+        for ind, score in zip(population, scores):
             if score is None:
                 continue
 
-            off.fitness.values = score
+            ind.fitness.values = score
 
-        # remove offspring which threw exceptions
-        offspring[:] = [ind for ind in offspring if ind.fitness.valid]
+        # remove individuals which threw exceptions
+        population[:] = [ind for ind in population if ind.fitness.valid]
 
-        for i in range(pop_size - len(offspring)):
-            offspring.append(gen_valid(toolbox))
+        for i in range(pop_size - len(population)):
+            population.append(gen_valid(toolbox))
 
-        population[:] = toolbox.select(population + offspring, pop_size)
+        toolbox.log(population, 0)
 
-        toolbox.log(population, g)
+        population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
+
+        for g in range(n_gen):
+
+            print("Gen {}".format(g))
+
+            population[:] = tools.selTournamentDCD(population, pop_size)
+            offspring = toolbox.map(toolbox.clone, population)  # TODO parallel?
+
+            # crossover - subtree
+            offspring = parallel(delayed(_perform_cx)(toolbox.cx_one_point, cx_pb, ch1, ch2)
+                                 for ch1, ch2 in zip(offspring[::2], offspring[1::2]))
+            offspring = list(chain.from_iterable(offspring))  # chain cx tuple elements
+
+            # mutation - subtree
+            offspring = parallel(delayed(_perform_mut)(toolbox.mutate_subtree, mut_pb, mut)
+                                 for mut in offspring)
+
+            # mutation - node args
+            offspring = parallel(delayed(_perform_mut)(toolbox.mutate_node_args, mut_pb, mut)
+                                 for mut in offspring)
+
+            offs_to_eval = [ind for ind in offspring if not ind.fitness.valid]
+
+            scores = toolbox.map(toolbox.evaluate, offs_to_eval, parallel=parallel)
+            for off, score in zip(offs_to_eval, scores):
+                if score is None:
+                    continue
+
+                off.fitness.values = score
+
+            # remove offspring which threw exceptions
+            offspring[:] = [ind for ind in offspring if ind.fitness.valid]
+
+            for i in range(pop_size - len(offspring)):
+                offspring.append(gen_valid(toolbox))
+
+            population[:] = toolbox.select(population + offspring, pop_size)
+
+            toolbox.log(population, g + 1)

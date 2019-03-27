@@ -8,8 +8,8 @@ from sklearn.model_selection import cross_val_score
 
 from deap import base, tools, creator
 from functools import partial, wraps
+from joblib import delayed
 
-import math
 import time
 import numpy as np
 import warnings
@@ -17,18 +17,19 @@ import genens.gp.operators as ops
 
 
 class GenensBase(BaseEstimator):
-    def __init__(self, config, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, scorer=None,
-                 pop_size=100, n_gen=10):
+    def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, scorer=None,
+                 pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False):
         """
+        TODO all parameters
 
         :param config:
         :param cx_pb:
         :param mut_pb:
         :param scorer:
-        :param default_score:
         """
         # accept config/load default config
         self.config = config
+        self.n_jobs = n_jobs
 
         self.cx_pb = cx_pb
         self.mut_pb = mut_pb
@@ -36,6 +37,9 @@ class GenensBase(BaseEstimator):
 
         self.pop_size = pop_size
         self.n_gen = n_gen
+
+        self.hc_repeat = hc_repeat
+        self.hc_keep_last = hc_keep_last
 
         self.scorer = scorer
 
@@ -53,12 +57,15 @@ class GenensBase(BaseEstimator):
 
         self._toolbox.register("individual", ops.gen_tree, self.config)
 
-        pop_func = partial(ops.gen_population, self._toolbox)
+        pop_func = partial(ops.gen_population, self._toolbox, self.config)
         self._toolbox.register("population", tools.initRepeat, list, pop_func)
+
+        self._toolbox.register("map", _map_parallel)
 
         self._toolbox.register("select", tools.selNSGA2)
         self._toolbox.register("mutate_subtree", ops.mutate_subtree, self._toolbox)
-        self._toolbox.register("mutate_node", ops.mutate_node_args, self._toolbox, self.config)
+        self._toolbox.register("mutate_node_args", ops.mutate_node_args, self._toolbox, self.config,
+                               hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
         self._toolbox.register("cx_one_point", ops.crossover_one_point)
 
         self._toolbox.register("compile", create_workflow, config_dict=self.config.func_config)
@@ -80,7 +87,6 @@ class GenensBase(BaseEstimator):
         self.logbook.chapters["score"].header = "min", "avg", "max"
 
     def _eval_tree_individual(self, gp_tree):
-
         wf = self._toolbox.compile(gp_tree)
         return self._fitness_eval.score(wf, self.scorer)
 
@@ -97,7 +103,8 @@ class GenensBase(BaseEstimator):
         self.pareto.clear()
 
         pop = self._toolbox.population(n=self.pop_size)
-        ops.ea_run(pop, self._toolbox, self.n_gen, self.pop_size, self.cx_pb, self.mut_pb)
+        ops.ea_run(pop, self._toolbox, self.n_gen, self.pop_size, self.cx_pb, self.mut_pb,
+                   self.mut_args_pb, n_jobs=self.n_jobs)
 
         return self
 
@@ -106,6 +113,13 @@ class GenensBase(BaseEstimator):
 
         res = workflow.predict(test_X)
         return res
+
+
+def _map_parallel(func, population, parallel=None):
+    if parallel is None:
+        return list(map(func, population))
+
+    return parallel(delayed(func)(ind) for ind in population)
 
 
 def eval_time(fn):

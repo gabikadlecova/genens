@@ -13,7 +13,7 @@ from genens.config import clf_default
 from genens.render import graph
 
 if __name__ == "__main__":
-    random.seed(420)
+    random.seed(42)
     np.random.seed(42)
 
     data, target = load_iris(return_X_y=True)
@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     config = clf_default.create_config(data.shape[1])
 
-    bs = GenensBase(config, pop_size=20)
+    bs = GenensBase(config, pop_size=20, n_jobs=-1)
 
     bs.fit(X_train, y_train)
 
