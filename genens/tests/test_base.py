@@ -5,6 +5,8 @@ import random
 
 import matplotlib.pyplot as plt
 
+from sklearn.metrics import accuracy_score
+
 from sklearn.datasets import load_iris
 from sklearn.model_selection import train_test_split
 
@@ -20,11 +22,15 @@ if __name__ == "__main__":
     X_train, X_test, y_train, y_test = train_test_split(data, target,
                                                         test_size=0.33)
 
-    config = clf_default.create_config(data.shape[1])
+    config = clf_default.create_clf_config()
 
-    bs = GenensBase(config, pop_size=20, n_jobs=-1)
+    bs = GenensBase(config, pop_size=200, n_jobs=-1)
+    bs.set_test_stats(X_train, y_train, X_test, y_test)
 
     bs.fit(X_train, y_train)
+
+    pred = bs.predict(X_test)
+    print("Accuracy: {}".format(accuracy_score(y_test, pred)))
 
     lbook = bs.logbook
     print(lbook)

@@ -263,15 +263,11 @@ def gen_valid(toolbox, timeout=1000):
         i += 1
 
 
-def _compute_score(toolbox, ind):
-    return toolbox.evaluate(ind)
-
-
 def _perform_cx(cx_func, cx_pb, ch1, ch2):
     if random.random() < cx_pb:
         ch1, ch2 = cx_func(ch1, ch2)
-        del ch1.fitness.values
-        del ch2.fitness.values
+        ch1.reset()
+        ch2.reset()
 
     return ch1, ch2
 
@@ -279,7 +275,7 @@ def _perform_cx(cx_func, cx_pb, ch1, ch2):
 def _perform_mut(mut_func, mut_pb, mut):
     if random.random() < mut_pb:
         mut = mut_func(mut)
-        del mut.fitness.values
+        mut.reset()
 
     return mut
 
@@ -287,8 +283,7 @@ def _perform_mut(mut_func, mut_pb, mut):
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_jobs=1):
     with Parallel(n_jobs=n_jobs) as parallel:
 
-        scores = parallel(delayed(_compute_score)(toolbox, ind) for ind in population)
-        # scores = toolbox.map(_compute_score, population, parallel=parallel)
+        scores = toolbox.map(toolbox.evaluate, population, parallel=parallel)
 
         for ind, score in zip(population, scores):
             if score is None:

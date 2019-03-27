@@ -95,6 +95,7 @@ def get_default_config():
     return GenensConfig(func_config, full_config, term_config, kwargs_config)
 
 
+# TODO possibly remove
 def get_n_components(feat_size, feat_fractions=None):
     """
     Returns list of feature counts which are fractions of the total count.

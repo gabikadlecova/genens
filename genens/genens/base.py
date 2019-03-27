@@ -3,7 +3,11 @@
 from genens.gp import types
 from genens.workflow.model_creation import create_workflow
 
-from sklearn.base import BaseEstimator
+from sklearn.base import BaseEstimator, is_classifier
+
+from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.multiclass import unique_labels
+
 from sklearn.model_selection import cross_val_score
 
 from deap import base, tools, creator
@@ -46,14 +50,19 @@ class GenensBase(BaseEstimator):
         self._fitness_eval = FitnessEvaluator()
         self.pareto = tools.ParetoFront()
 
+        self.fitted_wf = None
+
+        self.train_X = None
+        self.train_Y = None
+        self.test_X = None
+        self.test_Y = None
+        self.can_log_score = False
+
         self._setup_log()
         self._setup_toolbox()
 
     def _setup_toolbox(self):
         self._toolbox = base.Toolbox()
-
-        creator.create("GenensFitness", base.Fitness, weights=(1.0, -1.0))
-        creator.create("TreeIndividual", types.GpTreeIndividual, fitness=creator.GenensFitness)
 
         self._toolbox.register("individual", ops.gen_tree, self.config)
 
@@ -68,13 +77,15 @@ class GenensBase(BaseEstimator):
                                hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
         self._toolbox.register("cx_one_point", ops.crossover_one_point)
 
-        self._toolbox.register("compile", create_workflow, config_dict=self.config.func_config)
+        self._toolbox.register("compile", self._compile_pipe)
         self._toolbox.register("evaluate", self._eval_tree_individual)
         self._toolbox.register("log", self._log_pop_stats)
 
     def _setup_log(self):
         score_stats = tools.Statistics(lambda ind: ind.fitness.values[0])
-        self._mstats = tools.MultiStatistics(score=score_stats)
+        test_stats = tools.Statistics(lambda ind: self._compute_test(ind))
+
+        self._mstats = tools.MultiStatistics(score=score_stats, test_score=test_stats)
 
         self._mstats.register("avg", np.mean)
         self._mstats.register("std", np.std)
@@ -83,12 +94,49 @@ class GenensBase(BaseEstimator):
 
         self.logbook = tools.Logbook()
 
-        self.logbook.header = "gen", "score"
-        self.logbook.chapters["score"].header = "min", "avg", "max"
+        self.logbook.header = "gen", "score", "test_score"
+        self.logbook.chapters["score"].header = "min", "avg", "max", "std"
+        self.logbook.chapters["test_score"].header = "min", "avg", "max", "std"
+
+    def _compile_pipe(self, ind):
+        if ind.compiled_pipe is not None:
+            return ind.compiled_pipe
+
+        return create_workflow(ind, self.config.func_config)
 
     def _eval_tree_individual(self, gp_tree):
         wf = self._toolbox.compile(gp_tree)
         return self._fitness_eval.score(wf, self.scorer)
+
+    def set_test_stats(self, train_X, train_Y, test_X, test_Y):
+        self.train_X = train_X
+        self.train_Y = train_Y
+        self.test_X = test_X
+        self.test_Y = test_Y
+
+        self.can_log_score = train_X is not None and train_Y is not None \
+                             and test_X is not None and test_Y is not None
+
+    def _compute_test(self, ind):
+        if not self.can_log_score:
+            return None
+
+        if ind.test_stats is not None:
+            return ind.test_stats
+
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+
+            wf = self._toolbox.compile(ind)
+            wf.fit(self.train_X, self.train_Y)
+
+            if self.scorer is not None:
+                res = self.scorer(wf, self.test_X, self.test_Y)
+            else:
+                res = wf.score(self.test_X, self.test_Y)
+
+        ind.test_stats = res
+        return res
 
     def _log_pop_stats(self, population, gen_id):
         self.pareto.update(population)
@@ -96,9 +144,12 @@ class GenensBase(BaseEstimator):
         record = self._mstats.compile(population)
         self.logbook.record(gen=gen_id, **record)
 
-        # TODO if test_X and test_Y provided, compute these as well
-
     def fit(self, train_X, train_Y):
+        train_X, train_Y = check_X_y(train_X, train_Y, accept_sparse=True)
+
+        if is_classifier(self):
+            self.classes_ = unique_labels(train_Y)
+
         self._fitness_eval.fit(train_X, train_Y)
         self.pareto.clear()
 
@@ -106,12 +157,21 @@ class GenensBase(BaseEstimator):
         ops.ea_run(pop, self._toolbox, self.n_gen, self.pop_size, self.cx_pb, self.mut_pb,
                    self.mut_args_pb, n_jobs=self.n_jobs)
 
+        # TODO change later
+        tree = self.pareto[0]
+        self.fitted_wf = self._toolbox.compile(tree)
+        self.fitted_wf.fit(train_X, train_Y)
+
+        self.is_fitted_ = True
         return self
 
     def predict(self, test_X):
-        workflow = self.pareto[0]
+        test_X = check_array(test_X, accept_sparse=True)
+        check_is_fitted(self, 'is_fitted_')
 
-        res = workflow.predict(test_X)
+        # TODO clf/regr specific
+
+        res = self.fitted_wf.predict(test_X)
         return res
 
 

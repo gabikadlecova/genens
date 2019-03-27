@@ -138,11 +138,19 @@ class DeapTreeIndividual(GpTreeIndividual):
     def __init__(self, prim_list, max_height):
         super().__init__(prim_list, max_height)
         self.fitness = DeapTreeIndividual.Fitness()
+        self.compiled_pipe = None
+        self.test_stats = None
 
     class Fitness(base.Fitness):
         def __init__(self, values=()):
             self.weights = (1.0, -1.0)
             super().__init__(values)
+
+    def reset(self):
+        del self.fitness.values
+
+        self.compiled_pipe = None
+        self.test_stats = None
 
 
 class GpPrimitive:

@@ -4,8 +4,9 @@ import inspect
 import operator
 from functools import reduce
 
-from sklearn.base import BaseEstimator
 from sklearn.pipeline import Pipeline, make_union
+
+from genens.workflow.builtins import WeightedPipeline, RelativeTransformer
 
 
 def create_workflow(gp_tree, config_dict):
@@ -40,7 +41,14 @@ def create_estimator(est_cls, const_kwargs, child_list, evolved_kwargs):
     if len(child_list) > 0:
         raise ValueError("Estimator cannot have sub-estimators.")  # TODO specific
 
-    # create pipeline list
+    if 'feat_frac' in evolved_kwargs.keys():
+        feat_frac = evolved_kwargs['feat_frac']
+        evolved_kwargs = {key: val for key, val in evolved_kwargs.items()
+                          if key != 'feat_frac'}
+
+        est = est_cls(**const_kwargs, **evolved_kwargs)
+        return RelativeTransformer(est, feat_frac)
+
     return est_cls(**const_kwargs, **evolved_kwargs)
 
 
@@ -53,22 +61,6 @@ def create_empty_data(child_list, evolved_kwargs):
         raise ValueError("This can be assigned only to terminals.")  # TODO specific
 
     return []
-
-
-class WeightedPipeline(BaseEstimator):
-    def __init__(self, pipe):
-        self.pipe = pipe
-
-    def fit(self, X, y, sample_weight=None):
-            return self.pipe.fit(X, y, predictor__sample_weight=sample_weight)
-
-    def __getattr__(self, item):
-        try:
-            super().__getattribute__(item)
-        except AttributeError:
-            val = getattr(self.pipe, item)
-            setattr(self, item, val)
-            return val
 
 
 def create_pipeline(child_list, evolved_kwargs):

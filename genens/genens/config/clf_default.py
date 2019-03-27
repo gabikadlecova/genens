@@ -15,7 +15,7 @@ from sklearn import neighbors
 from sklearn import ensemble
 
 
-def create_config(feat_size):
+def create_clf_config():
     config = cf.get_default_config()
 
     # FUNCTIONS
@@ -140,26 +140,26 @@ def create_config(feat_size):
 
     transform_kwargs = {
         'NMF': {
-            'n_components': cf.get_n_components(feat_size),
+            'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
             'solver': ['cd', 'mu']
         },
         'FA': {
-            'n_components': cf.get_n_components(feat_size),
+            'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
         },
         'FastICA': {
-            'n_components': cf.get_n_components(feat_size),
+            'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
 
         },
         'PCA': {
-            'n_components': cf.get_n_components(feat_size),
+            'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
             'whiten': [False, True],
         },
         #'KernelPCA': {
-        #    'n_components': cf.get_n_components(feat_size),
+        #   'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
         #   'kernel': ['linear', 'poly', 'rbf', 'sigmoid', 'cosine']
         #},
         'kBest': {
-            'k': cf.get_n_components(feat_size),
+            'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
             'score_func': [feature_selection.chi2, feature_selection.f_classif]
         },
         'MaxAbsScaler': {},
