@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import genens.config.utils as cf
 
 from sklearn import decomposition

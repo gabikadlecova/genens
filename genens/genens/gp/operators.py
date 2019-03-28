@@ -262,6 +262,9 @@ def gen_valid(toolbox, timeout=1000):
 
         i += 1
 
+    # TODO remove
+    print("Valid after: {}".format(i))
+
 
 def _perform_cx(cx_func, cx_pb, ch1, ch2):
     if random.random() < cx_pb:
@@ -283,7 +286,12 @@ def _perform_mut(mut_func, mut_pb, mut):
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_jobs=1):
     with Parallel(n_jobs=n_jobs) as parallel:
 
+        # TODO remove
+        print('Population generated')
+
         scores = toolbox.map(toolbox.evaluate, population, parallel=parallel)
+
+        print('Evaluated')
 
         for ind, score in zip(population, scores):
             if score is None:
@@ -294,8 +302,12 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
         # remove individuals which threw exceptions
         population[:] = [ind for ind in population if ind.fitness.valid]
 
-        for i in range(pop_size - len(population)):
-            population.append(gen_valid(toolbox))
+        valid = parallel(delayed(gen_valid)(toolbox) for i in range(pop_size - len(population)))
+        population[:] = population + valid
+
+        # TODO
+        #for i in range(pop_size - len(population)):
+        #   population.append(gen_valid(toolbox))
 
         toolbox.log(population, 0)
 
