@@ -306,8 +306,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
         population[:] = population + valid
 
         # TODO
-        #for i in range(pop_size - len(population)):
-        #   population.append(gen_valid(toolbox))
+        # for i in range(pop_size - len(population)):
+        #    population.append(gen_valid(toolbox))
 
         toolbox.log(population, 0)
 
