@@ -17,6 +17,14 @@ from tests.datasets.load_datasets import load_dataset
 
 
 def run_tests(estimators, train_X, train_y, test_X, test_y, out_dir):
+    try:
+        os.mkdir(out_dir)
+    except FileExistsError:
+        print("Test directory already exists.")
+    except OSError as e:
+        print("\nCannot create test directory.")
+        raise e
+
     for i, (est, kwarg_dict) in enumerate(estimators):
         try:
             test_dir = out_dir + '/{}'.format(i)
@@ -63,9 +71,6 @@ def load_config(cmd_args):
     with open(args.file) as f:
         config = json.load(f)
 
-    dataset = config['dataset']
-    train_X, train_Y, test_X, test_Y = load_dataset(dataset)
-
     params = config['parameters']
 
     def product_dict(**kwargs):
@@ -93,7 +98,12 @@ def load_config(cmd_args):
             else:
                 yield GenensClassifier(**kwargs), kwargs
 
-    run_tests(clf_iterate(param_product), train_X, train_Y, test_X, test_Y, cmd_args.out)
+    datasets = config['datasets']
+
+    for dataset in datasets:
+        train_X, train_Y, test_X, test_Y = load_dataset(dataset)
+        run_tests(clf_iterate(param_product), train_X, train_Y, test_X, test_Y,
+                  cmd_args.out + '/' + dataset)
 
 
 def load_from_args(cmd_args):
