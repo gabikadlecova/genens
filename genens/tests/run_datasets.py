@@ -23,6 +23,7 @@ def run_tests(estimators, train_X, train_y, test_X, test_y, out_dir):
             os.mkdir(test_dir)
         except FileExistsError:
             # skip finished tests
+            print("Test {} skipped.".format(i))
             continue
         except OSError as e:
             print("Cannot create directory for test {}".format(i))
@@ -68,9 +69,20 @@ def load_config(cmd_args):
     params = config['parameters']
 
     def product_dict(**kwargs):
-        keys = kwargs.keys()
-        for values in itertools.product(*kwargs.values()):
-            yield dict(zip(keys, values))
+        """
+        Makes a dictionary product; computes the product of all lists in the
+        arguments, for every element of the product returns a dictionary of these
+        arguments. If an argument isn't a list, it is added to every element
+        of the product.
+        :param kwargs: Keyword argument dictionary.
+        :return: Keyword argument product.
+        """
+        only_lists = {key: val for key, val in kwargs.items() if isinstance(val, list)}
+        other_args = {key: val for key, val in kwargs.items() if key not in only_lists.keys()}
+
+        keys = only_lists.keys()
+        for values in itertools.product(*only_lists.values()):
+            yield dict(zip(keys, values), **other_args)
 
     param_product = product_dict(**params)
 
