@@ -7,8 +7,11 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c66519e1-475a-4ad4-bc94-22d789418865" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/genens/gp/operators.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/gp/operators.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/run_datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/run_datasets.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/genens/genens.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/genens.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/res/0/settings.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/res/1/logbook.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/res/1/pipelines.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/res/1/settings.txt" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -32,7 +35,7 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/genens/gp/operators.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="436">
@@ -53,11 +56,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/genens/genens.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="85">
-                  <caret line="9" column="13" selection-start-line="9" selection-start-column="13" selection-end-line="9" selection-end-column="13" />
+                <state relative-caret-position="374">
+                  <caret line="22" column="74" selection-start-line="22" selection-start-column="74" selection-end-line="22" selection-end-column="74" />
                   <folding>
                     <element signature="e#25#59#0" expanded="true" />
                   </folding>
@@ -93,8 +96,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/genens/workflow/model_creation.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="623">
-                  <caret line="80" column="36" selection-start-line="80" selection-start-column="36" selection-end-line="80" selection-end-column="36" />
+                <state relative-caret-position="28">
+                  <caret line="45" column="59" selection-start-line="45" selection-start-column="59" selection-end-line="45" selection-end-column="59" />
                   <folding>
                     <element signature="e#25#39#0" expanded="true" />
                   </folding>
@@ -201,7 +204,6 @@
         <option value="$PROJECT_DIR$/genens/config/utils.py" />
         <option value="$PROJECT_DIR$/genens/workflow/model_creation.py" />
         <option value="$PROJECT_DIR$/genens/config/clf_default.py" />
-        <option value="$PROJECT_DIR$/genens/genens.py" />
         <option value="$PROJECT_DIR$/genens/config/regr_default.py" />
         <option value="$PROJECT_DIR$/tests/test_run_datasets.py" />
         <option value="$PROJECT_DIR$/genens/__init__.py" />
@@ -213,6 +215,7 @@
         <option value="$PROJECT_DIR$/genens/base.py" />
         <option value="$PROJECT_DIR$/tests/run_datasets.py" />
         <option value="$PROJECT_DIR$/genens/gp/operators.py" />
+        <option value="$PROJECT_DIR$/genens/genens.py" />
       </list>
     </option>
   </component>
@@ -493,12 +496,12 @@
     <frame x="-8" y="-8" width="1936" height="1186" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.15437302" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.15437302" />
       <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.32953465" />
-      <window_info active="true" anchor="bottom" id="Run" order="2" sideWeight="0.49947312" visible="true" weight="0.32763532" />
+      <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49947312" visible="true" weight="0.32763532" />
       <window_info anchor="bottom" id="Debug" order="3" sideWeight="0.49947312" weight="0.2782526" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
@@ -888,16 +891,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/genens/genens.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="85">
-          <caret line="9" column="13" selection-start-line="9" selection-start-column="13" selection-end-line="9" selection-end-column="13" />
-          <folding>
-            <element signature="e#25#59#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/genens/render/plot.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="68">
@@ -951,8 +944,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/genens/workflow/model_creation.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="623">
-          <caret line="80" column="36" selection-start-line="80" selection-start-column="36" selection-end-line="80" selection-end-column="36" />
+        <state relative-caret-position="28">
+          <caret line="45" column="59" selection-start-line="45" selection-start-column="59" selection-end-line="45" selection-end-column="59" />
           <folding>
             <element signature="e#25#39#0" expanded="true" />
           </folding>
@@ -963,6 +956,16 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="436">
           <caret line="286" column="44" selection-start-line="286" selection-start-column="44" selection-end-line="286" selection-end-column="44" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/genens/genens.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="22" column="74" selection-start-line="22" selection-start-column="74" selection-end-line="22" selection-end-column="74" />
+          <folding>
+            <element signature="e#25#59#0" expanded="true" />
+          </folding>
         </state>
       </provider>
     </entry>
