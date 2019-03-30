@@ -1,0 +1,8 @@
+{
+   "dataset": "iris",
+   "parameters": {
+      "n_jobs": [-1],
+      "pop_size": [12,20,200],
+      "n_gen": [1]
+   }
+}

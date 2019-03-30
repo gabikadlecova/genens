@@ -60,6 +60,10 @@ class GpTreeIndividual:
 
         return True
 
+    def __repr__(self):
+        return 'GpTreePrimitive(height={}, '.format(self.max_height)\
+               + 'primitives=' + self.primitives.__repr__() + ')'
+
     def run_tree(self, node_func):
         """
         Applies a function with the signature ``func(node, child_list)`` on all
@@ -206,6 +210,10 @@ class GpPrimitive:
             return False
 
         return True
+
+    def __repr__(self):
+        return 'GpPrimitive( name=' + self.name + ", arity={}".format(self.arity)\
+               + "height={})".format(self.height)
 
     @property
     def out_type(self):

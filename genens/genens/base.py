@@ -144,6 +144,11 @@ class GenensBase(BaseEstimator):
         record = self._mstats.compile(population)
         self.logbook.record(gen=gen_id, **record)
 
+    def get_best_pipelines(self):
+        check_is_fitted(self, 'is_fitted_')
+
+        return list(map(self._toolbox.compile, self.pareto))
+
     def fit(self, train_X, train_Y):
         train_X, train_Y = check_X_y(train_X, train_Y, accept_sparse=True)
 
@@ -173,6 +178,17 @@ class GenensBase(BaseEstimator):
 
         res = self.fitted_wf.predict(test_X)
         return res
+
+    def score(self, test_X, test_y):
+        test_X, test_y = check_X_y(test_X, test_y, accept_sparse=True)
+        check_is_fitted(self, 'is_fitted_')
+
+        if self.scorer is not None:
+            s = self.scorer(self.fitted_wf, self.test_X, self.test_Y)
+        else:
+            s = self.fitted_wf.score(self.test_X, self.test_Y)
+
+        return s
 
 
 def _map_parallel(func, population, parallel=None):

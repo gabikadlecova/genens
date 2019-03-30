@@ -9,6 +9,9 @@ class WeightedPipeline(BaseEstimator):
     def __init__(self, pipe):
         self.pipe = pipe
 
+    def __repr__(self):
+        return "Weighted pipeline: " + self.pipe.__repr__()
+
     def fit(self, X, y, sample_weight=None):
             return self.pipe.fit(X, y, predictor__sample_weight=sample_weight)
 
@@ -32,6 +35,9 @@ class RelativeTransformer(BaseEstimator, TransformerMixin):
             self.param_name = 'n_components'
         else:
             raise ValueError("Invalid feature transformer.")  # TODO specific
+
+    def __repr__(self):
+        return "Transformer ({}): ".format(self.feat_frac) + self.transformer.__repr__()
 
     def fit(self, X, y):
         param = int(math.ceil(self.feat_frac * X.shape[1]))
