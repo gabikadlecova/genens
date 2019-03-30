@@ -262,9 +262,6 @@ def gen_valid(toolbox, timeout=1000):
 
         i += 1
 
-    # TODO remove
-    print("Valid after: {}".format(i))
-
 
 def _perform_cx(cx_func, cx_pb, ch1, ch2):
     if random.random() < cx_pb:
@@ -286,12 +283,10 @@ def _perform_mut(mut_func, mut_pb, mut):
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_jobs=1):
     with Parallel(n_jobs=n_jobs) as parallel:
 
-        # TODO remove
-        print('Population generated')
+        # TODO remove or verbose
+        print('Initial population generated.')
 
         scores = toolbox.map(toolbox.evaluate, population, parallel=parallel)
-
-        print('Evaluated')
 
         for ind, score in zip(population, scores):
             if score is None:

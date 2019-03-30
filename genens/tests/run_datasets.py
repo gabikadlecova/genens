@@ -23,13 +23,13 @@ def run_tests(estimators, train_X, train_y, test_X, test_y, out_dir):
             os.mkdir(test_dir)
         except FileExistsError:
             # skip finished tests
-            print("Test {} skipped.".format(i))
+            print("\nTest {} skipped.".format(i))
             continue
         except OSError as e:
-            print("Cannot create directory for test {}".format(i))
+            print("\nCannot create directory for test {}".format(i))
             raise e
         else:
-            print("Running test {}".format(i))
+            print("\nRunning test {}".format(i))
 
         run_once(est, train_X, train_y, test_X, test_y, kwarg_dict, test_dir)
 
@@ -55,7 +55,7 @@ def run_once(estimator, train_X, train_y, test_X, test_y, kwarg_dict, out_dir):
     export_plot(estimator, out_dir + '/result.png')
 
     for i, ind in enumerate(estimator.pareto):
-        create_graph(ind, out_dir + 'graph{}.png'.format(i))
+        create_graph(ind, out_dir + '/graph{}.png'.format(i))
 
 
 def load_config(cmd_args):
