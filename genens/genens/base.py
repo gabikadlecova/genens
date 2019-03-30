@@ -22,7 +22,8 @@ import genens.gp.operators as ops
 
 class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, scorer=None,
-                 pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False):
+                 pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False, max_height=None,
+                 max_arity=None):
         """
         TODO all parameters
 
@@ -33,6 +34,12 @@ class GenensBase(BaseEstimator):
         """
         # accept config/load default config
         self.config = config
+        if max_height is not None:
+            config.max_height = max_height
+
+        if max_arity is not None:
+            config.max_arity = max_arity
+
         self.n_jobs = n_jobs
 
         self.cx_pb = cx_pb
