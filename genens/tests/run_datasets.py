@@ -93,7 +93,13 @@ def load_from_args(cmd_args):
         cls = GenensClassifier
 
     cls_params = inspect.signature(cls.__init__).parameters
-    kwargs = dict((key, val) for key,val in arg_dict.items() if key in cls_params)
+    kwargs = dict((key, val) for key, val in arg_dict.items() if key in cls_params)
+
+    dataset = cmd_args.dataset
+    train_X, train_Y, test_X, test_Y = load_dataset(dataset)
+
+    run_once(cls(**kwargs), train_X, train_Y, test_X, test_Y, kwargs, cmd_args.out)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Run Genens on datasets.")
