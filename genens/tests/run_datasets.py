@@ -8,7 +8,7 @@ import itertools
 
 import os
 
-import matplotlib.pyplot as plt
+from sklearn.metrics import make_scorer
 
 from genens import GenensClassifier, GenensRegressor
 from genens.render.plot import export_plot
@@ -66,12 +66,36 @@ def run_once(estimator, train_X, train_y, test_X, test_y, kwarg_dict, out_dir):
         create_graph(ind, out_dir + '/graph{}.png'.format(i))
 
 
+def create_scorer(scorer_path, scorer_kwargs):
+    tmp_path = scorer_path.split('.')
+    op_str = tmp_path.pop()
+    import_str = '.'.join(tmp_path)
+
+    try:
+        exec('from {} import {}'.format(import_str, op_str))
+    except ImportError as e:
+        print("Could not import scoring function.")
+        raise e
+
+    cls = eval(op_str)
+
+    return make_scorer(cls, **scorer_kwargs)
+
+
 def load_config(cmd_args):
     # read config
-    with open(args.file) as f:
+    with open(cmd_args.file) as f:
         config = json.load(f)
 
     params = config['parameters']
+
+    # set up scorer
+    if config['scorer'] is not None:
+        func = config['scorer']['func']
+        scorer_args = config['scorer']['args']
+
+        scorer = create_scorer(func, scorer_args)
+        params['scorer'] = scorer
 
     def product_dict(**kwargs):
         """

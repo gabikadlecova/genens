@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import os
 import pandas as pd
 from functools import partial
 
@@ -11,7 +12,9 @@ from sklearn.preprocessing import LabelEncoder
 
 
 def load_wilt(random_state=42):
-    filename = 'wilt-train.csv'
+    dir_path = os.path.dirname(__file__)
+
+    filename = dir_path + '/wilt-train.csv'
     data = pd.read_csv(filename, sep=',')
     data = shuffle(data, random_state=random_state)
     train_X = data[data.columns[1:]]
@@ -21,7 +24,7 @@ def load_wilt(random_state=42):
     ix = train_y.index
     train_y = pd.Series(le.fit_transform(train_y), index=ix)
 
-    test_filename = 'wilt-test.csv'
+    test_filename = dir_path + '/wilt-test.csv'
 
     data = pd.read_csv(test_filename, sep=',')
 
@@ -39,7 +42,7 @@ def load_from_sklearn(load_func, random_state=42):
     data, target = load_func(return_X_y=True)
     train_X, test_X, train_y, test_y = train_test_split(data, target,
                                                         test_size=0.33, random_state=random_state)
-    return train_X, test_X, train_y, test_y
+    return train_X, train_y, test_X, test_y
 
 
 load_functions = {
@@ -59,8 +62,6 @@ def load_dataset(dataset_name, random_state=42):
     """
 
     if dataset_name in load_functions:
-        train_X, test_X, train_y, test_y = load_functions[dataset_name](random_state)
+        return load_functions[dataset_name](random_state)
     else:
         raise ValueError("Invalid dataset name.")
-
-    return train_X, train_y, test_X, test_y
