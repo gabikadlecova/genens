@@ -1,6 +1,6 @@
 # Picture output
 *.png
-./genens/tests/res/*
+genens/tests/res/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
