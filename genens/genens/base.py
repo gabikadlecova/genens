@@ -131,16 +131,20 @@ class GenensBase(BaseEstimator):
         if ind.test_stats is not None:
             return ind.test_stats
 
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
 
-            wf = self._toolbox.compile(ind)
-            wf.fit(self.train_X, self.train_Y)
+                wf = self._toolbox.compile(ind)
+                wf.fit(self.train_X, self.train_Y)
 
-            if self.scorer is not None:
-                res = self.scorer(wf, self.test_X, self.test_Y)
-            else:
-                res = wf.score(self.test_X, self.test_Y)
+                if self.scorer is not None:
+                    res = self.scorer(wf, self.test_X, self.test_Y)
+                else:
+                    res = wf.score(self.test_X, self.test_Y)
+        # TODO
+        except Exception as e:
+            return None
 
         ind.test_stats = res
         return res
