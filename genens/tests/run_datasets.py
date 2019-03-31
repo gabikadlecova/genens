@@ -90,7 +90,7 @@ def load_config(cmd_args):
     params = config['parameters']
 
     # set up scorer
-    if config['scorer'] is not None:
+    if 'scorer' in config.keys():
         func = config['scorer']['func']
         scorer_args = config['scorer']['args']
 

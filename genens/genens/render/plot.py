@@ -11,3 +11,4 @@ def export_plot(estimator, out_file):
     plt.plot(gen, max_vals)
     plt.plot(gen, test_vals)
     plt.savefig(out_file)
+    plt.close()

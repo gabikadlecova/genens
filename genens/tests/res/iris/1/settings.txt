@@ -1,0 +1,1 @@
+{'pop_size': 12, 'n_gen': 10, 'n_jobs': -1}
