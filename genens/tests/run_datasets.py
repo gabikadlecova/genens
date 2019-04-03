@@ -117,24 +117,29 @@ def load_config(cmd_args):
     param_product = product_dict(**params)
 
     if 'evaluator' in config.keys():
-        eval_kwargs = product_dict(**config['evaluator'])
+        eval_kwargs = config['evaluator']
     else:
-        eval_kwargs = ({})
+        eval_kwargs = {}
 
-    def clf_iterate(param_prod, eval_prod):
-        for e_kwargs in eval_prod:
-            evaluator = FitnessEvaluator(**e_kwargs)
-            for kwargs in param_prod:
+    # TODO
+    def ev_iterate(ev_kwargs):
+        for ek in product_dict(**ev_kwargs):
+            yield ek
+
+    def clf_iterate(param_prod):
+        for kwargs in param_prod:
+            for ek in ev_iterate(eval_kwargs):
+                evaluator = FitnessEvaluator(**ek)
                 if cmd_args.regression:
-                    yield GenensRegressor(**kwargs, evaluator=evaluator), {**kwargs, **e_kwargs}
+                    yield GenensRegressor(**kwargs, evaluator=evaluator), {**kwargs, **ek}
                 else:
-                    yield GenensClassifier(**kwargs, evaluator=evaluator), {**kwargs, **e_kwargs}
+                    yield GenensClassifier(**kwargs, evaluator=evaluator), {**kwargs, **ek}
 
     datasets = config['datasets']
 
     for dataset in datasets:
         train_X, train_Y, test_X, test_Y = load_dataset(dataset)
-        run_tests(clf_iterate(param_product, eval_kwargs), train_X, train_Y, test_X, test_Y,
+        run_tests(clf_iterate(param_product), train_X, train_Y, test_X, test_Y,
                   cmd_args.out + '/' + dataset)
 
 
