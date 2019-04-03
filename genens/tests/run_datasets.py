@@ -11,6 +11,7 @@ import os
 from sklearn.metrics import make_scorer
 
 from genens import GenensClassifier, GenensRegressor
+from genens.base import FitnessEvaluator
 from genens.render.plot import export_plot
 from genens.render.graph import create_graph
 from tests.datasets.load_datasets import load_dataset
@@ -115,18 +116,25 @@ def load_config(cmd_args):
 
     param_product = product_dict(**params)
 
-    def clf_iterate(prod):
-        for kwargs in prod:
-            if cmd_args.regression:
-                yield GenensRegressor(**kwargs), kwargs
-            else:
-                yield GenensClassifier(**kwargs), kwargs
+    if 'evaluator' in config.keys():
+        eval_kwargs = product_dict(**config['evaluator'])
+    else:
+        eval_kwargs = ({})
+
+    def clf_iterate(param_prod, eval_prod):
+        for e_kwargs in eval_prod:
+            evaluator = FitnessEvaluator(**e_kwargs)
+            for kwargs in param_prod:
+                if cmd_args.regression:
+                    yield GenensRegressor(**kwargs, evaluator=evaluator), {**kwargs, **e_kwargs}
+                else:
+                    yield GenensClassifier(**kwargs, evaluator=evaluator), {**kwargs, **e_kwargs}
 
     datasets = config['datasets']
 
     for dataset in datasets:
         train_X, train_Y, test_X, test_Y = load_dataset(dataset)
-        run_tests(clf_iterate(param_product), train_X, train_Y, test_X, test_Y,
+        run_tests(clf_iterate(param_product, eval_kwargs), train_X, train_Y, test_X, test_Y,
                   cmd_args.out + '/' + dataset)
 
 
