@@ -182,7 +182,7 @@ class GenensBase(BaseEstimator):
 
     def _compute_test(self, ind):
         if not self.can_log_score:
-            return None
+            return 0.0  # TODO
 
         if ind.test_stats is not None:
             return ind.test_stats
@@ -200,7 +200,7 @@ class GenensBase(BaseEstimator):
                     res = wf.score(self.test_X, self.test_Y)
         # TODO
         except Exception as e:
-            return None
+            return 0.0  # TODO
 
         ind.test_stats = res
         return res
