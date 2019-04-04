@@ -64,8 +64,9 @@ def run_once(estimator, train_X, train_y, test_X, test_y, kwarg_dict, out_dir):
     export_plot(estimator, out_dir + '/result.png')
 
     with open(out_dir + '/ind-score.txt', 'w+') as out_file:
-        for i, ind in enumerate(estimator.pareto):
-            out_file.write('Individual {}: Score {}, Test {}'.format(i, ind.fitness.values, ind.test_stats))
+        for i, ind in enumerate(estimator.get_best_pipelines(as_individuals=True)):
+            out_file.write('Individual {}: Score {}, Test {}\n'.format(i, ind.fitness.values,
+                                                                       ind.test_stats))
             create_graph(ind, out_dir + '/graph{}.png'.format(i))
 
 

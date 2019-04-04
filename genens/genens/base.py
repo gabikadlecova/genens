@@ -214,10 +214,14 @@ class GenensBase(BaseEstimator):
         record = self._mstats.compile(population)
         self.logbook.record(gen=gen_id, **record)
 
-    def get_best_pipelines(self):
+    def get_best_pipelines(self, as_individuals=False):
         check_is_fitted(self, 'is_fitted_')
 
-        return list(map(self._toolbox.compile, self.pareto))
+        if as_individuals:
+            [self._compute_test(ind) for ind in self.pareto]
+            return self.pareto
+        else:
+            return list(map(self._toolbox.compile, self.pareto))
 
     def fit(self, train_X, train_Y):
         train_X, train_Y = check_X_y(train_X, train_Y, accept_sparse=True)
