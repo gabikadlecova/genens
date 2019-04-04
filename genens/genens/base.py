@@ -45,6 +45,10 @@ class FitnessEvaluator:
         if cv_k < 0:
             raise AttributeError("Cross validation k must be greater than 0.")
 
+        if cv_k == 0:
+            self.train_X, self.test_X, self.train_y, self.test_y = train_test_split(self.train_X, self.train_y,
+                                                                                    test_size=0.33)
+        
         self.cv_k = cv_k
 
     def fit(self, train_X, train_y):
@@ -64,10 +68,8 @@ class FitnessEvaluator:
                     scores = cross_val_score(workflow, self.train_X, self.train_y,
                                              cv=self.cv_k, scoring=scorer)
                 else:
-                    train_X, test_X, train_y, test_y = train_test_split(self.train_X, self.train_y,
-                                                                        test_size=0.33)
-                    workflow.fit(train_X, train_y)
-                    scores = scorer(workflow, test_X, test_y)
+                    workflow.fit(self.train_X, self.train_y)
+                    scores = scorer(workflow, self.test_X, self.test_y)
 
                 return np.mean(scores)
         # TODO think of a better exception handling
