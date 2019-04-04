@@ -45,9 +45,6 @@ class FitnessEvaluator:
         if cv_k < 0:
             raise AttributeError("Cross validation k must be greater than 0.")
 
-        if cv_k == 0:
-            self.train_X, self.test_X, self.train_y, self.test_y = train_test_split(self.train_X, self.train_y,
-                                                                                    test_size=0.33)
         
         self.cv_k = cv_k
 
@@ -55,6 +52,10 @@ class FitnessEvaluator:
         self.train_X = train_X
         self.train_y = train_y
 
+        # TODO
+        if self.cv_k == 0:
+            self.train_X, self.test_X, self.train_y, self.test_y = train_test_split(self.train_X, self.train_y,
+                                                                                    test_size=0.33)
     @eval_time
     def score(self, workflow, scorer=None):
         if self.train_X is None or self.train_y is None:
