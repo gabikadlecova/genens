@@ -4,12 +4,13 @@
 This module defines genetic operators used in the evolution.
 """
 
-
+import numpy as np
 import random
 from genens.gp.types import GpTreeIndividual, DeapTreeIndividual
 
 from deap import creator, tools
 from itertools import chain
+from functools import reduce
 from joblib import Parallel, delayed
 
 # TODO write docstrings
@@ -20,6 +21,19 @@ def gen_population(toolbox, config, out_type='out'):
     height = random.randint(1, config.max_height)
 
     return toolbox.individual(max_height=height, max_arity=arity, first_type=out_type)
+
+
+def choose_prim_weighted(prim_list):
+    total_sum = reduce(np.sum, (prim.probability for prim in prim_list), 0)
+    rand_val = random.random() * total_sum
+
+    partial_sum = 0.0
+    for prim in prim_list:
+        partial_sum += prim.probability
+        if partial_sum > rand_val:
+            return prim
+
+    raise RuntimeError("Invalid probability sum.")  # should never get here
 
 
 def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
@@ -46,7 +60,7 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
             choose_from = config.term_config[next_type]
 
         # template of the next primitive
-        next_prim_t = random.choice(choose_from)
+        next_prim_t = choose_prim_weighted(choose_from)
 
         prim = next_prim_t.create_primitive(h, max_arity,
                                             config.kwargs_config[next_prim_t.name])

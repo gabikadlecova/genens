@@ -40,7 +40,9 @@ def create_clf_config():
         "QDA": cf.estimator_func(discriminant_analysis.QuadraticDiscriminantAnalysis),
         "MLP": cf.estimator_func(neural_network.MLPClassifier),
         "gaussianNB": cf.estimator_func(naive_bayes.GaussianNB),
-        "DT": cf.estimator_func(tree.DecisionTreeClassifier)
+        "DT": cf.estimator_func(tree.DecisionTreeClassifier),
+        "gradBoosting": cf.estimator_func(ensemble.GradientBoostingClassifier),
+        "randomForest": cf.estimator_func(ensemble.RandomForestClassifier)
     }
 
     transform_func = {
@@ -64,7 +66,9 @@ def create_clf_config():
         'bagging': {
             'n_estimators': [5, 10, 50, 100, 200]
         },
-        'voting': {}
+        'voting': {
+            'voting': ['hard', 'soft']
+        }
     }
 
     clf_kwargs = {
@@ -137,7 +141,16 @@ def create_clf_config():
             'min_samples_split': [2, 5, 10, 20],
             'min_samples_leaf': [1, 2, 5, 10, 20]
         },
-        'gaussianNB': {}
+        'gaussianNB': {},
+        'gradBoosting': {
+            'loss': ['deviance', 'exponential'],
+            'n_estimators': [20, 50, 100, 200, 300],
+            'subsample': [0.3, 0.5, 0.75, 1.0]
+            # TODO
+        },
+        'randomForest': {
+            'n_estimators': [10, 50, 100, 150, 200]
+        }
     }
 
     transform_kwargs = {
@@ -178,9 +191,9 @@ def create_clf_config():
     # PRIMITIVES
 
     # ensemble config
-    config.add_primitive(cf.ensemble_primitive('ada', 1))
-    config.add_primitive(cf.ensemble_primitive('bagging', 1))
-    config.add_primitive(cf.ensemble_primitive('voting', (2,'n')))
+    config.add_primitive(cf.ensemble_primitive('ada', 1, probability=0.9))
+    config.add_primitive(cf.ensemble_primitive('bagging', 1, probability=0.9))
+    config.add_primitive(cf.ensemble_primitive('voting', (2,'n'), probability=0.9))
 
     # classifier config
     config.add_primitive(cf.predictor_primitive("KNeighbors"))
@@ -192,6 +205,8 @@ def create_clf_config():
     config.add_primitive(cf.predictor_primitive("PAC"))
     config.add_primitive(cf.predictor_primitive("gaussianNB"))
     config.add_primitive(cf.predictor_primitive("DT"))
+    config.add_primitive(cf.predictor_primitive("gradBoosting"))
+    config.add_primitive(cf.predictor_primitive("randomForest"))
 
     # transformer config
     config.add_primitive(cf.transformer_primitive("NMF", 'featsel'))
@@ -215,5 +230,7 @@ def create_clf_config():
     config.add_primitive(cf.predictor_terminal("PAC"), term_only=True)
     config.add_primitive(cf.predictor_terminal("gaussianNB"), term_only=True)
     config.add_primitive(cf.predictor_terminal("DT"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("gradBoosting"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("randomForest"), term_only=True)
 
     return config

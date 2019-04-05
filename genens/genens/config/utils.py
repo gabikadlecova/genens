@@ -78,7 +78,7 @@ def get_default_config():
     full_config = {
         'out': [GpFunctionTemplate('cPipe', [TypeArity('ens', 1), TypeArity('data', (0,1))], 'out')],
         'data': [
-            GpFunctionTemplate('dUnion', [TypeArity('data', (2,3))], 'data'), # todo fix arity
+            GpFunctionTemplate('dUnion', [TypeArity('data', (2,3))], 'data', probability=0.1),
             GpFunctionTemplate('cData', [TypeArity('featsel', 1), TypeArity('scale', 1)], 'data')
         ],
         'ens': []
@@ -144,7 +144,7 @@ def ensemble_func(ens_cls, **kwargs):
     return partial(mc.create_ensemble, ens_cls, kwargs)
 
 
-def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens'):
+def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens', probability=1.0):
     """
     Creates a function template which represents an ensemble. The template can be used
     to create GP primitives with variable arity and different keyword argument dictionaries.
@@ -153,6 +153,7 @@ def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens'):
     by ``in_arity``. The ``out_type`` is 'ens' by default, which is the output type
     of predictors.
 
+    :param probability:
     :param str ens_name: Name of the ensemble.
     :param int, (int, int), (int, 'n') in_arity:
         Arity of input nodes, either a constant, or a range (inclusive), or a range
@@ -162,23 +163,25 @@ def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens'):
     :param str out_type: Node output type.
     :return: Function template which can be used to create an ensemble primitive.
     """
-    return GpFunctionTemplate(ens_name, [TypeArity(in_type, in_arity)], out_type)
+    return GpFunctionTemplate(ens_name, [TypeArity(in_type, in_arity)], out_type,
+                              probability=probability)
 
 
-def predictor_primitive(p_name):
+def predictor_primitive(p_name, probability=1.0):
     """
     Creates a terminal template which represents a simple predictor. The template
     can be used to create GP primitives with different keyword argument dictionaries.
 
     The node has the output type 'ens', which is the output type of predictors.
 
+    :param probability:
     :param str p_name: Name of the predictor.
     :return: Terminal template which can be used to create a predictor primitive.
     """
-    return GpTerminalTemplate(p_name, 'ens')
+    return GpTerminalTemplate(p_name, 'ens', probability=probability)
 
 
-def predictor_terminal(p_name):
+def predictor_terminal(p_name, probability=1.0):
     """
     Creates a terminal template which represents a simple predictor. The template
     can be used to create GP primitives with different keyword argument dictionaries.
@@ -187,23 +190,25 @@ def predictor_terminal(p_name):
     This node should be used when maximum tree height would be exceeded; in other
     cases, nodes returned by ``predictor_primitive`` should be used.
 
+    :param probability:
     :param str p_name: Name of the predictor.
     :return: Terminal template which can be used to create a predictor primitive.
     """
-    return GpTerminalTemplate(p_name, 'out')
+    return GpTerminalTemplate(p_name, 'out', probability)
 
 
-def transformer_primitive(t_name, out_type):
+def transformer_primitive(t_name, out_type, probability=1.0):
     """
     Creates a terminal template which represents a simple transformer. The template
     can be used to create GP primitives with different keyword argument dictionaries.
 
     The node has the output type 'data', which is the output type of transformer nodes.
 
+    :param probability:
     :param str t_name: Name of the transformer.
     :param str out_type:
         Name of the transformer output type (most common are 'featsel' for feature
         selectors and 'scale' for scaling transformers.
     :return: Terminal template which can be used to create a transformer primitive.
     """
-    return GpTerminalTemplate(t_name, out_type)
+    return GpTerminalTemplate(t_name, out_type, probability=probability)
