@@ -7,8 +7,24 @@ from sklearn.model_selection import cross_val_score
 
 
 from functools import wraps
+import multiprocessing
 import warnings
 import time
+
+
+def timeout(fn):
+    @wraps(fn)
+    def with_timeout(*args, **kwargs):
+        # todo if self.timeout absent, warning and skip
+
+        pool = multiprocessing.pool.ThreadPool(1)
+        async_result = pool.apply_async(fn, args, kwargs)
+        try:
+            return async_result.get(args[0].timeout)  # must be self
+        except multiprocessing.TimeoutError:
+            return None
+
+    return with_timeout
 
 
 def eval_time(fn):
@@ -17,8 +33,6 @@ def eval_time(fn):
         start_time = time.time()
 
         res = fn(*args, **kwargs)
-        if res is None:
-            return None
 
         # TODO modify time computation
         elapsed_time = np.log(time.time() - start_time + np.finfo(float).eps)
@@ -28,9 +42,11 @@ def eval_time(fn):
 
 
 class CrossvalEvaluator:
-    def __init__(self, cv_k=7):
+    def __init__(self, cv_k=7, timeout_s=None):
         self.train_X = None
         self.train_y = None
+
+        self.timeout = 5 * 60 if timeout_s is None else timeout_s
 
         if cv_k < 0:
             raise AttributeError("Cross validation k must be greater than 0.")
@@ -41,6 +57,7 @@ class CrossvalEvaluator:
         self.train_X = train_X
         self.train_y = train_y
 
+    @timeout
     @eval_time
     def score(self, workflow, scorer=None):
         if self.train_X is None or self.train_y is None:
@@ -60,9 +77,11 @@ class CrossvalEvaluator:
 
 
 class FixedSampleEvaluator:
-    def __init__(self, test_size=0.25, random_state=42):
+    def __init__(self, test_size=0.25, random_state=42, timeout_s=None):
         self.train_X = None
         self.train_y = None
+
+        self.timeout = 5 * 60 if timeout_s is None else timeout_s
 
         self.test_size = test_size
         self.random_state=random_state
@@ -71,6 +90,8 @@ class FixedSampleEvaluator:
         self.train_X, self.test_X, self.train_y, self.test_y = \
             train_test_split(train_X, train_y, test_size=self.test_size, random_state=self.random_state)
 
+    @timeout
+    @eval_time
     def score(self, workflow, scorer=None):
         if self.train_X is None or self.train_y is None:
             raise ValueError("Evaluator is not fitted with training data.")  # TODO specific
@@ -89,9 +110,11 @@ class FixedSampleEvaluator:
 
 
 class RandomSampleEvaluator:
-    def __init__(self, test_size=0.25, random_state=42):
+    def __init__(self, test_size=0.25, random_state=42, timeout_s=None):
         self.train_X = None
         self.train_y = None
+
+        self.timeout = 8 * 60 if timeout_s is None else timeout_s
 
         self.test_size = test_size
 
@@ -101,6 +124,8 @@ class RandomSampleEvaluator:
         self.train_X = train_X
         self.train_y = train_y
 
+    @timeout
+    @eval_time
     def score(self, workflow, scorer=None):
         if self.train_X is None or self.train_y is None:
             raise ValueError("Evaluator is not fitted with training data.")  # TODO specific

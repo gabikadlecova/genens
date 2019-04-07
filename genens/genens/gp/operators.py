@@ -332,6 +332,11 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
         population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
 
         for g in range(n_gen):
+            # TODO remove
+            if g < 2:
+                for i, ind in enumerate(population):
+                    graph.create_graph(ind, 'res/gen{}ind{}.png'.format(g, i))
+
             print("Gen {}".format(g))
 
             population[:] = tools.selTournamentDCD(population, pop_size)
