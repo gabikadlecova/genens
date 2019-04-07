@@ -7,7 +7,7 @@ from sklearn.model_selection import cross_val_score
 
 
 from functools import wraps
-import multiprocessing
+import threading
 import warnings
 import time
 
@@ -17,12 +17,21 @@ def timeout(fn):
     def with_timeout(*args, **kwargs):
         # todo if self.timeout absent, warning and skip
 
-        pool = multiprocessing.pool.ThreadPool(1)
-        async_result = pool.apply_async(fn, args, kwargs)
-        try:
-            return async_result.get(args[0].timeout)  # must be self
-        except multiprocessing.TimeoutError:
+        res = []
+
+        def save_res():
+            r = fn(*args, **kwargs)
+            res.append(r)
+
+        thread = threading.Thread(target=save_res)
+        thread.start()
+
+        thread.join(args[0].timeout)  # must be self
+
+        if thread.is_alive():
             return None
+
+        return res[0]
 
     return with_timeout
 
@@ -33,6 +42,8 @@ def eval_time(fn):
         start_time = time.time()
 
         res = fn(*args, **kwargs)
+        if res is None:
+            return None
 
         # TODO modify time computation
         elapsed_time = np.log(time.time() - start_time + np.finfo(float).eps)
