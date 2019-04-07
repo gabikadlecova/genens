@@ -41,11 +41,6 @@ class CrossvalEvaluator:
         self.train_X = train_X
         self.train_y = train_y
 
-        # TODO
-        if self.cv_k == 0:
-            self.train_X, self.test_X, self.train_y, self.test_y = train_test_split(self.train_X,
-                                                                                    self.train_y,
-                                                                                    test_size=0.33)
     @eval_time
     def score(self, workflow, scorer=None):
         if self.train_X is None or self.train_y is None:
@@ -55,13 +50,8 @@ class CrossvalEvaluator:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
 
-                if self.cv_k > 0:
-                    scores = cross_val_score(workflow, self.train_X, self.train_y,
+                scores = cross_val_score(workflow, self.train_X, self.train_y,
                                              cv=self.cv_k, scoring=scorer)
-                else:
-                    workflow.fit(self.train_X, self.train_y)
-                    scores = scorer(workflow, self.test_X, self.test_y)
-
                 return np.mean(scores)
         # TODO think of a better exception handling
         except Exception as e:
@@ -69,8 +59,72 @@ class CrossvalEvaluator:
             return None
 
 
+class FixedSampleEvaluator:
+    def __init__(self, test_size=0.25, random_state=42):
+        self.train_X = None
+        self.train_y = None
+
+        self.test_size = test_size
+        self.random_state=random_state
+
+    def fit(self, train_X, train_y):
+        self.train_X, self.test_X, self.train_y, self.test_y = \
+            train_test_split(train_X, train_y, test_size=self.test_size, random_state=self.random_state)
+
+    def score(self, workflow, scorer=None):
+        if self.train_X is None or self.train_y is None:
+            raise ValueError("Evaluator is not fitted with training data.")  # TODO specific
+
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+
+                workflow.fit(self.train_X, self.train_y)
+                scores = scorer(workflow, self.test_X, self.test_y)
+
+                return np.mean(scores)
+        except Exception as e:
+            # TODO log exception
+            return None
+
+
+class RandomSampleEvaluator:
+    def __init__(self, test_size=0.25, random_state=42):
+        self.train_X = None
+        self.train_y = None
+
+        self.test_size = test_size
+
+        np.random.seed(random_state)
+
+    def fit(self, train_X, train_y):
+        self.train_X = train_X
+        self.train_y = train_y
+
+    def score(self, workflow, scorer=None):
+        if self.train_X is None or self.train_y is None:
+            raise ValueError("Evaluator is not fitted with training data.")  # TODO specific
+
+        try:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+
+                train_X, test_X, train_y, test_y = \
+                    train_test_split(self.train_X, self.train_y, test_size=self.test_size)
+
+                workflow.fit(train_X, train_y)
+                scores = scorer(workflow, test_X, test_y)
+
+                return np.mean(scores)
+        except Exception as e:
+            # TODO log exception
+            return None
+
+
 _eval_names = {
-    'crossval': CrossvalEvaluator
+    'crossval': CrossvalEvaluator,
+    'fixed': FixedSampleEvaluator,
+    'perInd': RandomSampleEvaluator
 }
 
 

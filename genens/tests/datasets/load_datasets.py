@@ -11,7 +11,7 @@ from sklearn.utils import shuffle
 from sklearn.preprocessing import LabelEncoder
 
 
-def load_magic(random_state=42):
+def load_magic(random_state=42, test_size=0.25):
     dir_path = os.path.dirname(__file__)
 
     filename = dir_path + '/magic.csv'
@@ -26,7 +26,7 @@ def load_magic(random_state=42):
     ix = target.index
     target = pd.Series(le.fit_transform(target), index=ix)
 
-    train_X, test_X, train_y, test_y = train_test_split(features, target, test_size=0.25,
+    train_X, test_X, train_y, test_y = train_test_split(features, target, test_size=test_size,
                                                         random_state=random_state)
 
     return train_X, train_y, test_X, test_y
@@ -59,10 +59,10 @@ def load_wilt(random_state=42):
     return train_X, train_y, test_X, test_y
 
 
-def load_from_sklearn(load_func, random_state=42):
+def load_from_sklearn(load_func, random_state=42, test_size=0.25):
     data, target = load_func(return_X_y=True)
     train_X, test_X, train_y, test_y = train_test_split(data, target,
-                                                        test_size=0.33, random_state=random_state)
+                                                        test_size=test_size, random_state=random_state)
     return train_X, train_y, test_X, test_y
 
 
