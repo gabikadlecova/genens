@@ -1,8 +1,8 @@
 {
    "datasets": ["wilt"],
    "parameters": {
-      "n_jobs": -1,
-      "pop_size": 200,
+      "n_jobs": 1,
+      "pop_size": 72,
       "n_gen": 15,
       "cx_pb": 0.75,
       "mut_pb": 0.3,
@@ -11,11 +11,16 @@
    },
    "scorer": {
           "func": "sklearn.metrics.cohen_kappa_score",
-          "args": {
+          "kwargs": {
               "weights": "quadratic"
           }
    },
-   "evaluator": {
-          "cv_k": [0, 3, 5, 7, 10]
+   "group_weights": {
+            "pipeline": 1.0,
+            "union": [0.3, 0.5, 0.7],
+            "prepro": 1.0,
+            "ensemble": 1.0,
+            "predictor": [0.3, 0.6, 0.8, 1.0],
+            "transform": 1.0
    }
 }

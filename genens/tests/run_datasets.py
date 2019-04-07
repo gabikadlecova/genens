@@ -10,8 +10,11 @@ import os
 
 from sklearn.metrics import make_scorer
 
+from functools import partial
+
 from genens import GenensClassifier, GenensRegressor
-from genens.base import FitnessEvaluator
+from genens.workflow.evaluate import get_evaluator_cls
+from genens.config.clf_default import create_clf_config
 from genens.render.plot import export_plot
 from genens.render.graph import create_graph
 from tests.datasets.load_datasets import load_dataset
@@ -96,7 +99,7 @@ def load_config(cmd_args):
     # set up scorer
     if 'scorer' in config.keys():
         func = config['scorer']['func']
-        scorer_args = config['scorer']['args']
+        scorer_args = config['scorer']['kwargs']
 
         scorer = create_scorer(func, scorer_args)
         params['scorer'] = scorer
@@ -117,26 +120,26 @@ def load_config(cmd_args):
         for values in itertools.product(*only_lists.values()):
             yield dict(zip(keys, values), **other_args)
 
-    param_product = product_dict(**params)
+    def obj_kwargs_product(cls, kwargs_dict):
+        for kwargs in product_dict(**kwargs_dict):
+            yield cls(**kwargs)
 
     if 'evaluator' in config.keys():
-        eval_kwargs = config['evaluator']
-    else:
-        eval_kwargs = {}
+        eval_cls = get_evaluator_cls(config['evaluator']['func'])
+        params['evaluator'] = list(obj_kwargs_product(eval_cls, config['evaluator']['kwargs']))
 
-    # TODO
-    def ev_iterate(ev_kwargs):
-        for ek in product_dict(**ev_kwargs):
-            yield ek
+    if 'group_weights' in config.keys():
+        params['config'] = [create_clf_config(gweight) for gweight in
+                            product_dict(**config['group_weights'])]
+
+    param_product = product_dict(**params)
 
     def clf_iterate(param_prod):
         for kwargs in param_prod:
-            for ek in ev_iterate(eval_kwargs):
-                evaluator = FitnessEvaluator(**ek)
-                if cmd_args.regression:
-                    yield GenensRegressor(**kwargs, evaluator=evaluator), {**kwargs, **ek}
-                else:
-                    yield GenensClassifier(**kwargs, evaluator=evaluator), {**kwargs, **ek}
+            if cmd_args.regression:
+                yield GenensRegressor(**kwargs), {**kwargs}
+            else:
+                yield GenensClassifier(**kwargs), {**kwargs}
 
     datasets = config['datasets']
 

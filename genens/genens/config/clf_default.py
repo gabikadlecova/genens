@@ -17,9 +17,7 @@ from sklearn import neighbors
 from sklearn import ensemble
 
 
-def create_clf_config():
-    config = cf.get_default_config()
-
+def create_clf_config(group_weights=None):
     # FUNCTIONS
 
     ensembles_func = {
@@ -150,6 +148,7 @@ def create_clf_config():
         },
         'randomForest': {
             'n_estimators': [10, 50, 100, 150, 200]
+            # TODO
         }
     }
 
@@ -186,14 +185,26 @@ def create_clf_config():
     func_dict = {**ensembles_func, **clf_func, **transform_func}
     kwargs_dict = {**ensemble_kwargs, **clf_kwargs, **transform_kwargs}
 
+    if group_weights is None:
+        group_weights = {
+            'pipeline': 1.0,
+            'union': 0.3,
+            'prepro': 1.0,
+            'ensemble': 1.0,
+            'predictor': 0.8,
+            'transform': 1.0
+        }
+
+    # add to config
+    config = cf.get_default_config(group_weights=group_weights)
     config.add_functions_args(func_dict, kwargs_dict)
 
     # PRIMITIVES
 
     # ensemble config
-    config.add_primitive(cf.ensemble_primitive('ada', 1, probability=0.9))
-    config.add_primitive(cf.ensemble_primitive('bagging', 1, probability=0.9))
-    config.add_primitive(cf.ensemble_primitive('voting', (2,'n'), probability=0.9))
+    config.add_primitive(cf.ensemble_primitive('ada', 1))
+    config.add_primitive(cf.ensemble_primitive('bagging', 1))
+    config.add_primitive(cf.ensemble_primitive('voting', (2,'n')))
 
     # classifier config
     config.add_primitive(cf.predictor_primitive("KNeighbors"))
@@ -208,7 +219,22 @@ def create_clf_config():
     config.add_primitive(cf.predictor_primitive("gradBoosting"))
     config.add_primitive(cf.predictor_primitive("randomForest"))
 
+    # terminals used only as leaves
+    config.add_primitive(cf.predictor_terminal("KNeighbors"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("LinearSVC"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("SVC"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("logR"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("Perceptron"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("SGD"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("PAC"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("gaussianNB"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("DT"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("gradBoosting"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("randomForest"), term_only=True)
+
     # transformer config
+
+    # can be logically ordered via default cData node
     config.add_primitive(cf.transformer_primitive("NMF", 'featsel'))
     config.add_primitive(cf.transformer_primitive("FA", 'featsel'))
     config.add_primitive(cf.transformer_primitive("FastICA", 'featsel'))
@@ -221,16 +247,17 @@ def create_clf_config():
     config.add_primitive(cf.transformer_primitive("Normalizer", 'scale'))
     config.add_primitive(cf.transformer_primitive("StandardScaler", 'scale'))
 
-    config.add_primitive(cf.predictor_terminal("KNeighbors"), term_only=True)
-    config.add_primitive(cf.predictor_terminal("LinearSVC"), term_only=True)
-    config.add_primitive(cf.predictor_terminal("SVC"), term_only=True)
-    config.add_primitive(cf.predictor_terminal("logR"), term_only=True)
-    config.add_primitive(cf.predictor_terminal("Perceptron"), term_only=True)
-    config.add_primitive(cf.predictor_terminal("SGD"), term_only=True)
-    config.add_primitive(cf.predictor_terminal("PAC"), term_only=True)
-    config.add_primitive(cf.predictor_terminal("gaussianNB"), term_only=True)
-    config.add_primitive(cf.predictor_terminal("DT"), term_only=True)
-    config.add_primitive(cf.predictor_terminal("gradBoosting"), term_only=True)
-    config.add_primitive(cf.predictor_terminal("randomForest"), term_only=True)
+    # terminals used only as leaves
+    config.add_primitive(cf.transformer_primitive("NMF", 'data'), term_only=True)
+    config.add_primitive(cf.transformer_primitive("FA", 'data'), term_only=True)
+    config.add_primitive(cf.transformer_primitive("FastICA", 'data'), term_only=True)
+    config.add_primitive(cf.transformer_primitive("PCA", 'data'), term_only=True)
+    # config.add_primitive(cf.transformer_primitive("KernelPCA", 'data'), term_only=True)
+    config.add_primitive(cf.transformer_primitive("kBest", 'data'), term_only=True)
+
+    config.add_primitive(cf.transformer_primitive("MaxAbsScaler", 'data'), term_only=True)
+    config.add_primitive(cf.transformer_primitive("MinMaxScaler", 'data'), term_only=True)
+    config.add_primitive(cf.transformer_primitive("Normalizer", 'data'), term_only=True)
+    config.add_primitive(cf.transformer_primitive("StandardScaler", 'data'), term_only=True)
 
     return config

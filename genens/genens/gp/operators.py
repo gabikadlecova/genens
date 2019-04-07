@@ -7,6 +7,7 @@ This module defines genetic operators used in the evolution.
 import numpy as np
 import random
 from genens.gp.types import GpTreeIndividual, DeapTreeIndividual
+from genens.render import graph
 
 from deap import creator, tools
 from itertools import chain
@@ -23,17 +24,25 @@ def gen_population(toolbox, config, out_type='out'):
     return toolbox.individual(max_height=height, max_arity=arity, first_type=out_type)
 
 
-def choose_prim_weighted(prim_list):
-    total_sum = reduce(np.sum, (prim.probability for prim in prim_list), 0)
+def choose_prim_weighted(config, prim_list):
+    group_names = {prim.group for prim in prim_list}  # primitive groups to choose from
+
+    total_sum = np.sum((config.group_weights[group] for group in group_names))
     rand_val = random.random() * total_sum
 
+    group_chosen = None
     partial_sum = 0.0
-    for prim in prim_list:
-        partial_sum += prim.probability
+    for group in group_names:
+        partial_sum += config.group_weights[group]
         if partial_sum > rand_val:
-            return prim
+            group_chosen = group
+            break
 
-    raise RuntimeError("Invalid probability sum.")  # should never get here
+    if group_chosen is None:
+        raise RuntimeError("Invalid weight sum.")  # should never get here
+
+    prim_possible = [prim for prim in prim_list if prim.group == group_chosen]
+    return random.choice(prim_possible)
 
 
 def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
@@ -60,7 +69,7 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
             choose_from = config.term_config[next_type]
 
         # template of the next primitive
-        next_prim_t = choose_prim_weighted(choose_from)
+        next_prim_t = choose_prim_weighted(config, choose_from)
 
         prim = next_prim_t.create_primitive(h, max_arity,
                                             config.kwargs_config[next_prim_t.name])
@@ -323,6 +332,10 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
         population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
 
         for g in range(n_gen):
+            # TODO remove
+            if g < 2:
+                for i, ind in enumerate(population):
+                    graph.create_graph(ind, 'res/gen{}ind{}.png'.format(g, i))
 
             print("Gen {}".format(g))
 

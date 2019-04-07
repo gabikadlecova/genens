@@ -253,7 +253,7 @@ class GpTerminalTemplate:
 
     The keyword arguments are chosen from lists of possible values.
     """
-    def __init__(self, name, out_type, probability=1.0):
+    def __init__(self, name, out_type, group=None):
         """
         Creates a new instance of a terminal template.
 
@@ -262,7 +262,7 @@ class GpTerminalTemplate:
         """
         self.name = name
         self.out_type = out_type
-        self.probability = probability
+        self.group = group
 
     def create_primitive(self, curr_height, max_arity, kwargs_dict):
         """
@@ -356,7 +356,7 @@ class GpFunctionTemplate:
 
     The keyword arguments are chosen from lists of possible values.
     """
-    def __init__(self, name, type_arities, out_type, probability=1.0):
+    def __init__(self, name, type_arities, out_type, group=None):
         """
         Creates a new instance of a function template.
 
@@ -368,7 +368,7 @@ class GpFunctionTemplate:
         self.name = name
         self.type_arities = type_arities
         self.out_type = out_type
-        self.probability = probability
+        self.group = group
         
     def create_primitive(self, curr_height, max_arity, kwargs_dict):
         """

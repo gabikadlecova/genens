@@ -15,6 +15,7 @@ of other wrapper functions applied on child nodes and ``kwarg_dict`` is a dictio
 arguments.
 """
 
+import collections
 import math
 from warnings import warn
 from functools import partial
@@ -23,8 +24,31 @@ import genens.workflow.model_creation as mc
 from genens.gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
 
 
+def default_group_weights(*args, groups=None):
+    checked_groups = groups if groups is not None else {}
+    for prim_list in args:
+        # primitives are grouped by output nodes
+        for out_prim_list in prim_list.values():
+            for prim in out_prim_list:
+                # TODO default behaviour
+                if prim.group is None:
+                    # warn only if user provided config with missing values
+                    if groups is not None:
+                        warn("Primitive {} has no group, using its name as the group.".format(prim.name))
+                    prim.group = prim.name
+
+                if prim.group not in checked_groups.keys():
+                    # warn only if user provided config with missing values
+                    if groups is not None:
+                        warn("Group {} is not present in the group list, adding with default"
+                             "weight (1.0).".format(prim.group))
+                    checked_groups[prim.group] = 1.0
+    return checked_groups
+
+
 class GenensConfig:
-    def __init__(self, func, full, term, kwargs_config, max_height=5, max_arity=3):
+    def __init__(self, func, full, term, kwargs_config, max_height=5, max_arity=3,
+                 group_weights=None):
         self.func_config = func
 
         self.full_config = full
@@ -34,6 +58,8 @@ class GenensConfig:
 
         self.max_height = max_height
         self.max_arity = max_arity
+
+        self.group_weights = default_group_weights(self.full_config, self.term_config, groups=group_weights)
 
     def add_primitive(self, prim, term_only=False):
         if term_only and not isinstance(prim, GpTerminalTemplate):
@@ -60,39 +86,47 @@ class GenensConfig:
             self.kwargs_config[key] = kwarg_val
 
 
-def get_default_config():
+def get_default_config(group_weights=None):
     func_config = {
         'cPipe': mc.create_pipeline,
         'dUnion': mc.create_data_union,
         'cData': mc.create_transform_list,
+        'cFeatSelect': mc.create_transform_list,
+        'cScale': mc.create_transform_list,
         'dTerm': mc.create_empty_data
     }
 
     kwargs_config = {
         'cPipe': {},
         'cData': {},
+        'cFeatSelect': {},
+        'cScale': {},
         'dUnion': {},
         'dTerm': {}
     }
 
     full_config = {
-        'out': [GpFunctionTemplate('cPipe', [TypeArity('ens', 1), TypeArity('data', (0,1))], 'out')],
+        'out': [GpFunctionTemplate('cPipe', [TypeArity('ens', 1), TypeArity('data', (0,1))], 'out',
+                                   group='pipeline')],
         'data': [
-            GpFunctionTemplate('dUnion', [TypeArity('data', (2,3))], 'data', probability=0.1),
-            GpFunctionTemplate('cData', [TypeArity('featsel', 1), TypeArity('scale', 1)], 'data')
+            GpFunctionTemplate('dUnion', [TypeArity('data', (2,3))], 'data', group='union'),
+            GpFunctionTemplate('cData', [TypeArity('featsel', 1), TypeArity('scale', 1)], 'data',
+                               group='prepro'),
+            GpFunctionTemplate('cFeatSelect', [TypeArity('featsel', 1)], 'data',
+                               group='prepro'),
+            GpFunctionTemplate('cScale', [TypeArity('scale', 1)], 'data',
+                               group='prepro')
         ],
         'ens': []
     }
 
     term_config = {
         'out': [],
-        'data': [
-            GpTerminalTemplate('dTerm', 'data')
-        ],
+        'data': [],
         'ens': []
     }
 
-    return GenensConfig(func_config, full_config, term_config, kwargs_config)
+    return GenensConfig(func_config, full_config, term_config, kwargs_config, group_weights=group_weights)
 
 
 # TODO possibly remove
@@ -144,7 +178,7 @@ def ensemble_func(ens_cls, **kwargs):
     return partial(mc.create_ensemble, ens_cls, kwargs)
 
 
-def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens', probability=1.0):
+def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens', group='ensemble'):
     """
     Creates a function template which represents an ensemble. The template can be used
     to create GP primitives with variable arity and different keyword argument dictionaries.
@@ -153,7 +187,7 @@ def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens', probab
     by ``in_arity``. The ``out_type`` is 'ens' by default, which is the output type
     of predictors.
 
-    :param probability:
+    :param group:
     :param str ens_name: Name of the ensemble.
     :param int, (int, int), (int, 'n') in_arity:
         Arity of input nodes, either a constant, or a range (inclusive), or a range
@@ -164,24 +198,24 @@ def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens', probab
     :return: Function template which can be used to create an ensemble primitive.
     """
     return GpFunctionTemplate(ens_name, [TypeArity(in_type, in_arity)], out_type,
-                              probability=probability)
+                              group)
 
 
-def predictor_primitive(p_name, probability=1.0):
+def predictor_primitive(p_name, group='predictor'):
     """
     Creates a terminal template which represents a simple predictor. The template
     can be used to create GP primitives with different keyword argument dictionaries.
 
     The node has the output type 'ens', which is the output type of predictors.
 
-    :param probability:
+    :param group:
     :param str p_name: Name of the predictor.
     :return: Terminal template which can be used to create a predictor primitive.
     """
-    return GpTerminalTemplate(p_name, 'ens', probability=probability)
+    return GpTerminalTemplate(p_name, 'ens', group)
 
 
-def predictor_terminal(p_name, probability=1.0):
+def predictor_terminal(p_name, group='predictor'):
     """
     Creates a terminal template which represents a simple predictor. The template
     can be used to create GP primitives with different keyword argument dictionaries.
@@ -190,25 +224,25 @@ def predictor_terminal(p_name, probability=1.0):
     This node should be used when maximum tree height would be exceeded; in other
     cases, nodes returned by ``predictor_primitive`` should be used.
 
-    :param probability:
+    :param group:
     :param str p_name: Name of the predictor.
     :return: Terminal template which can be used to create a predictor primitive.
     """
-    return GpTerminalTemplate(p_name, 'out', probability)
+    return GpTerminalTemplate(p_name, 'out', group)
 
 
-def transformer_primitive(t_name, out_type, probability=1.0):
+def transformer_primitive(t_name, out_type, group='transform'):
     """
     Creates a terminal template which represents a simple transformer. The template
     can be used to create GP primitives with different keyword argument dictionaries.
 
     The node has the output type 'data', which is the output type of transformer nodes.
 
-    :param probability:
+    :param group:
     :param str t_name: Name of the transformer.
     :param str out_type:
         Name of the transformer output type (most common are 'featsel' for feature
         selectors and 'scale' for scaling transformers.
     :return: Terminal template which can be used to create a transformer primitive.
     """
-    return GpTerminalTemplate(t_name, out_type, probability=probability)
+    return GpTerminalTemplate(t_name, out_type, group)

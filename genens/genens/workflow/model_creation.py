@@ -69,9 +69,12 @@ def create_pipeline(child_list, evolved_kwargs):
 
     predictor = child_list[0]
 
-    if len(child_list) > 1 and len(child_list[1]) > 0:
-        step_names = ['step' + str(i) for i in range(0, len(child_list[1]))]
-        steps = list(zip(step_names, child_list[1]))
+    if len(child_list) > 1:
+        if isinstance(child_list[1], list):
+            step_names = ['step' + str(i) for i in range(0, len(child_list[1]))]
+            steps = list(zip(step_names, child_list[1]))
+        else:
+            steps = [('step', child_list[1])]
         steps.append(('predictor', predictor))
 
         pipe = Pipeline(steps=steps, **evolved_kwargs)
@@ -89,7 +92,13 @@ def create_data_union(child_list, evolved_kwargs):
     if not len(child_list):
         raise ValueError("No base estimator provided to the feature union.")  # TODO specific
 
-    reduced = reduce(operator.concat, child_list, [])
+    def add_or_concat(res, child):
+        if isinstance(child, list):
+            return res + child
+        res.append(child)
+        return res
+
+    reduced = reduce(add_or_concat, child_list, [])
     if not len(reduced):
         return []
 

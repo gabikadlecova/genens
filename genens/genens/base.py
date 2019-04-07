@@ -1,88 +1,26 @@
 # -*- coding: utf-8 -*-
 
-from genens.gp import types
+from genens.workflow.evaluate import CrossvalEvaluator
 from genens.workflow.model_creation import create_workflow
 
 from sklearn.base import BaseEstimator, is_classifier
 
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
-from sklearn.model_selection import train_test_split
 
-from sklearn.model_selection import cross_val_score
-
-from deap import base, tools, creator
-from functools import partial, wraps
+from deap import base, tools
+from functools import partial
 from joblib import delayed
 
-import time
 import numpy as np
 import warnings
 import genens.gp.operators as ops
 
 
-def eval_time(fn):
-    @wraps(fn)
-    def with_time(*args, **kwargs):
-        start_time = time.time()
-
-        res = fn(*args, **kwargs)
-        if res is None:
-            return None
-
-        # TODO modify time computation
-        elapsed_time = np.log(time.time() - start_time + np.finfo(float).eps)
-        return res, elapsed_time
-
-    return with_time
-
-
-class FitnessEvaluator:
-    def __init__(self, cv_k=7):
-        self.train_X = None
-        self.train_y = None
-
-        if cv_k < 0:
-            raise AttributeError("Cross validation k must be greater than 0.")
-
-        
-        self.cv_k = cv_k
-
-    def fit(self, train_X, train_y):
-        self.train_X = train_X
-        self.train_y = train_y
-
-        # TODO
-        if self.cv_k == 0:
-            self.train_X, self.test_X, self.train_y, self.test_y = train_test_split(self.train_X, self.train_y,
-                                                                                    test_size=0.33)
-    @eval_time
-    def score(self, workflow, scorer=None):
-        if self.train_X is None or self.train_y is None:
-            raise ValueError("Evaluator is not fitted with training data.")  # TODO specific
-
-        try:
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
-
-                if self.cv_k > 0:
-                    scores = cross_val_score(workflow, self.train_X, self.train_y,
-                                             cv=self.cv_k, scoring=scorer)
-                else:
-                    workflow.fit(self.train_X, self.train_y)
-                    scores = scorer(workflow, self.test_X, self.test_y)
-
-                return np.mean(scores)
-        # TODO think of a better exception handling
-        except Exception as e:
-            # TODO log exception
-            return None
-
-
 class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, scorer=None,
                  pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False, max_height=None,
-                 max_arity=None, evaluator=FitnessEvaluator()):
+                 max_arity=None, evaluator=CrossvalEvaluator()):
         """
         TODO all parameters
 
