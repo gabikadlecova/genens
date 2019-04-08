@@ -28,7 +28,7 @@ def timeout(fn):
             res = None
 
         return res
-    return with_timeout()
+    return with_timeout
 
 
 def eval_time(fn):

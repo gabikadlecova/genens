@@ -53,7 +53,7 @@ if __name__ == "__main__":
     config = clf_default.create_clf_config()
 
     bs = GenensBase(config, pop_size=200, n_jobs=-1, scorer=scorer)
-    bs.set_test_stats(X_train, y_train, X_test, y_test)
+    bs.setup_test_stats(X_train, y_train, X_test, y_test)
 
     bs.fit(X_train, y_train)
 

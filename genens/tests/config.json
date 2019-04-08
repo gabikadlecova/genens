@@ -1,5 +1,7 @@
 {
-   "datasets": ["wilt"],
+   "datasets": [
+        { "dataset_name": "wilt", "split_validation": true }
+    ],
    "parameters": {
       "n_jobs": 1,
       "pop_size": 72,

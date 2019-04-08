@@ -52,7 +52,8 @@ class GenensBase(BaseEstimator):
         self.scorer = scorer
 
         self._timeout = timeout
-        self._fitness_eval = evaluator if evaluator is not None else CrossvalEvaluator(timeout)
+        self._fitness_eval = evaluator if evaluator is not None \
+            else CrossvalEvaluator(timeout_s=timeout)
         self.test_evaluator = None
 
         self.pareto = tools.ParetoFront()
@@ -112,7 +113,7 @@ class GenensBase(BaseEstimator):
     def can_log_score(self):
         return self.test_evaluator is not None
 
-    def setup_test(self, train_X, train_y, test_X, test_y):
+    def setup_test_stats(self, train_X, train_y, test_X, test_y):
         self.test_evaluator = TrainTestEvaluator(test_X, test_y, timeout_s=self._timeout)
         self.test_evaluator.fit(train_X, train_y)
 

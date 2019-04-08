@@ -50,10 +50,10 @@ def run_once(estimator, train_X, train_y, test_X, test_y, kwarg_dict, out_dir):
     # start test time measurement
     start_time = time.time()
 
-    estimator.set_test_stats(train_X, train_y, test_X, test_y)
+    estimator.setup_test_stats(train_X, train_y, test_X, test_y)
 
     estimator.fit(train_X, train_y)
-    test_score = estimator.score(train_X, train_y)
+    test_score = estimator.score(test_X, test_y)
 
     # end test time measurement
     elapsed_time = time.time() - start_time
@@ -156,9 +156,12 @@ def load_config(cmd_args):
     datasets = config['datasets']
 
     for dataset in datasets:
-        train_X, train_Y, test_X, test_Y = load_dataset(dataset['func'], **dataset['kwargs'])
-        run_tests(clf_iterate(param_product), train_X, train_Y, test_X, test_Y,
-                  cmd_args.out + '/' + dataset)
+        if 'split_validation' in dataset and dataset['split_validation']:
+            train_X, train_Y, test_X, test_Y = load_dataset(**dataset)
+            run_tests(clf_iterate(param_product), train_X, train_Y, test_X, test_Y,
+                      cmd_args.out + '/' + dataset['dataset_name'])
+        else:
+            raise ValueError("TODO TODO TODO")
 
 
 def load_from_args(cmd_args):
