@@ -190,13 +190,14 @@ def create_clf_config(group_weights=None):
             'pipeline': 1.0,
             'union': 0.3,
             'prepro': 1.0,
-            'ensemble': 1.0,
-            'predictor': 0.8,
+            'ensemble': 0.5,
+            'predictor': 1.0,
+            'ensemble_l': 1.2,  # lightweight ensembles
             'transform': 1.0
         }
 
     # add to config
-    config = cf.get_default_config(group_weights=group_weights)
+    config = cf.get_default_config()
     config.add_functions_args(func_dict, kwargs_dict)
 
     # PRIMITIVES
@@ -204,7 +205,7 @@ def create_clf_config(group_weights=None):
     # ensemble config
     config.add_primitive(cf.ensemble_primitive('ada', 1))
     config.add_primitive(cf.ensemble_primitive('bagging', 1))
-    config.add_primitive(cf.ensemble_primitive('voting', (2,'n')))
+    config.add_primitive(cf.ensemble_primitive('voting', (2,'n'), group='ensemble_l'))
 
     # classifier config
     config.add_primitive(cf.predictor_primitive("KNeighbors"))
@@ -259,5 +260,7 @@ def create_clf_config(group_weights=None):
     config.add_primitive(cf.transformer_primitive("MinMaxScaler", 'data'), term_only=True)
     config.add_primitive(cf.transformer_primitive("Normalizer", 'data'), term_only=True)
     config.add_primitive(cf.transformer_primitive("StandardScaler", 'data'), term_only=True)
+
+    config.group_weights = group_weights  # checks for missing values according to config terminals
 
     return config

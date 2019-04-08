@@ -59,7 +59,28 @@ class GenensConfig:
         self.max_height = max_height
         self.max_arity = max_arity
 
-        self.group_weights = default_group_weights(self.full_config, self.term_config, groups=group_weights)
+        self._group_weights = group_weights
+
+    def __str__(self):
+        res = "Func: \n{}\n\n".format(self.func_config)
+        res += "Full: \n{}\n\n".format(self.full_config)
+        res += "Term: \n{}\n\n".format(self.term_config)
+        res += "Kwargs: \n{}\n\n".format(self.kwargs_config)
+        res += "Kwargs: \n{}\n\n".format(self.kwargs_config)
+        res += "Max height: \n{}, Max arity: {}\n\n".format(self.max_height, self.max_arity)
+
+    @property
+    def group_weights(self):
+        return self._group_weights
+
+    @group_weights.setter
+    def group_weights(self, value):
+        self._group_weights = default_group_weights(self.full_config, self.term_config,
+                                                    groups=value)
+
+    @group_weights.deleter
+    def group_weights(self):
+        del self._group_weights
 
     def add_primitive(self, prim, term_only=False):
         if term_only and not isinstance(prim, GpTerminalTemplate):
@@ -126,7 +147,8 @@ def get_default_config(group_weights=None):
         'ens': []
     }
 
-    return GenensConfig(func_config, full_config, term_config, kwargs_config, group_weights=group_weights)
+    return GenensConfig(func_config, full_config, term_config, kwargs_config,
+                        group_weights=group_weights)
 
 
 # TODO possibly remove
