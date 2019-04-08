@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from genens.workflow.evaluate import CrossvalEvaluator
+from genens.workflow.evaluate import CrossvalEvaluator, TrainTestEvaluator
 from genens.workflow.model_creation import create_workflow
 
 from sklearn.base import BaseEstimator, is_classifier
@@ -20,7 +20,7 @@ import genens.gp.operators as ops
 class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, scorer=None,
                  pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False, max_height=None,
-                 max_arity=None, evaluator=CrossvalEvaluator()):
+                 max_arity=None, timeout=None, evaluator=None):
         """
         TODO all parameters
 
@@ -51,16 +51,12 @@ class GenensBase(BaseEstimator):
 
         self.scorer = scorer
 
-        self._fitness_eval = evaluator
+        self._timeout = timeout
+        self._fitness_eval = evaluator if evaluator is not None else CrossvalEvaluator(timeout)
+        self.test_evaluator = None
+
         self.pareto = tools.ParetoFront()
-
         self.fitted_wf = None
-
-        self.train_X = None
-        self.train_Y = None
-        self.test_X = None
-        self.test_Y = None
-        self.can_log_score = False
 
         self._setup_log()
         self._setup_toolbox()
@@ -112,39 +108,26 @@ class GenensBase(BaseEstimator):
         wf = self._toolbox.compile(gp_tree)
         return self._fitness_eval.score(wf, self.scorer)
 
-    def set_test_stats(self, train_X, train_Y, test_X, test_Y):
-        self.train_X = train_X
-        self.train_Y = train_Y
-        self.test_X = test_X
-        self.test_Y = test_Y
+    @property
+    def can_log_score(self):
+        return self.test_evaluator is not None
 
-        self.can_log_score = train_X is not None and train_Y is not None \
-                             and test_X is not None and test_Y is not None
+    def setup_test(self, train_X, train_y, test_X, test_y):
+        self.test_evaluator = TrainTestEvaluator(test_X, test_y, timeout_s=self._timeout)
+        self.test_evaluator.fit(train_X, train_y)
 
     def _compute_test(self, ind):
         if not self.can_log_score:
-            return 0.0  # TODO
+            return 0.0  # TODO, warn
 
         if ind.test_stats is not None:
             return ind.test_stats
 
-        try:
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
-
-                wf = self._toolbox.compile(ind)
-                wf.fit(self.train_X, self.train_Y)
-
-                if self.scorer is not None:
-                    res = self.scorer(wf, self.test_X, self.test_Y)
-                else:
-                    res = wf.score(self.test_X, self.test_Y)
-        # TODO
-        except Exception as e:
-            return 0.0  # TODO
+        wf = self._toolbox.compile(ind)
+        res = self.test_evaluator.score(wf, self.scorer)
 
         ind.test_stats = res
-        return res
+        return res if res is not None else 0.0  # TODO
 
     def _log_pop_stats(self, population, gen_id):
         self.pareto.update(population)
@@ -161,13 +144,13 @@ class GenensBase(BaseEstimator):
         else:
             return list(map(self._toolbox.compile, self.pareto))
 
-    def fit(self, train_X, train_Y):
-        train_X, train_Y = check_X_y(train_X, train_Y, accept_sparse=True)
+    def fit(self, train_X, train_y):
+        train_X, train_y = check_X_y(train_X, train_y, accept_sparse=True)
 
         if is_classifier(self):
-            self.classes_ = unique_labels(train_Y)
+            self.classes_ = unique_labels(train_y)
 
-        self._fitness_eval.fit(train_X, train_Y)
+        self._fitness_eval.fit(train_X, train_y)
         self.pareto.clear()
 
         pop = self._toolbox.population(n=self.pop_size)
@@ -177,7 +160,7 @@ class GenensBase(BaseEstimator):
         # TODO change later
         tree = self.pareto[0]
         self.fitted_wf = self._toolbox.compile(tree)
-        self.fitted_wf.fit(train_X, train_Y)
+        self.fitted_wf.fit(train_X, train_y)
 
         self.is_fitted_ = True
         return self

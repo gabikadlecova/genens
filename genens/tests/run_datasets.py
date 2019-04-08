@@ -10,7 +10,7 @@ import os
 
 from sklearn.metrics import make_scorer
 
-from functools import partial
+import time
 
 from genens import GenensClassifier, GenensRegressor
 from genens.workflow.evaluate import get_evaluator_cls
@@ -47,17 +47,29 @@ def run_tests(estimators, train_X, train_y, test_X, test_y, out_dir):
 
 
 def run_once(estimator, train_X, train_y, test_X, test_y, kwarg_dict, out_dir):
+    # start test time measurement
+    start_time = time.time()
+
     estimator.set_test_stats(train_X, train_y, test_X, test_y)
 
     estimator.fit(train_X, train_y)
     test_score = estimator.score(train_X, train_y)
+
+    # end test time measurement
+    elapsed_time = time.time() - start_time
+
     print('Test score: {}'.format(test_score))
+    print('Test time: {}'.format(elapsed_time))
+
+    with open(out_dir + '/test-stats.txt', 'w+') as out_file:
+        out_file.write('Test score: {}\n'.format(test_score))
+        out_file.write('Test time: {}\n'.format(elapsed_time))
 
     with open(out_dir + '/settings.txt', 'w+') as out_file:
-        out_file.write(str(kwarg_dict))
+        out_file.write(str(kwarg_dict) + '\n')
 
     with open(out_dir + '/logbook.txt', 'w+') as log_file:
-        log_file.write(estimator.logbook.__str__())
+        log_file.write(estimator.logbook.__str__() + '\n')
 
     with open(out_dir + '/pipelines.txt', 'w+') as out_file:
         for pipe in estimator.get_best_pipelines():
@@ -144,7 +156,7 @@ def load_config(cmd_args):
     datasets = config['datasets']
 
     for dataset in datasets:
-        train_X, train_Y, test_X, test_Y = load_dataset(dataset)
+        train_X, train_Y, test_X, test_Y = load_dataset(dataset['func'], **dataset['kwargs'])
         run_tests(clf_iterate(param_product), train_X, train_Y, test_X, test_Y,
                   cmd_args.out + '/' + dataset)
 
