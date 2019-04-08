@@ -5,35 +5,28 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 
-
+from stopit import ThreadingTimeout as Timeout, TimeoutException
 from functools import wraps
-import threading
+
 import warnings
 import time
 
 
 def timeout(fn):
     @wraps(fn)
-    def with_timeout(*args, **kwargs):
-        # todo if self.timeout absent, warning and skip
+    def with_timeout(self, *args, **kwargs):
+        if not hasattr(self, 'timeout') or self.timeout is None:
+            return fn(self, *args, **kwargs)
 
-        res = []
+        try:
+            with Timeout(self.timeout, swallow_exc=False):
+                res = fn(self, *args, **kwargs)
+        except TimeoutException:
+            # TODO log cause
+            res = None
 
-        def save_res():
-            r = fn(*args, **kwargs)
-            res.append(r)
-
-        thread = threading.Thread(target=save_res)
-        thread.start()
-
-        thread.join(args[0].timeout)  # must be self
-
-        if thread.is_alive():
-            return None
-
-        return res[0]
-
-    return with_timeout
+        return res
+    return with_timeout()
 
 
 def eval_time(fn):
