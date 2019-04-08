@@ -43,7 +43,7 @@ def run_tests(estimators, train_X, train_y, out_dir, test_X=None, test_y=None):
         else:
             print("\nRunning test {}".format(i))
 
-        run_once(est, train_X, train_y, test_X, test_y, kwarg_dict, test_dir)
+        run_once(est, train_X, train_y, kwarg_dict, test_dir, test_X=test_X, test_y=test_y)
 
 
 def run_once(estimator, train_X, train_y, kwarg_dict, out_dir, test_X=None, test_y=None):

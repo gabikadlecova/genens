@@ -164,7 +164,7 @@ class TrainTestEvaluator(EvaluatorBase):
 _eval_names = {
     'crossval': CrossvalEvaluator,
     'fixed': FixedSampleEvaluator,
-    'perInd': RandomSampleEvaluator
+    'samplePerInd': RandomSampleEvaluator
 }
 
 
