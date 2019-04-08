@@ -6,9 +6,9 @@
       "n_jobs": 1,
       "pop_size": 72,
       "n_gen": 15,
-      "cx_pb": 0.75,
+      "cx_pb": 0.5,
       "mut_pb": 0.3,
-      "mut_args_pb": 0.3,
+      "mut_args_pb": 0.5,
       "max_height": 4
    },
    "scorer": {
@@ -21,8 +21,9 @@
             "pipeline": 1.0,
             "union": [0.3, 0.5, 0.7],
             "prepro": 1.0,
-            "ensemble": 1.0,
-            "predictor": [0.3, 0.6, 0.8, 1.0],
+            "ensemble": 0.5,
+            "ensemble_l": 1.0,
+            "predictor": 1.0,
             "transform": 1.0
    }
 }

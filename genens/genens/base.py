@@ -7,13 +7,13 @@ from sklearn.base import BaseEstimator, is_classifier
 
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
 from sklearn.utils.multiclass import unique_labels
+from sklearn.metrics import accuracy_score
 
 from deap import base, tools
 from functools import partial
 from joblib import delayed
 
 import numpy as np
-import warnings
 import genens.gp.operators as ops
 
 
@@ -180,9 +180,10 @@ class GenensBase(BaseEstimator):
         check_is_fitted(self, 'is_fitted_')
 
         if self.scorer is not None:
-            s = self.scorer(self.fitted_wf, self.test_X, self.test_Y)
+            s = self.scorer(self.fitted_wf, test_X, test_y)
         else:
-            s = self.fitted_wf.score(self.test_X, self.test_Y)
+            res_y = self.fitted_wf.predict(test_X)
+            s = accuracy_score(test_y, res_y)
 
         return s
 

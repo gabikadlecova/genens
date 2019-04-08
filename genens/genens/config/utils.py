@@ -151,21 +151,6 @@ def get_default_config(group_weights=None):
                         group_weights=group_weights)
 
 
-# TODO possibly remove
-def get_n_components(feat_size, feat_fractions=None):
-    """
-    Returns list of feature counts which are fractions of the total count.
-
-    :param int feat_size: Total feature count.
-    :param list[float] feat_fractions: Fractions in the interval (0.0, 1.0].
-    :return list[int]: Feature counts.
-    """
-    if feat_fractions is None:
-        feat_fractions = [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1]
-
-    return [int(math.ceil(feat_size * fraction)) for fraction in feat_fractions]
-
-
 def estimator_func(est_cls, **kwargs):
     """
     Creates a wrapper function which returns an instance of the argument estimator class.
