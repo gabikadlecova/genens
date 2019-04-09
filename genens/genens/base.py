@@ -54,6 +54,8 @@ class GenensBase(BaseEstimator):
         self._timeout = timeout
         self._fitness_eval = evaluator if evaluator is not None \
             else CrossvalEvaluator(timeout_s=timeout)
+        self._fitness_eval.timeout = timeout
+
         self.test_evaluator = None
 
         self.pareto = tools.ParetoFront()
