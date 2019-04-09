@@ -169,14 +169,14 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
 
         # the mutant is better, keep it
         if score > gp_tree.fitness.values:
-            gp_tree[mut_ind] = mut_node  # copy value to the mutated tree
+            gp_tree.primitives[mut_ind] = mut_node  # copy value to the mutated tree
             gp_tree.fitness.values = score
 
             has_mutated = True
         else:
             # return the last one if there were no mutation
             if keep_last and i == hc_repeat - 1 and not has_mutated:
-                gp_tree[mut_ind] = mut_node
+                gp_tree.primitives[ mut_ind] = mut_node
                 gp_tree.fitness.values = score
 
     return gp_tree
