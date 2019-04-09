@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from genens.base import GenensBase, CrossvalEvaluator
+from genens.base import GenensBase, CrossValEvaluator
 from genens.config.clf_default import create_clf_config
 from genens.config.regr_default import create_regr_config
 

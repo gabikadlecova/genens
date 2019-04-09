@@ -344,7 +344,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
                                  for mut in offspring)
 
             # mutation - node args
-            offspring = parallel(delayed(_perform_mut)(toolbox.mutate_node_args, mut_pb, mut_args_pb)
+            offspring = parallel(delayed(_perform_mut)(toolbox.mutate_node_args, mut_args_pb, mut)
                                  for mut in offspring)
 
             offs_to_eval = [ind for ind in offspring if not ind.fitness.valid]

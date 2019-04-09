@@ -6,6 +6,7 @@ import numpy as np
 from sklearn.model_selection import train_test_split
 from sklearn.model_selection import cross_val_score
 from sklearn.metrics import accuracy_score
+from sklearn.utils import resample
 
 from stopit import ThreadingTimeout as Timeout, TimeoutException
 from functools import wraps
@@ -71,6 +72,10 @@ class EvaluatorBase(ABC):
     def evaluate(self, workflow, scorer=None):
         pass
 
+    @abstractmethod
+    def reset(self):
+        pass
+
     def check_is_fitted(self):
         if self.train_X is None or self.train_y is None:
             raise ValueError("Evaluator is not fitted with training data.")  # TODO specific
@@ -91,7 +96,7 @@ class EvaluatorBase(ABC):
             return None
 
 
-class CrossvalEvaluator(EvaluatorBase):
+class CrossValEvaluator(EvaluatorBase):
     def __init__(self, cv_k=7, timeout_s=None):
         super().__init__(timeout_s)
 
@@ -105,8 +110,11 @@ class CrossvalEvaluator(EvaluatorBase):
                                  cv=self.cv_k, scoring=scorer)
         return np.mean(scores)
 
+    def reset(self):
+        pass
 
-class FixedSampleEvaluator(EvaluatorBase):
+
+class FixedTrainTestEvaluator(EvaluatorBase):
     def __init__(self, test_size=None, random_state=None, timeout_s=None):
         super().__init__(timeout_s)
 
@@ -114,7 +122,7 @@ class FixedSampleEvaluator(EvaluatorBase):
         self.test_y = None
 
         self.test_size = test_size
-        self.random_state=random_state
+        self.random_state = random_state
 
     def fit(self, train_X, train_y):
         self.train_X, self.test_X, self.train_y, self.test_y = \
@@ -130,22 +138,30 @@ class FixedSampleEvaluator(EvaluatorBase):
         return _simple_eval(workflow, self.train_X, self.train_y, self.test_X, self.test_y,
                             scorer=scorer)
 
+    def reset(self):
+        pass
 
-class RandomSampleEvaluator(EvaluatorBase):
+
+class RandomTrainTestEvaluator(EvaluatorBase):
     def __init__(self, test_size=None, random_state=None, timeout_s=None):
         super().__init__(timeout_s)
 
         self.test_size = test_size
 
+        self.rng = None
         if random_state is not None:
-            np.random.seed(random_state)
+            self.rng = np.random.RandomState(random_state)
 
     def evaluate(self, workflow, scorer=None):
         # random state is set only in the constructor
         train_X, test_X, train_y, test_y = train_test_split(self.train_X, self.train_y,
-                                                            test_size=self.test_size)
+                                                            test_size=self.test_size,
+                                                            random_state=self.rng)
         return _simple_eval(workflow, train_X, train_y, test_X, test_y,
                             scorer=scorer)
+
+    def reset(self):
+        pass
 
 
 class TrainTestEvaluator(EvaluatorBase):
@@ -160,11 +176,56 @@ class TrainTestEvaluator(EvaluatorBase):
         return _simple_eval(workflow, self.train_X, self.train_y, self.test_X, self.test_y,
                             scorer=scorer)
 
+    def reset(self):
+        pass
+
+
+class SampleCrossValEvaluator(CrossValEvaluator):
+    def __init__(self, sample_size=0.20, per_gen=True, cv_k=7, timeout_s=None, random_state=None,
+                 replace=False):
+        super().__init__(cv_k=cv_k, timeout_s=timeout_s)
+
+        self.full_X = None
+        self.full_y = None
+
+        self.sample_size = sample_size
+        self.per_gen = per_gen
+
+        self.replace = replace
+
+        self.rng = None
+        if random_state is not None:
+            self.rng = np.random.RandomState(random_state)
+
+    def _generate_sample(self, train_X, train_y):
+        self.train_X, self.train_y = resample(train_X, train_y, replace=self.replace,
+                                              n_samples=self.sample_size * train_X.shape[0],
+                                              random_state=self.rng)
+
+    def fit(self, train_X, train_y):
+        self._generate_sample(train_X, train_y)
+
+        self.full_X = train_X
+        self.full_y = train_y
+
+    def evaluate(self, workflow, scorer=None):
+        # generate sample for every evaluation
+        if not self.per_gen:
+            self._generate_sample(self.full_X, self.full_y)
+
+        return super().evaluate(workflow, scorer=scorer)
+
+    def reset(self):
+        # generate sample once per reset
+        if self.per_gen:
+            self._generate_sample(self.full_X, self.full_y)
+
 
 _eval_names = {
-    'crossval': CrossvalEvaluator,
-    'fixed': FixedSampleEvaluator,
-    'samplePerInd': RandomSampleEvaluator
+    'crossval': CrossValEvaluator,
+    'fixed': FixedTrainTestEvaluator,
+    'per-ind': RandomTrainTestEvaluator,
+    'sample-crossval': SampleCrossValEvaluator
 }
 
 

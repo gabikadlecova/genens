@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from genens.workflow.evaluate import CrossvalEvaluator, TrainTestEvaluator
+from genens.workflow.evaluate import CrossValEvaluator, TrainTestEvaluator
 from genens.workflow.model_creation import create_workflow
 
 from sklearn.base import BaseEstimator, is_classifier
@@ -53,7 +53,7 @@ class GenensBase(BaseEstimator):
 
         self._timeout = timeout
         self._fitness_eval = evaluator if evaluator is not None \
-            else CrossvalEvaluator(timeout_s=timeout)
+            else CrossValEvaluator(timeout_s=timeout)
         self._fitness_eval.timeout = timeout
 
         self.test_evaluator = None
