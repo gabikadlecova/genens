@@ -323,16 +323,13 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
         valid = parallel(delayed(gen_valid)(toolbox) for i in range(pop_size - len(population)))
         population[:] = population + valid
 
-        # TODO
-        # for i in range(pop_size - len(population)):
-        #    population.append(gen_valid(toolbox))
-
         toolbox.log(population, 0)
 
         population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
 
         for g in range(n_gen):
             print("Gen {}".format(g))
+            toolbox.next_gen()
 
             population[:] = tools.selTournamentDCD(population, pop_size)
             offspring = toolbox.map(toolbox.clone, population)  # TODO parallel?
@@ -347,7 +344,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
                                  for mut in offspring)
 
             # mutation - node args
-            offspring = parallel(delayed(_perform_mut)(toolbox.mutate_node_args, mut_pb, mut)
+            offspring = parallel(delayed(_perform_mut)(toolbox.mutate_node_args, mut_pb, mut_args_pb)
                                  for mut in offspring)
 
             offs_to_eval = [ind for ind in offspring if not ind.fitness.valid]

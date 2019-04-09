@@ -80,6 +80,7 @@ class GenensBase(BaseEstimator):
                                hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
         self._toolbox.register("cx_one_point", ops.crossover_one_point)
 
+        self._toolbox.register("next_gen", self._prepare_next_gen)
         self._toolbox.register("compile", self._compile_pipe)
         self._toolbox.register("evaluate", self._eval_tree_individual)
         self._toolbox.register("log", self._log_pop_stats)
@@ -110,6 +111,9 @@ class GenensBase(BaseEstimator):
     def _eval_tree_individual(self, gp_tree):
         wf = self._toolbox.compile(gp_tree)
         return self._fitness_eval.score(wf, self.scorer)
+
+    def _prepare_next_gen(self):
+        pass
 
     @property
     def can_log_score(self):

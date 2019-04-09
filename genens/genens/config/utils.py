@@ -109,6 +109,7 @@ class GenensConfig:
 
 def get_default_config(group_weights=None):
     func_config = {
+        'cPred': mc.create_pipeline,
         'cPipe': mc.create_pipeline,
         'dUnion': mc.create_data_union,
         'cData': mc.create_transform_list,
@@ -118,6 +119,7 @@ def get_default_config(group_weights=None):
     }
 
     kwargs_config = {
+        'cPred': {},
         'cPipe': {},
         'cData': {},
         'cFeatSelect': {},
@@ -127,8 +129,12 @@ def get_default_config(group_weights=None):
     }
 
     full_config = {
-        'out': [GpFunctionTemplate('cPipe', [TypeArity('ens', 1), TypeArity('data', (0,1))], 'out',
-                                   group='pipeline')],
+        'out': [
+            GpFunctionTemplate('cPred', [TypeArity('ens', 1)], 'out',
+                               group='pipeline'),
+            GpFunctionTemplate('cPipe', [TypeArity('ens', 1), TypeArity('data', 1)], 'out',
+                               group='pipeline'),
+        ],
         'data': [
             GpFunctionTemplate('dUnion', [TypeArity('data', (2,3))], 'data', group='union'),
             GpFunctionTemplate('cData', [TypeArity('featsel', 1), TypeArity('scale', 1)], 'data',
