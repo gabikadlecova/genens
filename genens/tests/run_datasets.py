@@ -64,7 +64,7 @@ def run_once(estimator, train_X, train_y, kwarg_dict, out_dir, test_X=None, test
         out_file.write(str(kwarg_dict) + '\n')
 
     with open(out_dir + '/logbook.txt', 'w+') as log_file:
-        out_file.write('Test time: {}\n\n'.format(elapsed_time))
+        log_file.write('Test time: {}\n\n'.format(elapsed_time))
         log_file.write(estimator.logbook.__str__() + '\n')
 
     with open(out_dir + '/pipelines.txt', 'w+') as out_file:
@@ -157,7 +157,7 @@ def load_config(cmd_args):
 
             run_tests(clf_iterate(param_product), train_X, train_Y,
                       cmd_args.out + '/' + dataset['dataset_name'],
-                      test_X=test_X, test_y= test_Y)
+                      test_X=test_X, test_y=test_Y)
         else:
             features, target = load_dataset(**dataset)
             run_tests(clf_iterate(param_product), features, target,
@@ -180,7 +180,8 @@ def load_from_args(cmd_args):
     dataset = cmd_args.dataset
     train_X, train_Y, test_X, test_Y = load_dataset(dataset, split_validation=True)
 
-    run_once(cls(**kwargs), train_X, train_Y, test_X, test_Y, kwargs, cmd_args.out)
+    run_once(cls(**kwargs), train_X, train_Y, kwargs, cmd_args.out,
+             test_X=test_X, test_y=test_Y)
 
 
 if __name__ == "__main__":
