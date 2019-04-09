@@ -1,6 +1,6 @@
 {
    "datasets": [
-        { "dataset_name": "wilt", "split_validation": true }
+        { "dataset_name": "wilt", "split_validation": false }
     ],
    "evaluator": {
       "func": "crossval",

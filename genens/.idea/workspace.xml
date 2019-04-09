@@ -7,7 +7,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c66519e1-475a-4ad4-bc94-22d789418865" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/genens/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/base.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/config.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/datasets/load_datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/datasets/load_datasets.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -65,8 +65,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/tests/datasets/load_datasets.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="454">
-                  <caret line="72" column="33" lean-forward="true" selection-start-line="72" selection-start-column="33" selection-end-line="72" selection-end-column="33" />
+                <state relative-caret-position="238">
+                  <caret line="50" column="42" selection-start-line="50" selection-start-column="42" selection-end-line="50" selection-end-column="42" />
                   <folding>
                     <element signature="e#25#34#0" expanded="true" />
                   </folding>
@@ -132,8 +132,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/genens/base.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="-561">
-                  <caret line="56" column="44" selection-start-line="56" selection-start-column="44" selection-end-line="56" selection-end-column="44" />
+                <state relative-caret-position="1513">
+                  <caret line="124" lean-forward="true" selection-start-line="124" selection-end-line="124" />
                 </state>
               </provider>
             </entry>
@@ -631,11 +631,26 @@
           <line>38</line>
           <option name="timeStamp" value="80" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/tests/datasets/load_datasets.py</url>
+          <line>50</line>
+          <option name="timeStamp" value="81" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="evaluateCodeFragment">
+      <expression>
+        <expression-string>test_data.shape</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
+      <expression>
+        <expression-string>data.shape</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>[ind for i, ind in enumerate(offspring) if ind in offspring[:i] + offspring[i+1:]]</expression-string>
         <language-id>Python</language-id>
@@ -668,16 +683,6 @@
       </expression>
       <expression>
         <expression-string>[ind for ind in population if len(ind.primitives) &gt; 21]</expression-string>
-        <language-id>Python</language-id>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>[ind for ind in population if len(ind.primitives) &gt; 20]</expression-string>
-        <language-id>Python</language-id>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>[k.validate_tree() for k in population]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
@@ -994,13 +999,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/genens/base.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="-561">
-          <caret line="56" column="44" selection-start-line="56" selection-start-column="44" selection-end-line="56" selection-end-column="44" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/metrics/scorer.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="255">
@@ -1012,6 +1010,13 @@
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="315">
           <caret line="90" selection-start-line="90" selection-end-line="90" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/genens/base.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1513">
+          <caret line="124" lean-forward="true" selection-start-line="124" selection-end-line="124" />
         </state>
       </provider>
     </entry>
@@ -1027,8 +1032,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/datasets/load_datasets.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="454">
-          <caret line="72" column="33" lean-forward="true" selection-start-line="72" selection-start-column="33" selection-end-line="72" selection-end-column="33" />
+        <state relative-caret-position="238">
+          <caret line="50" column="42" selection-start-line="50" selection-start-column="42" selection-end-line="50" selection-end-column="42" />
           <folding>
             <element signature="e#25#34#0" expanded="true" />
           </folding>

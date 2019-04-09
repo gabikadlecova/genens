@@ -48,7 +48,7 @@ def load_wilt(split_validation=False, random_state=None, test_size=None):
 
     # concatenate both sets to create the full set
     if not use_original_test:
-        data = np.concatenate((data, test_data))
+        data = pd.concat([data, test_data])
 
     data = shuffle(data, random_state=random_state)
 
