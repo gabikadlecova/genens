@@ -52,9 +52,9 @@ class GenensBase(BaseEstimator):
         self.scorer = scorer
 
         self._timeout = timeout
-        self._fitness_eval = evaluator if evaluator is not None \
+        self._fitness_evaluator = evaluator if evaluator is not None \
             else CrossValEvaluator(timeout_s=timeout)
-        self._fitness_eval.timeout = timeout
+        self._fitness_evaluator.timeout = timeout
 
         self.test_evaluator = None
 
@@ -110,10 +110,10 @@ class GenensBase(BaseEstimator):
 
     def _eval_tree_individual(self, gp_tree):
         wf = self._toolbox.compile(gp_tree)
-        return self._fitness_eval.score(wf, self.scorer)
+        return self._fitness_evaluator.score(wf, scorer=self.scorer)
 
     def _prepare_next_gen(self):
-        pass
+        self._fitness_evaluator.reset()
 
     @property
     def can_log_score(self):
@@ -131,7 +131,7 @@ class GenensBase(BaseEstimator):
             return ind.test_stats
 
         wf = self._toolbox.compile(ind)
-        res = self.test_evaluator.score(wf, self.scorer)
+        res = self.test_evaluator.score(wf, scorer=self.scorer)
 
         ind.test_stats = res
         return res if res is not None else 0.0  # TODO
@@ -157,12 +157,13 @@ class GenensBase(BaseEstimator):
         if is_classifier(self):
             self.classes_ = unique_labels(train_y)
 
-        self._fitness_eval.fit(train_X, train_y)
+        self._fitness_evaluator.fit(train_X, train_y)
         self.pareto.clear()
 
         pop = self._toolbox.population(n=self.pop_size)
-        ops.ea_run(pop, self._toolbox, self.n_gen, self.pop_size, self.cx_pb, self.mut_pb,
-                   self.mut_args_pb, n_jobs=self.n_jobs)
+        ops.ea_run(pop, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
+                   mut_pb=self.mut_pb,
+                   mut_args_pb=self.mut_args_pb, n_jobs=self.n_jobs)
 
         # TODO change later
         tree = self.pareto[0]

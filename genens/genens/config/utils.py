@@ -61,13 +61,10 @@ class GenensConfig:
 
         self._group_weights = group_weights
 
-    def __str__(self):
-        res = "Func: \n{}\n\n".format(self.func_config)
-        res += "Full: \n{}\n\n".format(self.full_config)
-        res += "Term: \n{}\n\n".format(self.term_config)
-        res += "Kwargs: \n{}\n\n".format(self.kwargs_config)
-        res += "Kwargs: \n{}\n\n".format(self.kwargs_config)
-        res += "Max height: \n{}, Max arity: {}\n\n".format(self.max_height, self.max_arity)
+    def __repr__(self):
+        res = "max_height: {}, max_arity: {}".format(self.max_height, self.max_arity)
+        res += ", group_weights: {}".format(str(self._group_weights))
+        return res
 
     @property
     def group_weights(self):

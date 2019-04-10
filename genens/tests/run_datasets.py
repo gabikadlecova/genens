@@ -10,6 +10,7 @@ import os
 
 from sklearn.metrics import make_scorer
 
+import pickle
 import time
 
 from genens import GenensClassifier, GenensRegressor
@@ -46,6 +47,18 @@ def run_tests(estimators, train_X, train_y, out_dir, test_X=None, test_y=None):
         run_once(est, train_X, train_y, kwarg_dict, test_dir, test_X=test_X, test_y=test_y)
 
 
+def evaluate_workflows(clf, features, target, scorer=None, method='crossval', **kwargs):
+    wfs = clf.get_best_pipelines()
+
+    cls = get_evaluator_cls(method)
+
+    eval = cls(**kwargs)
+    eval.fit(features, target)
+
+    s = clf.scorer if scorer is None else scorer
+    return [eval.score(wf, s) for wf in wfs]
+
+
 def run_once(estimator, train_X, train_y, kwarg_dict, out_dir, test_X=None, test_y=None):
     # start test time measurement
     start_time = time.time()
@@ -58,23 +71,43 @@ def run_once(estimator, train_X, train_y, kwarg_dict, out_dir, test_X=None, test
     # end test time measurement
     elapsed_time = time.time() - start_time
 
-    print('Test time: {}'.format(elapsed_time))
+    print('Evolution time: {}'.format(elapsed_time))
 
-    with open(out_dir + '/settings.txt', 'w+') as out_file:
+    # test the pipelines
+    with open(out_dir + '/pipe-eval.txt', 'w+') as out_file:
+        # default evaluation methods
+        if test_X is not None and test_y is not None:
+            res = evaluate_workflows(estimator, train_X, train_y, method='train_test',
+                                     test_X=test_X, test_y=test_y)
+        else:
+            res = evaluate_workflows(estimator, train_X, train_y, method='crossval', cv_k=10)
+
+        for i, val in enumerate(res):
+            out_file.write("Pipeline {} score: {}\n".format(i, val))
+
+    # write config to output dir
+    with open(out_dir + '/config.txt', 'w+') as out_file:
         out_file.write(str(kwarg_dict) + '\n')
 
+    # write logbook string representation to output dir
     with open(out_dir + '/logbook.txt', 'w+') as log_file:
         log_file.write('Test time: {}\n\n'.format(elapsed_time))
         log_file.write(estimator.logbook.__str__() + '\n')
 
+    # pickle best pipelines and write json to file
     with open(out_dir + '/pipelines.txt', 'w+') as out_file:
-        for pipe in estimator.get_best_pipelines():
-            out_file.write(str(pipe))
+        for i, pipe in enumerate(estimator.get_best_pipelines()):
+            with open(out_dir + '/pipeline{}.pickle'.format(i), 'wb') as pickle_file:
+                pickle.dump(pipe, pickle_file, pickle.HIGHEST_PROTOCOL)
+
+            out_file.write(repr(pipe))
             out_file.write('\n\n')
 
+    # evolution plot
     export_plot(estimator, out_dir + '/result.png')
 
-    with open(out_dir + '/ind-score.txt', 'w+') as out_file:
+    # individual fitness values
+    with open(out_dir + '/ind-fitness.txt', 'w+') as out_file:
         for i, ind in enumerate(estimator.get_best_pipelines(as_individuals=True)):
             out_file.write('Individual {}: Score {}, Test {}\n'.format(i, ind.fitness.values,
                                                                        ind.test_stats))
@@ -165,7 +198,7 @@ def load_config(cmd_args):
 
 
 def load_from_args(cmd_args):
-    # TODO rewrite if needed
+    # TODO rewrite if needed (only for 'run' case)
 
     arg_dict = vars(cmd_args)
 
@@ -191,6 +224,7 @@ if __name__ == "__main__":
 
     subparsers = parser.add_subparsers()
 
+    # pass arguments in a config file
     parser_config = subparsers.add_parser('config')
     parser_config.add_argument('file', type=str, help='Configuration file location.')
 
@@ -198,6 +232,7 @@ if __name__ == "__main__":
 
     parser_run = subparsers.add_parser('run')
 
+    # pass arguments on command line
     parser_run.add_argument('--dataset', type=str, help='Dataset name.', required=True)
     parser_run.add_argument('--n_jobs', type=int, default=1, help='Sets n_jobs of Genens.')
     parser_run.add_argument('--cx_pb', type=float, default=0.5, help='Sets crossover probability.')
