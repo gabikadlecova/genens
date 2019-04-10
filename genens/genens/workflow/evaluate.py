@@ -11,6 +11,7 @@ from sklearn.utils import resample
 from stopit import ThreadingTimeout as Timeout, TimeoutException
 from functools import wraps
 
+import math
 import warnings
 import time
 
@@ -145,7 +146,7 @@ class FixedTrainTestEvaluator(EvaluatorBase):
 
     def evaluate(self, workflow, scorer=None):
         return _simple_eval(workflow, self.train_X, self.train_y, self.test_X, self.test_y,
-                            scorer=scorer)
+                           scorer=scorer)
 
     def reset(self):
         pass
@@ -207,8 +208,10 @@ class DataSampler:
         self.full_y = full_y
 
     def generate_sample(self):
+        n_samples = int(math.ceil(self.sample_size * self.full_X.shape[0]))
+
         return resample(self.full_X, self.full_y, replace=self.replace,
-                        n_samples=self.sample_size * self.full_X.shape[0],
+                        n_samples=n_samples,
                         random_state=self.rng)
 
 
@@ -281,7 +284,7 @@ class SampleTrainTestEvaluator(FixedTrainTestEvaluator):
         if not self.per_gen:
             self._fit_sample()
 
-        super().evaluate(workflow, scorer=scorer)
+        return super().evaluate(workflow, scorer=scorer)
 
     def reset(self):
         # generate new fixed sample
@@ -294,7 +297,8 @@ _eval_names = {
     'fixed': FixedTrainTestEvaluator,
     'per_ind': RandomTrainTestEvaluator,
     'train_test': TrainTestEvaluator,
-    'sample_crossval': SampleCrossValEvaluator
+    'sample_crossval': SampleCrossValEvaluator,
+    'sample_train_test': SampleTrainTestEvaluator
 }
 
 

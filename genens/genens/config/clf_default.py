@@ -65,7 +65,8 @@ def create_clf_config(group_weights=None):
             'n_estimators': [5, 10, 50, 100, 200]
         },
         'voting': {
-            'voting': ['hard', 'soft']
+            # ['hard', 'soft'] a lot of classifiers does not support predict_proba
+            'voting': ['hard']
         }
     }
 

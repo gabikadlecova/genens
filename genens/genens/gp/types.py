@@ -213,7 +213,7 @@ class GpPrimitive:
 
     def __repr__(self):
         return 'GpPrimitive( name=' + self.name + ", arity={}".format(self.arity)\
-               + "height={})".format(self.height)
+               + ", height={})".format(self.height)
 
     @property
     def out_type(self):

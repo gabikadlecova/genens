@@ -6,6 +6,9 @@ import json
 
 import itertools
 
+import numpy as np
+import random
+
 import os
 
 from sklearn.metrics import make_scorer
@@ -22,6 +25,9 @@ from tests.datasets.load_datasets import load_dataset
 
 
 def run_tests(estimators, train_X, train_y, out_dir, test_X=None, test_y=None):
+    np.random.seed(545)
+    random.seed(545)
+
     try:
         os.mkdir(out_dir)
     except FileExistsError:
