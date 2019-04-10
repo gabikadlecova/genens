@@ -7,14 +7,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c66519e1-475a-4ad4-bc94-22d789418865" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genens/base.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/base.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/genens/config/utils.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/config/utils.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/genens/workflow/evaluate.py" beforeDir="false" afterPath="$PROJECT_DIR$/genens/workflow/evaluate.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/config.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/datasets/load_datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/datasets/load_datasets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/run_datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/run_datasets.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/test_base.py" beforeDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -30,7 +23,7 @@
             <entry file="file://$PROJECT_DIR$/genens/workflow/evaluate.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="747">
-                  <caret line="242" column="52" selection-start-line="242" selection-start-column="52" selection-end-line="242" selection-end-column="52" />
+                  <caret line="283" column="48" selection-start-line="283" selection-start-column="48" selection-end-line="283" selection-end-column="48" />
                   <folding>
                     <element signature="e#25#60#0" expanded="true" />
                   </folding>
@@ -994,7 +987,7 @@
     <entry file="file://$PROJECT_DIR$/genens/workflow/evaluate.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="747">
-          <caret line="242" column="52" selection-start-line="242" selection-start-column="52" selection-end-line="242" selection-end-column="52" />
+          <caret line="283" column="48" selection-start-line="283" selection-start-column="48" selection-end-line="283" selection-end-column="48" />
           <folding>
             <element signature="e#25#60#0" expanded="true" />
           </folding>

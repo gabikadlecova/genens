@@ -248,6 +248,47 @@ class SampleCrossValEvaluator(CrossValEvaluator):
             self._reset_data()
 
 
+class SampleTrainTestEvaluator(FixedTrainTestEvaluator):
+    def __init__(self, test_size=None, timeout_s=None, sample_size=0.20,
+                 per_gen=True, random_state=None, replace=False):
+
+        self.per_gen = per_gen
+        self.sampler = DataSampler(sample_size=sample_size, random_state=random_state,
+                                   replace=replace)
+
+        # rng should be set in DataSampler ctor
+        super().__init__(test_size=test_size, random_state=self.sampler.rng, timeout_s=timeout_s)
+
+    def __repr__(self):
+        res = super().__repr__()
+        res += ", sample_size: {}".format(self.sampler.sample_size)
+        res += ", per_gen: {}".format(self.per_gen)
+        res += ", replace: {}".format(self.sampler.replace)
+        return res
+
+    def _fit_sample(self):
+        train_X, train_y = self.sampler.generate_sample()
+
+        super().fit(train_X, train_y)
+
+    def fit(self, train_X, train_y):
+        self.sampler.fit(train_X, train_y)
+
+        self._fit_sample()
+
+    def evaluate(self, workflow, scorer=None):
+        # one sample per evaluation
+        if not self.per_gen:
+            self._fit_sample()
+
+        super().evaluate(workflow, scorer=scorer)
+
+    def reset(self):
+        # generate new fixed sample
+        if self.per_gen:
+            self._fit_sample()
+
+
 _eval_names = {
     'crossval': CrossValEvaluator,
     'fixed': FixedTrainTestEvaluator,
