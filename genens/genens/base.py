@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from genens.workflow.evaluate import CrossValEvaluator, TrainTestEvaluator
+from genens.workflow.evaluate import CrossValEvaluator, TrainTestEvaluator, default_score
 from genens.workflow.model_creation import create_workflow
 
 from sklearn.base import BaseEstimator, is_classifier
@@ -189,8 +189,7 @@ class GenensBase(BaseEstimator):
         if self.scorer is not None:
             s = self.scorer(self.fitted_wf, test_X, test_y)
         else:
-            res_y = self.fitted_wf.predict(test_X)
-            s = accuracy_score(test_y, res_y)
+            s = default_score(self.fitted_wf, test_X, test_y)
 
         return s
 

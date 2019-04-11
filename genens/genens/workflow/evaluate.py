@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 from abc import ABC, abstractmethod
+from functools import wraps
+
 import numpy as np
 
 from sklearn.model_selection import train_test_split
@@ -9,11 +11,10 @@ from sklearn.metrics import accuracy_score
 from sklearn.utils import resample
 
 from stopit import ThreadingTimeout as Timeout, TimeoutException
-from functools import wraps
 
 import math
-import warnings
 import time
+import warnings
 
 
 def timeout(fn):
@@ -42,11 +43,15 @@ def eval_time(fn):
         if res is None:
             return None
 
-        # TODO modify time computation
         elapsed_time = np.log(time.time() - start_time + np.finfo(float).eps)
         return res, elapsed_time
 
     return with_time
+
+
+def default_score(workflow, test_X, test_y):
+    res_y = workflow.predict(test_X)
+    return accuracy_score(test_y, res_y)
 
 
 def _simple_eval(workflow, train_X, train_y, test_X, test_y, scorer=None):
@@ -54,8 +59,7 @@ def _simple_eval(workflow, train_X, train_y, test_X, test_y, scorer=None):
     if scorer is not None:
         return scorer(workflow, test_X, test_y)
 
-    res_y = workflow.predict(test_X)
-    return accuracy_score(test_y, res_y)
+    return default_score(workflow, test_X, test_y)
 
 
 class EvaluatorBase(ABC):
@@ -151,7 +155,7 @@ class FixedTrainTestEvaluator(EvaluatorBase):
 
     def evaluate(self, workflow, scorer=None):
         return _simple_eval(workflow, self.train_X, self.train_y, self.test_X, self.test_y,
-                           scorer=scorer)
+                            scorer=scorer)
 
     def reset(self):
         pass
@@ -165,6 +169,9 @@ class RandomTrainTestEvaluator(EvaluatorBase):
 
         self.rng = None
         if random_state is not None:
+            if isinstance(random_state, np.random.RandomState):
+                self.rng = random_state
+
             self.rng = np.random.RandomState(random_state)
 
     def __repr__(self):
@@ -211,6 +218,9 @@ class DataSampler:
 
         self.rng = None
         if random_state is not None:
+            if isinstance(random_state, np.random.RandomState):
+                self.rng = random_state
+
             self.rng = np.random.RandomState(random_state)
 
     def fit(self, full_X, full_y):

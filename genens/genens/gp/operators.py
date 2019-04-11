@@ -4,15 +4,14 @@
 This module defines genetic operators used in the evolution.
 """
 
-import numpy as np
-import random
-from genens.gp.types import GpTreeIndividual, DeapTreeIndividual
-from genens.render import graph
-
 from deap import creator, tools
 from itertools import chain
-from functools import reduce
 from joblib import Parallel, delayed
+
+from genens.gp.types import GpTreeIndividual, DeapTreeIndividual
+
+import numpy as np
+import random
 
 # TODO write docstrings
 
@@ -27,9 +26,11 @@ def gen_population(toolbox, config, out_type='out'):
 def choose_prim_weighted(config, prim_list):
     group_names = {prim.group for prim in prim_list}  # primitive groups to choose from
 
+    # weighted choice
     total_sum = np.sum((config.group_weights[group] for group in group_names))
     rand_val = random.random() * total_sum
 
+    # determine which group was chosen
     group_chosen = None
     partial_sum = 0.0
     for group in group_names:
@@ -60,9 +61,11 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
         next_type, ar, h = type_stack.pop()
         tree_height = max(h, tree_height)
 
+        # more children should be generated
         if ar - 1 > 0:
             type_stack.append((next_type, ar - 1, h))
 
+        # choose only terminals in the last level
         if h < max_height:
             choose_from = config.full_config[next_type]
         else:
@@ -74,13 +77,13 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
         prim = next_prim_t.create_primitive(h, max_arity,
                                             config.kwargs_config[next_prim_t.name])
 
+        # append child types and arities to the stack
         if prim.arity > 0:
             for child_type in prim.node_type[0]:
                 type_stack.append((child_type.name, child_type.arity, h + 1))
 
         tree_list.append(prim)
 
-    # return creator.TreeIndividual(list(reversed(tree_list)), tree_height)
     return DeapTreeIndividual(list(reversed(tree_list)), tree_height)
 
 
@@ -97,6 +100,7 @@ def mutate_subtree(toolbox, gp_tree, eps=4):
 
     :return: The mutated tree.
     """
+    # mutation does not replace the whole tree
     if len(gp_tree.primitives) < 2:
         return gp_tree
 
@@ -142,6 +146,7 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
 
     mut_arg = random.choice(list(mut_node.obj_kwargs.keys()))
 
+    # mutate one parameter, do not perform hillclimbing
     if hc_repeat < 1:
         _mut_args(config, mut_node, mut_arg)
         return gp_tree
@@ -155,6 +160,7 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
             return gp_tree
         gp_tree.fitness.values = score
 
+    # hill-climbing procedure
     has_mutated = False
     for i in range(hc_repeat):
         mutant = toolbox.clone(gp_tree)
@@ -174,7 +180,7 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
 
             has_mutated = True
         else:
-            # return the last one if there were no mutation
+            # return the last one if no mutant was better than the first individual
             if keep_last and i == hc_repeat - 1 and not has_mutated:
                 gp_tree.primitives[ mut_ind] = mut_node
                 gp_tree.fitness.values = score
@@ -200,6 +206,7 @@ def crossover_one_point(gp_tree_1, gp_tree_2):
     common_types = list(type_set_1.intersection(type_set_2))
     cx_type = random.choice(common_types)
 
+    # nodes which can be roots of subtrees to be swapped
     eligible_1 = [ind for ind, node in enumerate(gp_tree_1.primitives) if node.out_type == cx_type]
     eligible_2 = [ind for ind, node in enumerate(gp_tree_2.primitives) if node.out_type == cx_type]
 
@@ -309,6 +316,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
         # TODO remove or verbose
         print('Initial population generated.')
 
+        # evaluate first gen
         scores = toolbox.map(toolbox.evaluate, population, parallel=parallel)
 
         for ind, score in zip(population, scores):
@@ -317,7 +325,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
 
             ind.fitness.values = score
 
-        # remove individuals which threw exceptions
+        # remove individuals which threw exceptions and generate new valid individuals
         population[:] = [ind for ind in population if ind.fitness.valid]
 
         valid = parallel(delayed(gen_valid)(toolbox) for i in range(pop_size - len(population)))
@@ -331,6 +339,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
             print("Gen {}".format(g))
             toolbox.next_gen()
 
+            # selection for operations
             population[:] = tools.selTournamentDCD(population, pop_size)
             offspring = toolbox.map(toolbox.clone, population)  # TODO parallel?
 
@@ -349,6 +358,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
 
             offs_to_eval = [ind for ind in offspring if not ind.fitness.valid]
 
+            # evaluation of changed offspring
             scores = toolbox.map(toolbox.evaluate, offs_to_eval, parallel=parallel)
             for off, score in zip(offs_to_eval, scores):
                 if score is None:

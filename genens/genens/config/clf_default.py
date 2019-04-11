@@ -65,7 +65,7 @@ def create_clf_config(group_weights=None):
             'n_estimators': [5, 10, 50, 100, 200]
         },
         'voting': {
-            # ['hard', 'soft'] a lot of classifiers does not support predict_proba
+            # 'soft' not included - a lot of classifiers does not support predict_proba
             'voting': ['hard']
         }
     }
@@ -206,7 +206,7 @@ def create_clf_config(group_weights=None):
     # ensemble config
     config.add_primitive(cf.ensemble_primitive('ada', 1))
     config.add_primitive(cf.ensemble_primitive('bagging', 1))
-    config.add_primitive(cf.ensemble_primitive('voting', (2,'n'), group='ensemble_l'))
+    config.add_primitive(cf.ensemble_primitive('voting', (2, 'n'), group='ensemble_l'))
 
     # classifier config
     config.add_primitive(cf.predictor_primitive("KNeighbors"))

@@ -15,13 +15,12 @@ of other wrapper functions applied on child nodes and ``kwarg_dict`` is a dictio
 arguments.
 """
 
-import collections
-import math
-from warnings import warn
 from functools import partial
 
 import genens.workflow.model_creation as mc
 from genens.gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
+
+from warnings import warn
 
 
 def default_group_weights(*args, groups=None):
@@ -30,11 +29,12 @@ def default_group_weights(*args, groups=None):
         # primitives are grouped by output nodes
         for out_prim_list in prim_list.values():
             for prim in out_prim_list:
-                # TODO default behaviour
+
                 if prim.group is None:
                     # warn only if user provided config with missing values
                     if groups is not None:
                         warn("Primitive {} has no group, using its name as the group.".format(prim.name))
+
                     prim.group = prim.name
 
                 if prim.group not in checked_groups.keys():
@@ -42,12 +42,14 @@ def default_group_weights(*args, groups=None):
                     if groups is not None:
                         warn("Group {} is not present in the group list, adding with default"
                              "weight (1.0).".format(prim.group))
+
                     checked_groups[prim.group] = 1.0
+
     return checked_groups
 
 
 class GenensConfig:
-    def __init__(self, func, full, term, kwargs_config, max_height=5, max_arity=3,
+    def __init__(self, func, full, term, kwargs_config, max_height=4, max_arity=3,
                  group_weights=None):
         self.func_config = func
 
@@ -208,7 +210,7 @@ def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens', group=
     :return: Function template which can be used to create an ensemble primitive.
     """
     return GpFunctionTemplate(ens_name, [TypeArity(in_type, in_arity)], out_type,
-                              group)
+                              group=group)
 
 
 def predictor_primitive(p_name, group='predictor'):
@@ -222,7 +224,7 @@ def predictor_primitive(p_name, group='predictor'):
     :param str p_name: Name of the predictor.
     :return: Terminal template which can be used to create a predictor primitive.
     """
-    return GpTerminalTemplate(p_name, 'ens', group)
+    return GpTerminalTemplate(p_name, 'ens', group=group)
 
 
 def predictor_terminal(p_name, group='predictor'):
@@ -238,7 +240,7 @@ def predictor_terminal(p_name, group='predictor'):
     :param str p_name: Name of the predictor.
     :return: Terminal template which can be used to create a predictor primitive.
     """
-    return GpTerminalTemplate(p_name, 'out', group)
+    return GpTerminalTemplate(p_name, 'out', group=group)
 
 
 def transformer_primitive(t_name, out_type, group='transform'):
@@ -255,4 +257,4 @@ def transformer_primitive(t_name, out_type, group='transform'):
         selectors and 'scale' for scaling transformers.
     :return: Terminal template which can be used to create a transformer primitive.
     """
-    return GpTerminalTemplate(t_name, out_type, group)
+    return GpTerminalTemplate(t_name, out_type, group=group)
