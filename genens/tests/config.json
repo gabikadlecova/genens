@@ -19,10 +19,10 @@
           }
    },
    "evaluator": {
-          "func": "sample_train_test",
+          "func": "sample_train_tes",
           "kwargs": {
                "test_size": 0.33,
-               "per_gen": false,
+               "per_gen": true,
                "sample_size": 0.25,
                "random_state": 42
           }

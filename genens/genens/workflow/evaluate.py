@@ -66,7 +66,7 @@ class EvaluatorBase(ABC):
         self.timeout = timeout_s
 
     def __repr__(self):
-        res = "{}".format(__class__.__name__)
+        res = "{}".format(self.__class__.__name__)
         return res
 
     def fit(self, train_X, train_y):
@@ -134,6 +134,11 @@ class FixedTrainTestEvaluator(EvaluatorBase):
         self.test_size = test_size
         self.random_state = random_state
 
+    def __repr__(self):
+        res = super().__repr__()
+        res += ", test_size: {}".format(self.test_size)
+        return res
+
     def fit(self, train_X, train_y):
         self.train_X, self.test_X, self.train_y, self.test_y = \
             train_test_split(train_X, train_y, test_size=self.test_size,
@@ -161,6 +166,11 @@ class RandomTrainTestEvaluator(EvaluatorBase):
         self.rng = None
         if random_state is not None:
             self.rng = np.random.RandomState(random_state)
+
+    def __repr__(self):
+        res = super().__repr__()
+        res += ", test_size: {}".format(self.test_size)
+        return res
 
     def evaluate(self, workflow, scorer=None):
         # random state is set only in the constructor
