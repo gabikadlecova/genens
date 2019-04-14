@@ -208,13 +208,12 @@ class TrainTestEvaluator(EvaluatorBase):
 
 
 class DataSampler:
-    def __init__(self, sample_size=0.20, random_state=None, replace=False):
+    def __init__(self, sample_size=0.20, random_state=None, stratified=True):
         self.full_X = None
         self.full_y = None
 
         self.sample_size = sample_size
-
-        self.replace = replace
+        self.stratified = stratified
 
         self.rng = None
         if random_state is not None:
@@ -228,27 +227,26 @@ class DataSampler:
         self.full_y = full_y
 
     def generate_sample(self):
-        n_samples = int(math.ceil(self.sample_size * self.full_X.shape[0]))
+        stratify = self.full_y if self.stratified else None
 
-        return resample(self.full_X, self.full_y, replace=self.replace,
-                        n_samples=n_samples,
-                        random_state=self.rng)
+        _, sample_X, _, sample_y = train_test_split(self.full_X, self.full_y,
+                                                    test_size=self.sample_size,
+                                                    random_state=self.rng,
+                                                    stratify=stratify)
+        return sample_X, sample_y
 
 
 class SampleCrossValEvaluator(CrossValEvaluator):
-    def __init__(self, cv_k=7, timeout_s=None, sample_size=0.20, per_gen=True, random_state=None,
-                 replace=False):
+    def __init__(self, cv_k=7, timeout_s=None, sample_size=0.20, per_gen=True, random_state=None):
         super().__init__(cv_k=cv_k, timeout_s=timeout_s)
 
         self.per_gen = per_gen
-        self.sampler = DataSampler(sample_size=sample_size, random_state=random_state,
-                                   replace=replace)
+        self.sampler = DataSampler(sample_size=sample_size, random_state=random_state)
 
     def __repr__(self):
         res = super().__repr__()
         res += ", sample_size: {}".format(self.sampler.sample_size)
         res += ", per_gen: {}".format(self.per_gen)
-        res += ", replace: {}".format(self.sampler.replace)
         return res
 
     def _reset_data(self):
@@ -273,11 +271,10 @@ class SampleCrossValEvaluator(CrossValEvaluator):
 
 class SampleTrainTestEvaluator(FixedTrainTestEvaluator):
     def __init__(self, test_size=None, timeout_s=None, sample_size=0.20,
-                 per_gen=True, random_state=None, replace=False):
+                 per_gen=True, random_state=None):
 
         self.per_gen = per_gen
-        self.sampler = DataSampler(sample_size=sample_size, random_state=random_state,
-                                   replace=replace)
+        self.sampler = DataSampler(sample_size=sample_size, random_state=random_state)
 
         # rng should be set in DataSampler ctor
         super().__init__(test_size=test_size, random_state=self.sampler.rng, timeout_s=timeout_s)
@@ -286,7 +283,6 @@ class SampleTrainTestEvaluator(FixedTrainTestEvaluator):
         res = super().__repr__()
         res += ", sample_size: {}".format(self.sampler.sample_size)
         res += ", per_gen: {}".format(self.per_gen)
-        res += ", replace: {}".format(self.sampler.replace)
         return res
 
     def _fit_sample(self):

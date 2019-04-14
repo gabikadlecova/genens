@@ -19,9 +19,9 @@
           }
    },
    "evaluator": {
-          "func": "sample_train_tes",
+          "func": "sample_crossval",
           "kwargs": {
-               "test_size": 0.33,
+               "cv_k": 5,
                "per_gen": true,
                "sample_size": 0.25,
                "random_state": 42
