@@ -1,6 +1,6 @@
 {
    "datasets": [
-        { "dataset_name": "wilt", "split_validation": false }
+        { "dataset_name": "mnist", "split_validation": false }
     ],
    "parameters": {
       "n_jobs": 1,
@@ -23,7 +23,7 @@
           "kwargs": {
                "cv_k": 5,
                "per_gen": true,
-               "sample_size": 0.25,
+               "sample_size": 0.01,
                "random_state": 42
           }
    },

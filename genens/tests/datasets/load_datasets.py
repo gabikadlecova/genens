@@ -4,11 +4,22 @@ import os
 import pandas as pd
 from functools import partial
 
-from sklearn.datasets import load_iris, load_digits, load_wine, load_breast_cancer
+from sklearn.datasets import load_iris, load_digits, load_wine, load_breast_cancer, fetch_openml
 from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 
 from sklearn.preprocessing import LabelEncoder
+
+
+def load_mnist(split_validation=False, random_state=None, test_size=None):
+    features, target = fetch_openml('mnist_784', return_X_y=True)
+
+    if split_validation:
+        train_X, test_X, train_y, test_y = train_test_split(features, target, test_size=test_size,
+                                                            random_state=random_state)
+        return train_X, train_y, test_X, test_y
+
+    return features, target
 
 
 def load_magic(split_validation=False, random_state=None, test_size=None):
@@ -96,7 +107,8 @@ load_functions = {
     'wine': partial(load_from_sklearn, load_wine),
     'breast_cancer': partial(load_from_sklearn, load_breast_cancer),
     'wilt': load_wilt,
-    'magic': load_magic
+    'magic': load_magic,
+    'mnist': load_mnist
 }
 
 
