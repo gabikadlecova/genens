@@ -164,7 +164,7 @@ def mutate_node_swap(config, gp_tree):
 
     chosen_tm = random.choice(possible_templates)
 
-    if chosen_tm is GpFunctionTemplate:
+    if isinstance(chosen_tm, GpFunctionTemplate):
         new_node = chosen_tm.create_primitive(swap_node.height, config.max_arity,
                                               config.kwargs_config[chosen_tm.name],
                                               in_type=swap_node.node_type[0])

@@ -24,7 +24,7 @@
           "kwargs": {
                "cv_k": 5,
                "per_gen": true,
-               "sample_size": 0.01,
+               "sample_size": 0.1,
                "random_state": 42
           }
    },
