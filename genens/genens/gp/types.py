@@ -261,6 +261,7 @@ class GpTerminalTemplate:
         :param str out_type: Name of the node output type.
         """
         self.name = name
+        self.type_arities = []
         self.out_type = out_type
         self.group = group
 
@@ -370,7 +371,7 @@ class GpFunctionTemplate:
         self.out_type = out_type
         self.group = group
         
-    def create_primitive(self, curr_height, max_arity, kwargs_dict):
+    def create_primitive(self, curr_height, max_arity, kwargs_dict, in_type=None):
         """
         Creates an instance of a ``GpPrimitive`` from the template.
 
@@ -386,6 +387,7 @@ class GpFunctionTemplate:
         :param match_arity:
         If true, arity of the resulting primitive matches exactly `max_arity`. Raises and
         exception if it is not possible to create a primitive with this value.
+        :param in_type:
 
         :return: A new instance of GpPrimitive
         """
@@ -400,9 +402,12 @@ class GpFunctionTemplate:
 
             return GpPrimitive.PrimType(t.prim_type, arity)
 
-        # ordered list of final typed arities
-        in_type = [create_type(t_a) for t_a in self.type_arities]
-        in_type = [t for t in in_type if t is not None]
+        if in_type is None:
+            # ordered list of final typed arities
+            in_type = [create_type(t_a) for t_a in self.type_arities]
+            in_type = [t for t in in_type if t is not None]
+
+        # TODO maybe check the provided in_type (and maybe change it a bit)
 
         # sum of all arities
         arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)

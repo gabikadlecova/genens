@@ -8,7 +8,7 @@ from deap import creator, tools
 from itertools import chain
 from joblib import Parallel, delayed
 
-from genens.gp.types import GpTreeIndividual, DeapTreeIndividual
+from genens.gp.types import GpTreeIndividual, GpFunctionTemplate, GpTerminalTemplate, DeapTreeIndividual
 
 import numpy as np
 import random
@@ -104,6 +104,7 @@ def mutate_subtree(toolbox, gp_tree, eps=4):
     if len(gp_tree.primitives) < 2:
         return gp_tree
 
+    # select a node other than the root
     mut_end_point = random.randrange(len(gp_tree.primitives) - 1)
 
     _, subtree_height = gp_tree.subtree(mut_end_point)
@@ -116,6 +117,63 @@ def mutate_subtree(toolbox, gp_tree, eps=4):
     offs = _swap_subtrees(gp_tree, new_tree, mut_end_point, new_root_point, keep_2=False)
 
     return offs[0]
+
+
+def _node_types_match(node, node_template):
+    # out types match?
+    if node.node_type[1] != node_template.out_type:
+        return False
+
+    # in types (and arities) match?
+    in_types = node.node_type[0]
+    template_types = node_template.type_arities
+
+    if len(in_types) != len(template_types):
+        return False
+
+    for in_type_1, in_type_2 in zip(in_types, template_types):
+        # check type compatibility
+        if in_type_1.name != in_type_2.prim_type:
+            return False
+
+        # check arity compatibility
+        if not in_type_2.is_valid_arity(in_type_1.arity):
+            return False
+
+    return True
+
+
+def mutate_node_swap(config, gp_tree):
+    """
+
+    :param GenensConfig config:
+    :param GpTreeIndividual gp_tree:
+    :return:
+    """
+
+    swap_ind = random.randrange(len(gp_tree.primitives))
+    swap_node = gp_tree.primitives[swap_ind]
+
+    out_type = swap_node.node_type[1]
+
+    possible_templates = [tm for tm in config.full_config[out_type]
+                          if _node_types_match(swap_node, tm)]
+
+    possible_templates += [tm for tm in config.term_config[out_type]
+                           if _node_types_match(swap_node, tm)]
+
+    chosen_tm = random.choice(possible_templates)
+
+    if chosen_tm is GpFunctionTemplate:
+        new_node = chosen_tm.create_primitive(swap_node.height, config.max_arity,
+                                              config.kwargs_config[chosen_tm.name],
+                                              in_type=swap_node.node_type[0])
+    else:
+        new_node = chosen_tm.create_primitive(swap_node.height, config.max_arity,
+                                              config.kwargs_config[chosen_tm.name])
+
+    gp_tree.primitives[swap_ind] = new_node
+    return gp_tree
 
 
 def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
@@ -310,7 +368,7 @@ def _perform_mut(mut_func, mut_pb, mut):
     return mut
 
 
-def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_jobs=1):
+def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb, n_jobs=1):
     with Parallel(n_jobs=n_jobs) as parallel:
 
         # TODO remove or verbose
@@ -354,6 +412,10 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, n_j
 
             # mutation - node args
             offspring = parallel(delayed(_perform_mut)(toolbox.mutate_node_args, mut_args_pb, mut)
+                                 for mut in offspring)
+
+            # mutation - node swap
+            offspring = parallel(delayed(_perform_mut)(toolbox.mutate_node_swap, mut_node_pb, mut)
                                  for mut in offspring)
 
             offs_to_eval = [ind for ind in offspring if not ind.fitness.valid]

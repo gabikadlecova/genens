@@ -8,9 +8,9 @@ from sklearn.base import ClassifierMixin, RegressorMixin
 
 
 class GenensClassifier(GenensBase, ClassifierMixin):
-    def __init__(self, config=None, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, scorer=None,
-                 pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False, max_height=None,
-                 max_arity=None, timeout=None, evaluator=None):
+    def __init__(self, config=None, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, mut_node_pb=0.3,
+                 scorer=None, pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False,
+                 max_height=None, max_arity=None, timeout=None, evaluator=None):
         if config is None:
             config = create_clf_config()
 
@@ -19,6 +19,7 @@ class GenensClassifier(GenensBase, ClassifierMixin):
                          cx_pb=cx_pb,
                          mut_pb=mut_pb,
                          mut_args_pb=mut_args_pb,
+                         mut_node_pb=mut_node_pb,
                          scorer=scorer,
                          pop_size=pop_size,
                          n_gen=n_gen,
@@ -31,9 +32,9 @@ class GenensClassifier(GenensBase, ClassifierMixin):
 
 
 class GenensRegressor(GenensBase, RegressorMixin):
-    def __init__(self, config=None, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, scorer=None,
-                 pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False, max_height=None,
-                 max_arity=None, timeout=None, evaluator=None):
+    def __init__(self, config=None, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, mut_node_pb=0.3,
+                 scorer=None, pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False,
+                 max_height=None, max_arity=None, timeout=None, evaluator=None):
         if config is None:
             config = create_regr_config()
 
@@ -42,6 +43,7 @@ class GenensRegressor(GenensBase, RegressorMixin):
                          cx_pb=cx_pb,
                          mut_pb=mut_pb,
                          mut_args_pb=mut_args_pb,
+                         mut_node_pb=mut_node_pb,
                          scorer=scorer,
                          pop_size=pop_size,
                          n_gen=n_gen,

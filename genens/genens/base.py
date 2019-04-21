@@ -18,8 +18,9 @@ import genens.gp.operators as ops
 
 
 class GenensBase(BaseEstimator):
-    def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, scorer=None,
-                 pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False, max_height=None,
+    def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6,
+                 mut_node_pb=0.3, scorer=None, pop_size=100,
+                 n_gen=10, hc_repeat=0, hc_keep_last=False, max_height=None,
                  max_arity=None, timeout=None, evaluator=None):
         """
         TODO all parameters
@@ -42,6 +43,7 @@ class GenensBase(BaseEstimator):
         self.cx_pb = cx_pb
         self.mut_pb = mut_pb
         self.mut_args_pb = mut_args_pb
+        self.mut_node_pb = mut_node_pb
 
         self.pop_size = pop_size
         self.n_gen = n_gen
@@ -78,6 +80,7 @@ class GenensBase(BaseEstimator):
         self._toolbox.register("mutate_subtree", ops.mutate_subtree, self._toolbox)
         self._toolbox.register("mutate_node_args", ops.mutate_node_args, self._toolbox, self.config,
                                hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
+        self._toolbox.register("mutate_node_swap", ops.mutate_node_swap, self.config)
         self._toolbox.register("cx_one_point", ops.crossover_one_point)
 
         self._toolbox.register("next_gen", self._prepare_next_gen)
@@ -163,7 +166,7 @@ class GenensBase(BaseEstimator):
         pop = self._toolbox.population(n=self.pop_size)
         ops.ea_run(pop, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
                    mut_pb=self.mut_pb,
-                   mut_args_pb=self.mut_args_pb, n_jobs=self.n_jobs)
+                   mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs)
 
         # TODO change later
         tree = self.pareto[0]
