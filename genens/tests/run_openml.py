@@ -1,24 +1,44 @@
 import openml
 
-import numpy as np
+import argparse
+import json
 import pickle
 import time
 
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
+from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 
+from stopit import ThreadingTimeout as Timeout, TimeoutException
 import os
 
 from genens import GenensClassifier
 from genens.workflow.evaluate import SampleCrossValEvaluator
-from genens.config.clf_default import create_clf_config
 from genens.render.plot import export_plot
 from genens.render.graph import create_graph
 
 
-def evaluate_pipeline(pipe, task, out_dir):
-    pass
+def evaluate_pipeline(pipe, task, out_dir, preprocessing=None):
+    if preprocessing is not None:
+        pipe = Pipeline(steps=[
+            ('Preprocessing', preprocessing),
+            ('Pipeline', pipe)
+        ])
+
+    run = openml.runs.run_model_on_task(
+        pipe,
+        task,
+        avoid_duplicate_runs=False,
+        upload_flow=False
+    )
+
+    # Store run offline
+    run.to_filesystem(directory=out_dir)
+    score = run.get_metric_fn(accuracy_score)
+
+    with open(out_dir + '/accuracy-score.txt', 'w+') as score_file:
+        score_file.write('{}\n'.format(score))
 
 
 def _create_dir_check(out_dir):
@@ -46,8 +66,9 @@ def _log_evolution(fitted_clf, out_dir):
     # top 5 individual fitness values
     with open(out_dir + '/ind-fitness.txt', 'w+') as out_file:
         for i, ind in enumerate(fitted_clf.get_best_pipelines(as_individuals=True)[:5]):
-            out_file.write('Individual {}: Score {}, Test {}\n'.format(i, ind.fitness.values,
-                                                                       ind.test_stats))
+            out_file.write('Individual {}: Score {}\n'.format(i, ind.fitness.values))
+
+            # individual tree
             create_graph(ind, out_dir + '/graph{}.png'.format(i))
 
     # pickle top 5 best pipelines
@@ -119,29 +140,43 @@ def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
         max_height=8
     )
 
-    clf.fit(X, y)
+    start_time = time.time()
+    try:
+        with Timeout(task_timeout, swallow_exc=False):
+            clf.fit(X, y)
+    except TimeoutException:
+        print('Timeout - task {} on dataset {}'.format(task.task_id, dataset.name))
+        return
+
+    elapsed_time = time.time() - start_time
+
+    # log time
+    with open(out_dir + '/time.txt', 'w+') as time_file:
+        time_file.write('Elapsed time: {}\n'.format(elapsed_time))
 
     _log_evolution(clf, out_dir)
 
-    # run top 5 pipelines
+    # run and log top 5 pipelines
     for i, pipe in enumerate(clf.get_best_pipelines()[:5]):
         pipe_dir = out_dir + '/run{}'.format(i)
         _create_dir_check(pipe_dir)
 
-        evaluate_pipeline(pipe, task, pipe_dir)
+        evaluate_pipeline(pipe, task, pipe_dir, preprocessing=imputer)
 
 
-def run_tests(test_ids, out_dir='.', n_jobs=1, timeout=None, task_timeout=None):
+def run_tests(task_ids=None, out_dir='.', n_jobs=1, timeout=None, task_timeout=None):
     benchmark_suite = openml.study.get_study('OpenML-CC18', 'tasks')
 
     for task_id in benchmark_suite.tasks:
+        # skip other ids
+        if task_ids is not None and task_id not in task_ids:
+            continue
+
         task = openml.tasks.get_task(task_id)
         dataset = task.get_dataset()
 
-        # create output directory
+        # create output directory or skip the task if it exists
         dataset_dir = '/{}'.format(dataset.name)
-
-        # skip existing directories
         if not _create_dir_check(dataset_dir):
             continue
 
@@ -153,4 +188,18 @@ def run_tests(test_ids, out_dir='.', n_jobs=1, timeout=None, task_timeout=None):
 
 
 if __name__ == '__main__':
-    pass
+    parser = argparse.ArgumentParser("Run OpenML task tests.")
+    parser.add_argument('--config', type=str, help='Configuration file location.')
+    parser.add_argument('--out', required=True)
+
+    args = parser.parse_args()
+
+    with open(args.config) as cf:
+        config = json.load(cf)
+
+    kwargs = config.get('settings', {})
+    task_ids = config.get('task_ids', None)
+
+    run_tests(task_ids=task_ids,
+              out_dir=args.out,
+              **kwargs)
