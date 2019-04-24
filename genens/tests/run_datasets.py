@@ -101,7 +101,7 @@ def run_once(estimator, train_X, train_y, kwarg_dict, out_dir, test_X=None, test
         log_file.write('Test time: {}\n\n'.format(elapsed_time))
         log_file.write(estimator.logbook.__str__() + '\n')
 
-    # pickle best pipelines and write json to file
+    # pickle best pipelines and print to file
     with open(out_dir + '/pipelines.txt', 'w+') as out_file:
         for i, pipe in enumerate(estimator.get_best_pipelines()):
             with open(out_dir + '/pipeline{}.pickle'.format(i), 'wb') as pickle_file:
