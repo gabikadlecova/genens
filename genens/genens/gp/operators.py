@@ -334,7 +334,7 @@ def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
     return tree_1, tree_2 if keep_2 else tree_1,
 
 
-def gen_valid(toolbox, timeout=1000):
+def gen_valid(toolbox, timeout=100):
     i = 0
 
     while True:

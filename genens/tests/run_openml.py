@@ -7,35 +7,23 @@ import time
 
 from sklearn.compose import ColumnTransformer
 from sklearn.impute import SimpleImputer
-from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
+from sklearn.utils import shuffle
 
 from stopit import ThreadingTimeout as Timeout, TimeoutException
 import os
 
 from genens import GenensClassifier
-from genens.workflow.evaluate import SampleCrossValEvaluator
+from genens.workflow.evaluate import SampleCrossValEvaluator, CrossValEvaluator
 from genens.render.plot import export_plot
 from genens.render.graph import create_graph
 
 
-def evaluate_pipeline(pipe, task, out_dir, preprocessing=None):
-    if preprocessing is not None:
-        pipe = Pipeline(steps=[
-            ('Preprocessing', preprocessing),
-            ('Pipeline', pipe)
-        ])
+def evaluate_pipeline(pipe, X, y, out_dir):
+    eval = CrossValEvaluator(cv_k=10)
+    eval.fit(X, y)
 
-    run = openml.runs.run_model_on_task(
-        pipe,
-        task,
-        avoid_duplicate_runs=False,
-        upload_flow=False
-    )
-
-    # Store run offline
-    run.to_filesystem(directory=out_dir)
-    score = run.get_metric_fn(accuracy_score)
+    score = eval.score(pipe)  # accuracy score
 
     with open(out_dir + '/accuracy-score.txt', 'w+') as score_file:
         score_file.write('{}\n'.format(score))
@@ -63,16 +51,16 @@ def _log_evolution(fitted_clf, out_dir):
     # evolution plot
     export_plot(fitted_clf, out_dir + '/result.png')
 
-    # top 5 individual fitness values
+    # top 3 individual fitness values
     with open(out_dir + '/ind-fitness.txt', 'w+') as out_file:
-        for i, ind in enumerate(fitted_clf.get_best_pipelines(as_individuals=True)[:5]):
+        for i, ind in enumerate(fitted_clf.get_best_pipelines(as_individuals=True)[:3]):
             out_file.write('Individual {}: Score {}\n'.format(i, ind.fitness.values))
 
             # individual tree
             create_graph(ind, out_dir + '/graph{}.png'.format(i))
 
-    # pickle top 5 best pipelines
-    for i, pipe in enumerate(fitted_clf.get_best_pipelines()[:5]):
+    # pickle top 3 best pipelines
+    for i, pipe in enumerate(fitted_clf.get_best_pipelines()[:3]):
         with open(out_dir + '/pipeline{}.pickle'.format(i), 'wb') as pickle_file:
             pickle.dump(pipe, pickle_file, pickle.HIGHEST_PROTOCOL)
 
@@ -106,10 +94,18 @@ def _conditional_imput(X, categorical):
     categorical_id = [i for i, val in enumerate(categorical) if val]
     numerical_id = [i for i, val in enumerate(categorical) if not val]
 
+    categorical_pipe = Pipeline(steps=[
+        ('median_imputer', SimpleImputer(strategy='median'))
+    ])
+
+    numerical_pipe = Pipeline(steps=[
+        ('mean_imputer', SimpleImputer(strategy='mean'))
+    ])
+
     imputer = ColumnTransformer(
         transformers=[
-            ('mean_imputer', SimpleImputer(strategy='mean'), numerical_id),
-            ('median_imputer', SimpleImputer(strategy='median'), categorical_id),
+            ('numerical', numerical_pipe, numerical_id),
+            ('categorical', categorical_pipe, categorical_id),
         ]
     )
 
@@ -120,13 +116,15 @@ def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
     dataset = task.get_dataset()
 
     X, y, categorical = dataset.get_data(
-        dataset_format='array',
         target=dataset.default_target_attribute,
-        return_categorical_indicator=True,
+        return_categorical_indicator=True
     )
 
     imputer = _conditional_imput(X, categorical)
     X = imputer.fit_transform(X)
+
+    # TODO hardcoded random state
+    X, y = shuffle(X, y, random_state=42)
 
     sample_size = _heuristic_sample_size(X.shape[0], X.shape[1])
     evaluator = SampleCrossValEvaluator(cv_k=5, timeout_s=timeout, per_gen=False,
@@ -137,16 +135,24 @@ def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
         n_jobs=n_jobs,
         timeout=timeout,
         evaluator=evaluator,
-        max_height=8
+        max_height=5,
+        pop_size=12,
+        n_gen=1
     )
 
     start_time = time.time()
-    try:
-        with Timeout(task_timeout, swallow_exc=False):
-            clf.fit(X, y)
-    except TimeoutException:
-        print('Timeout - task {} on dataset {}'.format(task.task_id, dataset.name))
-        return
+
+    if task_timeout is not None:
+        # timeout after task_timeout seconds
+        try:
+            with Timeout(task_timeout, swallow_exc=False):
+                clf.fit(X, y)
+        except TimeoutException:
+            print('Timeout - task {} on dataset {}'.format(task.task_id, dataset.name))
+            return
+    else:
+        # run without interrupt
+        clf.fit(X, y)
 
     elapsed_time = time.time() - start_time
 
@@ -156,12 +162,12 @@ def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
 
     _log_evolution(clf, out_dir)
 
-    # run and log top 5 pipelines
-    for i, pipe in enumerate(clf.get_best_pipelines()[:5]):
+    # run and log top 3 pipelines
+    for i, pipe in enumerate(clf.get_best_pipelines()[:3]):
         pipe_dir = out_dir + '/run{}'.format(i)
         _create_dir_check(pipe_dir)
 
-        evaluate_pipeline(pipe, task, pipe_dir, preprocessing=imputer)
+        evaluate_pipeline(pipe, X, y, pipe_dir)
 
 
 def run_tests(task_ids=None, out_dir='.', n_jobs=1, timeout=None, task_timeout=None):
@@ -177,7 +183,7 @@ def run_tests(task_ids=None, out_dir='.', n_jobs=1, timeout=None, task_timeout=N
 
         # create output directory or skip the task if it exists
         dataset_dir = '/{}'.format(dataset.name)
-        if not _create_dir_check(dataset_dir):
+        if not _create_dir_check(out_dir + dataset_dir):
             continue
 
         run_task(task,

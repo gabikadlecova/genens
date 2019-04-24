@@ -144,16 +144,16 @@ def create_clf_config(group_weights=None):
         'gaussianNB': {},
         'gradBoosting': {
             'loss': ['deviance', 'exponential'],
-            'n_estimators': [20, 50, 100, 200, 300],
+            'n_estimators': [20, 50, 100, 200],
             'subsample': [0.3, 0.5, 0.75, 1.0]
             # TODO
         },
         'randomForest': {
-            'n_estimators': [10, 50, 100, 150, 200, 500]
+            'n_estimators': [10, 50, 100, 150, 200]
             # TODO
         },
         'extraTrees': {
-            'n_estimators': [10, 50, 100, 150, 200, 500]
+            'n_estimators': [10, 50, 100, 150, 200]
         }
     }
 
