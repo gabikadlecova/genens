@@ -135,9 +135,7 @@ def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
         n_jobs=n_jobs,
         timeout=timeout,
         evaluator=evaluator,
-        max_height=5,
-        pop_size=12,
-        n_gen=1
+        max_height=5
     )
 
     start_time = time.time()
