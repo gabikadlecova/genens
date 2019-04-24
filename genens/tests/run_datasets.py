@@ -9,7 +9,7 @@ import itertools
 import numpy as np
 import random
 
-import openml
+import pprint
 import os
 
 from sklearn.metrics import make_scorer
@@ -17,27 +17,12 @@ from sklearn.metrics import make_scorer
 import pickle
 import time
 
-from stopit import ThreadingTimeout as Timeout, TimeoutException
-
 from genens import GenensClassifier, GenensRegressor
 from genens.workflow.evaluate import get_evaluator_cls
 from genens.config.clf_default import create_clf_config
 from genens.render.plot import export_plot
 from genens.render.graph import create_graph
 from tests.datasets.load_datasets import load_dataset
-
-
-def run_openml_benchmarks():
-    benchmark_suite = openml.study.get_study('OpenML-CC18', 'tasks')
-    for task_id in benchmark_suite.tasks:
-        task = openml.tasks.get_task(task_id)
-
-        dataset_id = task.dataset_id
-        dataset = openml.datasets.get_dataset(dataset_id)
-        if dataset.name == 'mnist_784' or dataset.name == 'wilt':
-            continue
-
-        X, y = task.get_X_and_y()
 
 
 def run_tests(estimators, train_X, train_y, out_dir, test_X=None, test_y=None):
@@ -122,6 +107,8 @@ def run_once(estimator, train_X, train_y, kwarg_dict, out_dir, test_X=None, test
             with open(out_dir + '/pipeline{}.pickle'.format(i), 'wb') as pickle_file:
                 pickle.dump(pipe, pickle_file, pickle.HIGHEST_PROTOCOL)
 
+            # todo check with wilt
+            # pprint.pprint(pipe, out_file)
             out_file.write(repr(pipe))
             out_file.write('\n\n')
 

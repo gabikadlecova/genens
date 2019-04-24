@@ -40,7 +40,8 @@ def create_clf_config(group_weights=None):
         "gaussianNB": cf.estimator_func(naive_bayes.GaussianNB),
         "DT": cf.estimator_func(tree.DecisionTreeClassifier),
         "gradBoosting": cf.estimator_func(ensemble.GradientBoostingClassifier),
-        "randomForest": cf.estimator_func(ensemble.RandomForestClassifier)
+        "randomForest": cf.estimator_func(ensemble.RandomForestClassifier),
+        "extraTrees": cf.estimator_func(ensemble.ExtraTreesClassifier)
     }
 
     transform_func = {
@@ -148,8 +149,11 @@ def create_clf_config(group_weights=None):
             # TODO
         },
         'randomForest': {
-            'n_estimators': [10, 50, 100, 150, 200]
+            'n_estimators': [10, 50, 100, 150, 200, 500]
             # TODO
+        },
+        'extraTrees': {
+            'n_estimators': [10, 50, 100, 150, 200, 500]
         }
     }
 
@@ -188,13 +192,13 @@ def create_clf_config(group_weights=None):
 
     if group_weights is None:
         group_weights = {
-            'pipeline': 1.0,
-            'union': 0.3,
-            'prepro': 1.0,
-            'ensemble': 0.5,
-            'predictor': 1.0,
-            'ensemble_l': 1.2,  # lightweight ensembles
-            'transform': 1.0
+            "pipeline": 1.0,
+            "union": 0.1,
+            "prepro": 1.0,
+            "ensemble": 0.5,
+            "ensemble_l": 1.0,
+            "predictor": 1.0,
+            "transform": 1.0
         }
 
     # add to config
@@ -220,6 +224,7 @@ def create_clf_config(group_weights=None):
     config.add_primitive(cf.predictor_primitive("DT"))
     config.add_primitive(cf.predictor_primitive("gradBoosting"))
     config.add_primitive(cf.predictor_primitive("randomForest"))
+    config.add_primitive(cf.predictor_primitive("extraTrees"))
 
     # terminals used only as leaves
     config.add_primitive(cf.predictor_terminal("KNeighbors"), term_only=True)
@@ -233,6 +238,7 @@ def create_clf_config(group_weights=None):
     config.add_primitive(cf.predictor_terminal("DT"), term_only=True)
     config.add_primitive(cf.predictor_terminal("gradBoosting"), term_only=True)
     config.add_primitive(cf.predictor_terminal("randomForest"), term_only=True)
+    config.add_primitive(cf.predictor_terminal("extraTrees"), term_only=True)
 
     # transformer config
 

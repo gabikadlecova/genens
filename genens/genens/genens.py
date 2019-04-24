@@ -8,8 +8,8 @@ from sklearn.base import ClassifierMixin, RegressorMixin
 
 
 class GenensClassifier(GenensBase, ClassifierMixin):
-    def __init__(self, config=None, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, mut_node_pb=0.3,
-                 scorer=None, pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False,
+    def __init__(self, config=None, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6, mut_node_pb=0.3,
+                 scorer=None, pop_size=200, n_gen=15, hc_repeat=0, hc_keep_last=False,
                  max_height=None, max_arity=None, timeout=None, evaluator=None):
         if config is None:
             config = create_clf_config()
@@ -32,8 +32,8 @@ class GenensClassifier(GenensBase, ClassifierMixin):
 
 
 class GenensRegressor(GenensBase, RegressorMixin):
-    def __init__(self, config=None, n_jobs=1, cx_pb=0.5, mut_pb=0.1, mut_args_pb=0.3, mut_node_pb=0.3,
-                 scorer=None, pop_size=100, n_gen=10, hc_repeat=0, hc_keep_last=False,
+    def __init__(self, config=None, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6, mut_node_pb=0.3,
+                 scorer=None, pop_size=200, n_gen=15, hc_repeat=0, hc_keep_last=False,
                  max_height=None, max_arity=None, timeout=None, evaluator=None):
         if config is None:
             config = create_regr_config()

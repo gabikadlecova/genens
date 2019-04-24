@@ -15,9 +15,12 @@ def export_plot(estimator, out_file):
     test_max = estimator.logbook.chapters["test_score"].select("max")
     test_avg = estimator.logbook.chapters["test_score"].select("avg")
 
-    test_all_zero = np.all(test_max == 0.0) and np.all(test_avg == 0.0)
+    test_all_zero = all(tt == 0.0 for tt in test_max) and \
+                    all(tt == 0.0 for tt in test_avg)
 
     fig = plt.figure()
+    fig.suptitle("Evolution of population scores")
+
     ax1 = fig.add_subplot(111)
 
     ax1.set_xlabel("Generation")

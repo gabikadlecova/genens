@@ -235,7 +235,7 @@ class DataSampler:
 
 
 class SampleCrossValEvaluator(CrossValEvaluator):
-    def __init__(self, cv_k=7, timeout_s=None, sample_size=0.20, per_gen=True, random_state=None):
+    def __init__(self, cv_k=7, timeout_s=None, sample_size=0.20, per_gen=False, random_state=None):
         super().__init__(cv_k=cv_k, timeout_s=timeout_s)
 
         self.per_gen = per_gen
@@ -269,7 +269,7 @@ class SampleCrossValEvaluator(CrossValEvaluator):
 
 class SampleTrainTestEvaluator(FixedTrainTestEvaluator):
     def __init__(self, test_size=None, timeout_s=None, sample_size=0.20,
-                 per_gen=True, random_state=None):
+                 per_gen=False, random_state=None):
 
         self.per_gen = per_gen
         self.sampler = DataSampler(sample_size=sample_size, random_state=random_state)

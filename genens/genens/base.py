@@ -19,8 +19,8 @@ import genens.gp.operators as ops
 
 class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6,
-                 mut_node_pb=0.3, scorer=None, pop_size=100,
-                 n_gen=10, hc_repeat=0, hc_keep_last=False, max_height=None,
+                 mut_node_pb=0.3, scorer=None, pop_size=200,
+                 n_gen=15, hc_repeat=0, hc_keep_last=False, max_height=None,
                  max_arity=None, timeout=None, evaluator=None):
         """
         TODO all parameters
