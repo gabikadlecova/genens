@@ -70,7 +70,7 @@ def _heuristic_sample_size(n_rows, n_cols):
 
     # 'small' datasets
     if size < 10000:
-        return 1.0
+        return None
 
     if n_rows < 1000:
         return 0.5
@@ -127,8 +127,12 @@ def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
     X, y = shuffle(X, y, random_state=42)
 
     sample_size = _heuristic_sample_size(X.shape[0], X.shape[1])
-    evaluator = SampleCrossValEvaluator(cv_k=5, timeout_s=timeout, per_gen=False,
-                                        sample_size=sample_size)
+
+    if sample_size is not None:
+        evaluator = SampleCrossValEvaluator(cv_k=5, timeout_s=timeout, per_gen=False,
+                                            sample_size=sample_size)
+    else:
+        evaluator = CrossValEvaluator(cv_k=5, timeout_s=timeout)
 
     # TODO bad practice warning - hardcoded height
     clf = GenensClassifier(
