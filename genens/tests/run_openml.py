@@ -113,7 +113,7 @@ def _conditional_imput(X, categorical):
 
 
 def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
-    dataset = task.get_dataset()
+    dataset = openml.datasets.get_dataset(task.dataset_id)
 
     X, y, categorical = dataset.get_data(
         target=dataset.default_target_attribute,
