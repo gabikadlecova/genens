@@ -55,7 +55,7 @@ def run_tests(estimators, train_X, train_y, out_dir, test_X=None, test_y=None):
 
 
 def evaluate_workflows(clf, features, target, scorer=None, method='crossval', **kwargs):
-    wfs = clf.get_best_pipelines()
+    wfs = clf.get_best_pipelines()[:5]
 
     cls = get_evaluator_cls(method)
 
