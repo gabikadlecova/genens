@@ -109,7 +109,7 @@ def load_from_openml(dataset_name, split_validation=False, random_state=None, te
     for k, v in all_datasets.items():
         if v['name'] == dataset_name:
             dataset_id = k
-        break
+            break
 
     if dataset_id is None:
         raise ValueError("Invalid dataset name.")
