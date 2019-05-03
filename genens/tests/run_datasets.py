@@ -103,7 +103,7 @@ def run_once(estimator, train_X, train_y, kwarg_dict, out_dir, test_X=None, test
 
     # pickle best pipelines and print to file
     with open(out_dir + '/pipelines.txt', 'w+') as out_file:
-        for i, pipe in enumerate(estimator.get_best_pipelines()):
+        for i, pipe in enumerate(estimator.get_best_pipelines()[:5]):
             with open(out_dir + '/pipeline{}.pickle'.format(i), 'wb') as pickle_file:
                 pickle.dump(pipe, pickle_file, pickle.HIGHEST_PROTOCOL)
 
@@ -117,7 +117,7 @@ def run_once(estimator, train_X, train_y, kwarg_dict, out_dir, test_X=None, test
 
     # individual fitness values
     with open(out_dir + '/ind-fitness.txt', 'w+') as out_file:
-        for i, ind in enumerate(estimator.get_best_pipelines(as_individuals=True)):
+        for i, ind in enumerate(estimator.get_best_pipelines(as_individuals=True)[:5]):
             out_file.write('Individual {}: Score {}, Test {}\n'.format(i, ind.fitness.values,
                                                                        ind.test_stats))
             create_graph(ind, out_dir + '/graph{}.png'.format(i))

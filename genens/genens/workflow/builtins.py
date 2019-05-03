@@ -13,7 +13,7 @@ class WeightedPipeline(BaseEstimator):
         return "Weighted pipeline: " + self.pipe.__repr__()
 
     def fit(self, X, y, sample_weight=None):
-            return self.pipe.fit(X, y, predictor__sample_weight=sample_weight)
+        return self.pipe.fit(X, y, predictor__sample_weight=sample_weight)
 
     def __getattr__(self, item):
         try:
