@@ -1,8 +1,10 @@
 # -*- coding: utf-8 -*-
 
+import matplotlib.pyplot as plt
 import openml
 import os
 import pandas as pd
+import seaborn as sns
 
 
 def get_score_stats(columns, dirs):
@@ -28,6 +30,13 @@ def read_score_list(file_list):
 
         score_list.append(max_val)
     return score_list
+
+
+def boxplot_compare_columns(df, out_path, out_name='outbox.png'):
+    bx_plot = sns.boxplot(x='variable', y='value', data=pd.melt(df))
+
+    fig = bx_plot.get_figure()
+    fig.savefig('/'.join([out_path, out_name]))
 
 
 def get_openml_stats():
