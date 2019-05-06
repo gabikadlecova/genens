@@ -10,7 +10,7 @@ def get_score_stats(columns, dirs):
     df = pd.DataFrame()
     for col_name, dir_path in zip(columns, dirs):
         file_paths = os.listdir(dir_path)
-        file_paths = ["/".join(dir_path, f) for f in file_paths]
+        file_paths = ["/".join([dir_path, f]) for f in file_paths]
 
         df[col_name] = read_score_list(file_paths)
 
