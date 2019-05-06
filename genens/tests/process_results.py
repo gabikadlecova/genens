@@ -23,7 +23,8 @@ def read_score_list(file_list):
         max_val = 0.0
         with open(file_name, 'r') as in_file:
             for line in in_file:
-                max_val = max(line, max_val)
+                val = float(line)
+                max_val = max(val, max_val)
 
         score_list.append(max_val)
     return score_list
