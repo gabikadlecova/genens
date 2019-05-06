@@ -17,9 +17,9 @@ def get_score_stats(columns, dirs):
     return df
 
 
-def read_score_list(*args):
+def read_score_list(file_list):
     score_list = []
-    for file_name in args:
+    for file_name in file_list:
         max_val = 0.0
         with open(file_name, 'r') as in_file:
             for line in in_file:
