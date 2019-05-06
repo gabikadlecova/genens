@@ -369,38 +369,39 @@ def _perform_mut(mut_func, mut_pb, mut):
 
 
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb, n_jobs=1):
+
+    # TODO remove or verbose
+    print('Initial population generated.')
+
+    # evaluate first gen 
     with Parallel(n_jobs=n_jobs) as parallel:
-
-        # TODO remove or verbose
-        print('Initial population generated.')
-
-        # evaluate first gen
         scores = toolbox.map(toolbox.evaluate, population, parallel=parallel)
 
-        for ind, score in zip(population, scores):
-            if score is None:
-                continue
+    for ind, score in zip(population, scores):
+        if score is None:
+            continue
 
-            ind.fitness.values = score
+        ind.fitness.values = score
 
-        # remove individuals which threw exceptions and generate new valid individuals
-        population[:] = [ind for ind in population if ind.fitness.valid]
+    # remove individuals which threw exceptions and generate new valid individuals
+    population[:] = [ind for ind in population if ind.fitness.valid]
 
-        valid = parallel(delayed(gen_valid)(toolbox) for i in range(pop_size - len(population)))
-        population[:] = population + valid
+    valid = Parallel(n_jobs=n_jobs)(delayed(gen_valid)(toolbox) for i in range(pop_size - len(population)))
+    population += valid
 
-        toolbox.log(population, 0)
+    toolbox.log(population, 0)
 
-        population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
+    population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
 
-        for g in range(n_gen):
-            print("Gen {}".format(g))
-            toolbox.next_gen()
+    for g in range(n_gen):
+        print("Gen {}".format(g))
+        toolbox.next_gen()
 
-            # selection for operations
-            population[:] = tools.selTournamentDCD(population, pop_size)
-            offspring = toolbox.map(toolbox.clone, population)  # TODO parallel?
+        # selection for operations
+        population[:] = tools.selTournamentDCD(population, pop_size)
+        offspring = toolbox.map(toolbox.clone, population)  # TODO parallel?
 
+        with Parallel(n_jobs=n_jobs) as parallel:
             # crossover - subtree
             offspring = parallel(delayed(_perform_cx)(toolbox.cx_one_point, cx_pb, ch1, ch2)
                                  for ch1, ch2 in zip(offspring[::2], offspring[1::2]))
@@ -431,9 +432,9 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
             # remove offspring which threw exceptions
             offspring[:] = [ind for ind in offspring if ind.fitness.valid]
 
-            for i in range(pop_size - len(offspring)):
-                offspring.append(gen_valid(toolbox))
+            valid = parallel(delayed(gen_valid)(toolbox) for i in range(pop_size - len(offspring)))
+            offspring += valid
 
-            population[:] = toolbox.select(population + offspring, pop_size)
+        population[:] = toolbox.select(population + offspring, pop_size)
 
-            toolbox.log(population, g + 1)
+        toolbox.log(population, g + 1)
