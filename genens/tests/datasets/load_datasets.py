@@ -84,7 +84,8 @@ def load_wilt(split_validation=False, random_state=None, test_size=None):
     # choose a different test set
     if split_validation and test_size is not None:
         train_X, test_X, train_y, test_y = train_test_split(features, target,
-                                                            test_size=test_size)
+                                                            test_size=test_size,
+                                                            random_state=random_state)
         return train_X, train_y, test_X, test_y
 
     return features, target
