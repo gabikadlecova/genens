@@ -7,7 +7,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c66519e1-475a-4ad4-bc94-22d789418865" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/tests/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/config.json" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/tests/openml_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/run-full-wine.sh" beforeDir="false" afterPath="$PROJECT_DIR$/run-full-wine.sh" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -19,13 +21,22 @@
     <splitter split-orientation="horizontal" split-proportion="0.5">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tests/datasets/load_datasets.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="331">
-                  <caret line="111" column="12" selection-start-line="111" selection-start-column="12" selection-end-line="111" selection-end-column="12" />
+                <state relative-caret-position="365">
+                  <caret line="113" column="26" selection-start-line="113" selection-start-column="26" selection-end-line="113" selection-end-column="26" />
+                </state>
+              </provider>
+            </entry>
+          </file>
+          <file pinned="false" current-in-tab="true">
+            <entry file="file://$PROJECT_DIR$/tests/openml_results.py">
+              <provider selected="true" editor-type-id="text-editor">
+                <state relative-caret-position="374">
+                  <caret line="22" column="22" selection-start-line="22" selection-start-column="22" selection-end-line="22" selection-end-column="22" />
                   <folding>
-                    <element signature="e#25#31#0" expanded="true" />
+                    <element signature="e#25#38#0" expanded="true" />
                   </folding>
                 </state>
               </provider>
@@ -71,11 +82,11 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/tests/run_openml.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="229">
-                  <caret line="115" selection-start-line="115" selection-end-line="115" />
+                <state relative-caret-position="542">
+                  <caret line="199" column="68" selection-start-line="199" selection-start-column="68" selection-end-line="199" selection-end-column="68" />
                   <folding>
                     <element signature="e#0#13#0" expanded="true" />
                   </folding>
@@ -92,14 +103,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tests/run_datasets.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="470">
-                  <caret line="262" selection-start-line="262" selection-end-line="262" />
-                  <folding>
-                    <element signature="e#24#39#0" expanded="true" />
-                  </folding>
+                <state relative-caret-position="102">
+                  <caret line="6" column="16" lean-forward="true" selection-start-line="6" selection-start-column="16" selection-end-line="6" selection-end-column="16" />
                 </state>
               </provider>
             </entry>
@@ -140,7 +148,7 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/genens/workflow/builtins.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="170">
+                <state relative-caret-position="221">
                   <caret line="15" column="8" selection-start-line="15" selection-start-column="8" selection-end-line="15" selection-end-column="8" />
                 </state>
               </provider>
@@ -231,6 +239,7 @@
         <option value="$PROJECT_DIR$/genens/workflow/builtins.py" />
         <option value="$PROJECT_DIR$/tests/run_datasets.py" />
         <option value="$PROJECT_DIR$/tests/datasets/load_datasets.py" />
+        <option value="$PROJECT_DIR$/tests/openml_results.py" />
       </list>
     </option>
   </component>
@@ -246,6 +255,7 @@
       <foldersAlwaysOnTop value="true" />
     </navigator>
     <panes>
+      <pane id="Scope" />
       <pane id="ProjectPane">
         <subPane>
           <expand>
@@ -297,7 +307,6 @@
           <select />
         </subPane>
       </pane>
-      <pane id="Scope" />
     </panes>
   </component>
   <component name="PropertiesComponent">
@@ -342,7 +351,28 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.run_datasets">
+  <component name="RunManager" selected="Python.openml_results">
+    <configuration name="openml_results" type="PythonConfigurationType" factoryName="Python" temporary="true">
+      <module name="genens" />
+      <option name="INTERPRETER_OPTIONS" value="" />
+      <option name="PARENT_ENVS" value="true" />
+      <envs>
+        <env name="PYTHONUNBUFFERED" value="1" />
+      </envs>
+      <option name="SDK_HOME" value="" />
+      <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/tests" />
+      <option name="IS_MODULE_SDK" value="true" />
+      <option name="ADD_CONTENT_ROOTS" value="true" />
+      <option name="ADD_SOURCE_ROOTS" value="true" />
+      <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/openml_results.py" />
+      <option name="PARAMETERS" value="" />
+      <option name="SHOW_COMMAND_LINE" value="false" />
+      <option name="EMULATE_TERMINAL" value="false" />
+      <option name="MODULE_MODE" value="false" />
+      <option name="REDIRECT_INPUT" value="false" />
+      <option name="INPUT_FILE" value="" />
+      <method v="2" />
+    </configuration>
     <configuration name="run_datasets" type="PythonConfigurationType" factoryName="Python">
       <module name="genens" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -492,9 +522,11 @@
       <item itemvalue="Python.testbase (1)" />
       <item itemvalue="Python.testbase" />
       <item itemvalue="Python tests.pytest in G:/Code/Python/BP/genens/genens/tests/test_base.py" />
+      <item itemvalue="Python.openml_results" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="Python.openml_results" />
         <item itemvalue="Python tests.pytest in G:/Code/Python/BP/genens/genens/tests/test_base.py" />
         <item itemvalue="Python.testbase" />
         <item itemvalue="Python.test-similarity" />
@@ -530,7 +562,7 @@
     </todo-panel>
   </component>
   <component name="ToolWindowManager">
-    <frame x="-8" y="-8" width="1936" height="1186" extended-state="6" />
+    <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
       <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49857953" visible="true" weight="0.15437302" />
@@ -539,13 +571,13 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3290461" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49947312" weight="0.3687031" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49947312" visible="true" weight="0.29819563" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49894625" visible="true" weight="0.29796356" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32953465" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32918552" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.32953465" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50052685" side_tool="true" weight="0.27920228" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50105375" side_tool="true" weight="0.29796356" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32953465" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -626,120 +658,69 @@
           <line>151</line>
           <option name="timeStamp" value="117" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/tests/openml_results.py</url>
+          <line>20</line>
+          <option name="timeStamp" value="120" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/tests/openml_results.py</url>
+          <line>15</line>
+          <option name="timeStamp" value="130" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="evaluateCodeFragment">
       <expression>
-        <expression-string>'wine-quality-white' in [v['name'] for k, v in all_datasets.items()]</expression-string>
+        <expression-string>next(iter(evaluations.values()))</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>wine-quality-white in [v['name'] for k, v in all_datasets.items()]</expression-string>
+        <expression-string>evaluations.items().</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>[v['name'] for k, v in all_datasets.items()]</expression-string>
+        <expression-string>evaluations.items()[0]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>dataset.get_data</expression-string>
+        <expression-string>evaluations.items()</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>all(tt == 0 for tt in test_max)</expression-string>
+        <expression-string>next(evaluations.values())</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>test_max == 0.0</expression-string>
+        <expression-string>evaluations.values().next()</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>np.all(test_max == 0.0)</expression-string>
+        <expression-string>evaluations.values()</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>np.any([-1])</expression-string>
+        <expression-string>[r.value for r in runs.values()]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
       <expression>
-        <expression-string>np.any(self.test_y &lt; 0)</expression-string>
+        <expression-string>[r.value for r in runs]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
     </expressions>
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/deap/tools/emo.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="244">
-          <caret line="179" selection-start-line="179" selection-end-line="179" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Anaconda3/envs/genenv/Lib/multiprocessing/pool.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1955">
-          <caret line="126" selection-start-line="126" selection-end-line="126" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/deap/tools/support.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="655">
-          <caret line="203" column="51" selection-start-line="203" selection-start-column="51" selection-end-line="203" selection-end-column="51" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/test_base.py" />
-    <entry file="file://$PROJECT_DIR$/tests/__init__.py">
-      <provider selected="true" editor-type-id="text-editor" />
-    </entry>
-    <entry file="file://$USER_HOME$/.PyCharmCE2019.1/system/python_stubs/-452098456/builtins.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="803" column="8" selection-start-line="803" selection-start-column="8" selection-end-line="803" selection-end-column="8" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/result_evaluation.py" />
-    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/utils/__init__.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="451">
-          <caret line="298" column="29" selection-start-line="298" selection-start-column="29" selection-end-line="298" selection-end-column="29" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Anaconda3/envs/genenv/Lib/inspect.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="2135" selection-start-line="2135" selection-end-line="2135" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Anaconda3/envs/genenv/Lib/copy.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="629">
-          <caret line="212" column="21" selection-start-line="212" selection-start-column="21" selection-end-line="212" selection-end-column="21" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/stopit/threadstop.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="680">
-          <caret line="43" selection-start-line="43" selection-end-line="43" />
-        </state>
-      </provider>
-    </entry>
     <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/sklearn/svm/base.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2346">
@@ -978,6 +959,13 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/genens/workflow/evaluate.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="102">
+          <caret line="6" selection-start-line="6" selection-end-line="6" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/genens/config/utils.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="850">
@@ -1007,44 +995,111 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/genens/workflow/builtins.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="170">
+        <state relative-caret-position="221">
           <caret line="15" column="8" selection-start-line="15" selection-start-column="8" selection-end-line="15" selection-end-column="8" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/genens/workflow/evaluate.py">
+    <entry file="file://$PROJECT_DIR$/tests/datasets/load_datasets.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="365">
+          <caret line="113" column="26" selection-start-line="113" selection-start-column="26" selection-end-line="113" selection-end-column="26" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/run_datasets.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="102">
-          <caret line="6" selection-start-line="6" selection-end-line="6" />
+          <caret line="6" column="16" lean-forward="true" selection-start-line="6" selection-start-column="16" selection-end-line="6" selection-end-column="16" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/openml/_api_calls.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="209">
+          <caret line="99" selection-start-line="99" selection-end-line="99" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/requests/adapters.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="209">
+          <caret line="515" selection-start-line="515" selection-end-line="515" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/openml/utils.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="209">
+          <caret line="154" selection-start-line="154" selection-end-line="154" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/run_openml.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="229">
-          <caret line="115" selection-start-line="115" selection-end-line="115" />
+        <state relative-caret-position="542">
+          <caret line="199" column="68" selection-start-line="199" selection-start-column="68" selection-end-line="199" selection-end-column="68" />
           <folding>
             <element signature="e#0#13#0" expanded="true" />
           </folding>
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/run_datasets.py">
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/os.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="470">
-          <caret line="262" selection-start-line="262" selection-end-line="262" />
-          <folding>
-            <element signature="e#24#39#0" expanded="true" />
-          </folding>
+        <state relative-caret-position="524">
+          <caret line="229" lean-forward="true" selection-start-line="229" selection-end-line="229" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/datasets/load_datasets.py">
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/ssl.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="331">
-          <caret line="111" column="12" selection-start-line="111" selection-start-column="12" selection-end-line="111" selection-end-column="12" />
+        <state relative-caret-position="209">
+          <caret line="1118" selection-start-line="1118" selection-end-line="1118" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/openml/runs/run.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1017">
+          <caret line="250" selection-start-line="250" selection-end-line="250" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/openml/runs/functions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="413">
+          <caret line="721" selection-start-line="721" selection-end-line="721" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/xmltodict.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="218">
+          <caret line="327" selection-start-line="327" selection-end-line="327" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/openml/evaluations/functions.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="-76">
+          <caret line="103" selection-start-line="103" selection-end-line="103" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://C:/Anaconda3/envs/genenv/Lib/site-packages/pandas/core/internals/construction.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="209">
+          <caret line="491" selection-start-line="491" selection-end-line="491" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/openml_results.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="374">
+          <caret line="22" column="22" selection-start-line="22" selection-start-column="22" selection-end-line="22" selection-end-column="22" />
           <folding>
-            <element signature="e#25#31#0" expanded="true" />
+            <element signature="e#25#38#0" expanded="true" />
           </folding>
         </state>
       </provider>
