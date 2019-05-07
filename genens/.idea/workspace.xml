@@ -7,7 +7,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c66519e1-475a-4ad4-bc94-22d789418865" name="Default Changelist" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tests/process_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/process_results.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -32,8 +31,8 @@
           <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/tests/process_results.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="800">
-                  <caret line="63" selection-start-line="63" selection-end-line="63" />
+                <state relative-caret-position="528">
+                  <caret line="47" column="41" selection-start-line="47" selection-start-column="41" selection-end-line="47" selection-end-column="41" />
                   <folding>
                     <element signature="e#25#56#0" expanded="true" />
                   </folding>
@@ -520,13 +519,13 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.openml_results" />
       <item itemvalue="Python.run_datasets" />
       <item itemvalue="Python.run_openml" />
       <item itemvalue="Python.test-base" />
       <item itemvalue="Python.test-similarity" />
       <item itemvalue="Python.testbase (1)" />
       <item itemvalue="Python.testbase" />
+      <item itemvalue="Python.openml_results" />
       <item itemvalue="Python tests.pytest in C:/Users/Gabi/Documents/genens-test/genens/genens/tests/test_base.py" />
     </list>
     <recent_temporary>
@@ -570,7 +569,7 @@
     <frame x="-8" y="-8" width="1936" height="1066" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info content_ui="combo" id="Project" order="0" sideWeight="0.49857953" visible="true" weight="0.15437302" />
+      <window_info active="true" content_ui="combo" id="Project" order="0" sideWeight="0.49857953" visible="true" weight="0.15437302" />
       <window_info id="Structure" order="1" sideWeight="0.50142044" side_tool="true" weight="0.15437302" />
       <window_info id="Favorites" order="2" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
@@ -1107,8 +1106,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/process_results.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="800">
-          <caret line="63" selection-start-line="63" selection-end-line="63" />
+        <state relative-caret-position="528">
+          <caret line="47" column="41" selection-start-line="47" selection-start-column="41" selection-end-line="47" selection-end-column="41" />
           <folding>
             <element signature="e#25#56#0" expanded="true" />
           </folding>
