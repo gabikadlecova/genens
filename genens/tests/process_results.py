@@ -60,3 +60,4 @@ def get_openml_stats():
 
 if __name__ == "__main__":
     df = get_openml_stats()
+    df.to_csv("openml-data.csv", sep=';')
