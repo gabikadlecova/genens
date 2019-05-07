@@ -20,6 +20,7 @@ def load_mnist(split_validation=False, random_state=None, test_size=None):
                                                             random_state=random_state)
         return train_X, train_y, test_X, test_y
 
+    features, target = shuffle(features, target, random_state=random_state)
     return features, target
 
 
@@ -43,6 +44,7 @@ def load_magic(split_validation=False, random_state=None, test_size=None):
                                                             random_state=random_state)
         return train_X, train_y, test_X, test_y
 
+    features, target = shuffle(features, target, random_state=random_state)
     return features, target
 
 
@@ -60,8 +62,6 @@ def load_wilt(split_validation=False, random_state=None, test_size=None):
     # concatenate both sets to create the full set
     if not use_original_test:
         data = pd.concat([data, test_data])
-
-    data = shuffle(data, random_state=random_state)
 
     features = data[data.columns[1:]]
     target = data[data.columns[0]]
@@ -88,6 +88,7 @@ def load_wilt(split_validation=False, random_state=None, test_size=None):
                                                             random_state=random_state)
         return train_X, train_y, test_X, test_y
 
+    features, target = shuffle(features, target, random_state=random_state)
     return features, target
 
 
@@ -100,6 +101,7 @@ def load_from_sklearn(load_func, split_validation=False, random_state=None, test
                                                             random_state=random_state)
         return train_X, train_y, test_X, test_y
 
+    features, target = shuffle(features, target, random_state=random_state)
     return features, target
 
 
@@ -124,6 +126,7 @@ def load_from_openml(dataset_name, split_validation=False, random_state=None, te
                                                             random_state=random_state)
         return train_X, train_y, test_X, test_y
 
+    features, target = shuffle(features, target, random_state=random_state)
     return features, target
 
 

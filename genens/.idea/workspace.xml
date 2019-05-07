@@ -8,7 +8,8 @@
   <component name="ChangeListManager">
     <list default="true" id="c66519e1-475a-4ad4-bc94-22d789418865" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tests/process_results.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/process_results.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/config.json" beforeDir="false" afterPath="$PROJECT_DIR$/tests/config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/tests/datasets/load_datasets.py" beforeDir="false" afterPath="$PROJECT_DIR$/tests/datasets/load_datasets.py" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -20,20 +21,20 @@
     <splitter split-orientation="horizontal" split-proportion="0.45732087">
       <split-first>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/tests/datasets/load_datasets.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="1326">
-                  <caret line="87" column="85" selection-start-line="87" selection-start-column="85" selection-end-line="87" selection-end-column="85" />
+                <state relative-caret-position="221">
+                  <caret line="22" column="75" selection-start-line="22" selection-start-column="75" selection-end-line="22" selection-end-column="75" />
                 </state>
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tests/process_results.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="544">
-                  <caret line="35" column="79" selection-start-line="35" selection-start-column="79" selection-end-line="35" selection-end-column="79" />
+                <state relative-caret-position="324">
+                  <caret line="37" column="18" selection-start-line="37" selection-start-column="18" selection-end-line="37" selection-end-column="18" />
                   <folding>
                     <element signature="e#25#56#0" expanded="true" />
                   </folding>
@@ -44,8 +45,8 @@
           <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/genens/gp/operators.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="5695">
-                  <caret line="342" selection-start-line="342" selection-end-line="342" />
+                <state relative-caret-position="2768">
+                  <caret line="355" column="5" lean-forward="true" selection-start-line="355" selection-start-column="5" selection-end-line="355" selection-end-column="5" />
                   <folding>
                     <element signature="e#95#126#0" expanded="true" />
                   </folding>
@@ -81,11 +82,11 @@
       </split-first>
       <split-second>
         <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file pinned="false" current-in-tab="true">
+          <file pinned="false" current-in-tab="false">
             <entry file="file://$PROJECT_DIR$/tests/run_openml.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="100">
-                  <caret line="173" lean-forward="true" selection-start-line="173" selection-end-line="173" />
+                <state relative-caret-position="1392">
+                  <caret line="147" column="19" lean-forward="true" selection-start-line="147" selection-start-column="19" selection-end-line="147" selection-end-column="19" />
                   <folding>
                     <element signature="e#0#13#0" expanded="true" />
                   </folding>
@@ -97,7 +98,7 @@
             <entry file="file://$PROJECT_DIR$/genens/workflow/evaluate.py">
               <provider selected="true" editor-type-id="text-editor">
                 <state relative-caret-position="1377">
-                  <caret line="93" lean-forward="true" selection-start-line="93" selection-end-line="93" />
+                  <caret line="93" selection-start-line="93" selection-end-line="93" />
                   <folding>
                     <element signature="e#25#60#0" expanded="true" />
                   </folding>
@@ -105,11 +106,11 @@
               </provider>
             </entry>
           </file>
-          <file pinned="false" current-in-tab="false">
+          <file pinned="false" current-in-tab="true">
             <entry file="file://$PROJECT_DIR$/tests/run_datasets.py">
               <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="357">
-                  <caret line="44" column="33" lean-forward="true" selection-start-line="44" selection-start-column="33" selection-end-line="44" selection-end-column="33" />
+                <state relative-caret-position="17">
+                  <caret line="40" selection-start-line="40" selection-end-line="40" />
                   <folding>
                     <element signature="e#24#39#0" expanded="true" />
                   </folding>
@@ -243,9 +244,9 @@
         <option value="$PROJECT_DIR$/tests/run_openml.py" />
         <option value="$PROJECT_DIR$/genens/workflow/builtins.py" />
         <option value="$PROJECT_DIR$/tests/openml_results.py" />
-        <option value="$PROJECT_DIR$/tests/datasets/load_datasets.py" />
         <option value="$PROJECT_DIR$/tests/run_datasets.py" />
         <option value="$PROJECT_DIR$/tests/process_results.py" />
+        <option value="$PROJECT_DIR$/tests/datasets/load_datasets.py" />
       </list>
     </option>
   </component>
@@ -356,7 +357,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Python.openml_results">
+  <component name="RunManager" selected="Python.run_datasets">
     <configuration name="openml_results" type="PythonConfigurationType" factoryName="Python" temporary="true">
       <module name="genens" />
       <option name="INTERPRETER_OPTIONS" value="" />
@@ -391,7 +392,7 @@
       <option name="ADD_CONTENT_ROOTS" value="true" />
       <option name="ADD_SOURCE_ROOTS" value="true" />
       <option name="SCRIPT_NAME" value="$PROJECT_DIR$/tests/run_datasets.py" />
-      <option name="PARAMETERS" value="--out g:\Code\Python\BP\genens\genens\tests\res\ config config.json" />
+      <option name="PARAMETERS" value="--out C:\Users\Gabi\Documents\genens-test\genens\genens\tests\res\ config config.json" />
       <option name="SHOW_COMMAND_LINE" value="false" />
       <option name="EMULATE_TERMINAL" value="false" />
       <option name="MODULE_MODE" value="false" />
@@ -520,10 +521,10 @@
       <method v="2" />
     </configuration>
     <list>
-      <item itemvalue="Python.openml_results" />
       <item itemvalue="Python.run_datasets" />
       <item itemvalue="Python.run_openml" />
       <item itemvalue="Python.test-base" />
+      <item itemvalue="Python.openml_results" />
       <item itemvalue="Python.test-similarity" />
       <item itemvalue="Python.testbase (1)" />
       <item itemvalue="Python.testbase" />
@@ -596,13 +597,13 @@
       <window_info anchor="bottom" id="Message" order="0" />
       <window_info anchor="bottom" id="Find" order="1" weight="0.3290461" />
       <window_info anchor="bottom" id="Run" order="2" sideWeight="0.49947312" weight="0.3687031" />
-      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49947312" visible="true" weight="0.29903537" />
+      <window_info active="true" anchor="bottom" id="Debug" order="3" sideWeight="0.49894625" visible="true" weight="0.29796356" />
       <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
       <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
       <window_info anchor="bottom" id="TODO" order="6" weight="0.32953465" />
       <window_info anchor="bottom" id="Version Control" order="7" weight="0.32918552" />
       <window_info anchor="bottom" id="Terminal" order="8" weight="0.32953465" />
-      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50052685" side_tool="true" weight="0.27920228" />
+      <window_info anchor="bottom" id="Event Log" order="9" sideWeight="0.50105375" side_tool="true" weight="0.29796356" />
       <window_info anchor="bottom" id="Python Console" order="10" weight="0.32953465" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
@@ -627,11 +628,6 @@
           <url>file://C:/Anaconda3/envs/genenv/Lib/json/decoder.py</url>
           <line>354</line>
           <option name="timeStamp" value="45" />
-        </line-breakpoint>
-        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
-          <url>file://$PROJECT_DIR$/tests/run_datasets.py</url>
-          <line>40</line>
-          <option name="timeStamp" value="82" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/genens/workflow/evaluate.py</url>
@@ -660,7 +656,7 @@
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
           <url>file://$PROJECT_DIR$/tests/datasets/load_datasets.py</url>
-          <line>152</line>
+          <line>155</line>
           <option name="timeStamp" value="117" />
         </line-breakpoint>
         <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
@@ -673,11 +669,37 @@
           <line>15</line>
           <option name="timeStamp" value="130" />
         </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
+          <line>363</line>
+          <option name="timeStamp" value="131" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
+          <line>354</line>
+          <option name="timeStamp" value="132" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" suspend="THREAD" type="python-line">
+          <url>file://$PROJECT_DIR$/genens/gp/operators.py</url>
+          <line>373</line>
+          <option name="timeStamp" value="133" />
+        </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
+    <watches-manager>
+      <configuration name="PythonConfigurationType">
+        <watch expression="population" />
+        <watch expression="population[2]" />
+      </configuration>
+    </watches-manager>
   </component>
   <component name="debuggerHistoryManager">
     <expressions id="evaluateCodeFragment">
+      <expression>
+        <expression-string>[ind.fitness.values for ind in population]</expression-string>
+        <language-id>Python</language-id>
+        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
+      </expression>
       <expression>
         <expression-string>next(iter(evaluations.values()))</expression-string>
         <language-id>Python</language-id>
@@ -715,11 +737,6 @@
       </expression>
       <expression>
         <expression-string>[r.value for r in runs.values()]</expression-string>
-        <language-id>Python</language-id>
-        <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
-      </expression>
-      <expression>
-        <expression-string>[r.value for r in runs]</expression-string>
         <language-id>Python</language-id>
         <evaluation-mode>CODE_FRAGMENT</evaluation-mode>
       </expression>
@@ -1004,23 +1021,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/datasets/load_datasets.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="1326">
-          <caret line="87" column="85" selection-start-line="87" selection-start-column="85" selection-end-line="87" selection-end-column="85" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/genens/gp/operators.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="5695">
-          <caret line="342" selection-start-line="342" selection-end-line="342" />
-          <folding>
-            <element signature="e#95#126#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/genens/config/clf_default.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="2244">
@@ -1041,32 +1041,12 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/tests/run_openml.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="100">
-          <caret line="173" lean-forward="true" selection-start-line="173" selection-end-line="173" />
-          <folding>
-            <element signature="e#0#13#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/genens/workflow/evaluate.py">
       <provider selected="true" editor-type-id="text-editor">
         <state relative-caret-position="1377">
-          <caret line="93" lean-forward="true" selection-start-line="93" selection-end-line="93" />
+          <caret line="93" selection-start-line="93" selection-end-line="93" />
           <folding>
             <element signature="e#25#60#0" expanded="true" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/tests/run_datasets.py">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="357">
-          <caret line="44" column="33" lean-forward="true" selection-start-line="44" selection-start-column="33" selection-end-line="44" selection-end-column="33" />
-          <folding>
-            <element signature="e#24#39#0" expanded="true" />
           </folding>
         </state>
       </provider>
@@ -1107,11 +1087,48 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/tests/process_results.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="544">
-          <caret line="35" column="79" selection-start-line="35" selection-start-column="79" selection-end-line="35" selection-end-column="79" />
+        <state relative-caret-position="324">
+          <caret line="37" column="18" selection-start-line="37" selection-start-column="18" selection-end-line="37" selection-end-column="18" />
           <folding>
             <element signature="e#25#56#0" expanded="true" />
           </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/run_openml.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="1392">
+          <caret line="147" column="19" lean-forward="true" selection-start-line="147" selection-start-column="19" selection-end-line="147" selection-end-column="19" />
+          <folding>
+            <element signature="e#0#13#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/genens/gp/operators.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="2768">
+          <caret line="355" column="5" lean-forward="true" selection-start-line="355" selection-start-column="5" selection-end-line="355" selection-end-column="5" />
+          <folding>
+            <element signature="e#95#126#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/run_datasets.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="17">
+          <caret line="40" selection-start-line="40" selection-end-line="40" />
+          <folding>
+            <element signature="e#24#39#0" expanded="true" />
+          </folding>
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/tests/datasets/load_datasets.py">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="221">
+          <caret line="22" column="75" selection-start-line="22" selection-start-column="75" selection-end-line="22" selection-end-column="75" />
         </state>
       </provider>
     </entry>
