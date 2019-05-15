@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import matplotlib.pyplot as plt
+import numpy as np
 import openml
 import os
 import pandas as pd
@@ -32,11 +33,35 @@ def read_score_list(file_list):
     return score_list
 
 
-def boxplot_compare_columns(df, out_path, out_name='outbox.png'):
-    bx_plot = sns.boxplot(x='variable', y='value', data=pd.melt(df), notch=True)
+def boxplot_get_stats(df):
+    res = []
+    for column in df.columns:
+        bx = plt.boxplot(df[column], notch=True)
 
-    fig = bx_plot.get_figure()
-    fig.savefig('/'.join([out_path, out_name]))
+        c_min = np.min(df[column])
+        c_max = np.max(df[column])
+
+        bx_data = bx['boxes'][0].get_ydata()
+        c_cilo = bx_data[2]
+        c_med = bx_data[3]
+        c_cihi = bx_data[4]
+
+        res.append([c_min, c_cilo, c_med, c_cihi, c_max])
+
+    res_df = pd.DataFrame(data=res, columns=['minimum', 'ci_low', 'median', 'ci_high', 'maximum'], index=df.columns)
+    return res_df.round(4)
+
+
+def boxplot_compare_columns(df, out_path, out_name='outbox.png', x_axis='Evaluation strategy',
+                            eval_metric='Predictive accuracy'):
+    sns.set()
+
+    bx_plot = sns.boxplot(x='variable', y='value', data=pd.melt(df), notch=True)
+    plt.xlabel(x_axis)
+    plt.ylabel(eval_metric)
+
+    plt.tight_layout()
+    plt.savefig('/'.join([out_path, out_name]))
 
 
 def get_openml_stats():

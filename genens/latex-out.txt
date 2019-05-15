@@ -1,0 +1,7 @@
+\begin{tabular}{lrrlrrrrrrr}
+\toprule
+{} &      cihi &     cilo & fliers &      iqr &      mean &       med &        q1 &        q3 &    whishi &    whislo \\
+\midrule
+0 &  0.541658 &  0.53426 &     [] &  0.00745 &  0.539175 &  0.537959 &  0.535621 &  0.543071 &  0.545431 &  0.534019 \\
+\bottomrule
+\end{tabular}
