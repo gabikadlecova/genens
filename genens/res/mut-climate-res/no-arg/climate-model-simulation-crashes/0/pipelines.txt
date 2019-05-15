@@ -1,0 +1,34 @@
+Weighted pipeline: Pipeline(memory=None,
+     steps=[('predictor', GradientBoostingClassifier(criterion='friedman_mse', init=None,
+              learning_rate=0.1, loss='deviance', max_depth=3,
+              max_features=None, max_leaf_nodes=None,
+              min_impurity_decrease=0.0, min_impurity_split=None,
+              min_samples_leaf=1...   subsample=0.75, tol=0.0001, validation_fraction=0.1,
+              verbose=0, warm_start=False))])
+
+Weighted pipeline: Pipeline(memory=None,
+     steps=[('step0', MaxAbsScaler(copy=True)), ('predictor', VotingClassifier(estimators=[('clf0', DecisionTreeClassifier(class_weight=None, criterion='entropy', max_depth=15,
+            max_features=1, max_leaf_nodes=None, min_impurity_decrease=0.0,
+            min_impurity_split=None, min_samples_lea...    splitter='best'))],
+         flatten_transform=None, n_jobs=None, voting='hard', weights=None))])
+
+PassiveAggressiveClassifier(C=0.5, average=False, class_weight=None,
+              early_stopping=False, fit_intercept=True, loss='hinge',
+              max_iter=None, n_iter=None, n_iter_no_change=5, n_jobs=None,
+              random_state=None, shuffle=True, tol=None,
+              validation_fraction=0.1, verbose=0, warm_start=False)
+
+DecisionTreeClassifier(class_weight=None, criterion='entropy', max_depth=5,
+            max_features=1, max_leaf_nodes=None, min_impurity_decrease=0.0,
+            min_impurity_split=None, min_samples_leaf=20,
+            min_samples_split=10, min_weight_fraction_leaf=0.0,
+            presort=False, random_state=None, splitter='best')
+
+Weighted pipeline: Pipeline(memory=None,
+     steps=[('predictor', DecisionTreeClassifier(class_weight=None, criterion='gini', max_depth=1,
+            max_features=0.05, max_leaf_nodes=None,
+            min_impurity_decrease=0.0, min_impurity_split=None,
+            min_samples_leaf=20, min_samples_split=5,
+            min_weight_fraction_leaf=0.0, presort=False, random_state=None,
+            splitter='best'))])
+

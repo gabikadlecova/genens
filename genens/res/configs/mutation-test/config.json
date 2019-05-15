@@ -1,6 +1,6 @@
 {
    "datasets": [
-        { "dataset_name": "wine-quality-white", "split_validation": false }
+        { "dataset_name": "climate-model-simulation-crashes", "split_validation": false }
     ],
    "parameters": {
       "n_jobs": -1,

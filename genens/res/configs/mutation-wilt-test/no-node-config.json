@@ -1,6 +1,6 @@
 {
    "datasets": [
-        { "dataset_name": "wine-quality-white", "split_validation": false }
+        { "dataset_name": "wilt", "split_validation": false }
     ],
    "parameters": {
       "n_jobs": -1,
@@ -9,15 +9,23 @@
       "cx_pb": 0.5,
       "mut_pb": 0.3,
       "mut_args_pb": 0.6,
-      "mut_node_pb": 0.3,
+      "mut_node_pb": 0.0,
       "max_height": 5,
       "timeout": 420
    },
+   "scorer": {
+	"func": "sklearn.metrics.cohen_kappa_score",
+	"kwargs": {
+		"weights": "quadratic"
+	}
+   },
    "evaluator": {
-          "func": "crossval",
-          "kwargs": {
-	       "cv_k": 5
-          }
+	"func": "sample_crossval",
+	"kwargs": {
+		"cv_k": 5,
+		"sample_size": 0.25,
+		"per_gen": true
+	}
    },
    "group_weights":  {
             "pipeline": 1.0,

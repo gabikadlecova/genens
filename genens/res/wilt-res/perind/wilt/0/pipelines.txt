@@ -1,0 +1,31 @@
+Pipeline(memory=None,
+     steps=[('step', Transformer (1): FactorAnalysis(copy=True, iterated_power=3, max_iter=1000, n_components=None,
+        noise_variance_init=None, random_state=0, svd_method='randomized',
+        tol=0.01)), ('predictor', KNeighborsClassifier(algorithm='ball_tree', leaf_size=30, metric='minkowski',
+           metric_params=None, n_jobs=None, n_neighbors=5, p=2,
+           weights='uniform'))])
+
+SVC(C=2, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape='ovr', degree=3, gamma=0.001, kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False)
+
+SVC(C=10, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape='ovr', degree=3, gamma=0.001, kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.001, verbose=False)
+
+Weighted pipeline: Pipeline(memory=None,
+     steps=[('predictor', SVC(C=5, cache_size=200, class_weight=None, coef0=0.0,
+  decision_function_shape='ovr', degree=3, gamma=0.0001, kernel='rbf',
+  max_iter=-1, probability=False, random_state=None, shrinking=True,
+  tol=0.01, verbose=False))])
+
+Weighted pipeline: Pipeline(memory=None,
+     steps=[('predictor', DecisionTreeClassifier(class_weight=None, criterion='entropy', max_depth=25,
+            max_features=0.75, max_leaf_nodes=None,
+            min_impurity_decrease=0.0, min_impurity_split=None,
+            min_samples_leaf=2, min_samples_split=2,
+            min_weight_fraction_leaf=0.0, presort=False, random_state=None,
+            splitter='best'))])
+

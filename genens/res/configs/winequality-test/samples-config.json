@@ -14,9 +14,11 @@
       "timeout": 420
    },
    "evaluator": {
-          "func": "crossval",
+          "func": "sample_crossval",
           "kwargs": {
-	       "cv_k": 5
+	       "sample_size": 0.25,
+	       "cv_k": 5,
+	       "per_gen": true
           }
    },
    "group_weights":  {
