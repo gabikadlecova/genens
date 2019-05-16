@@ -46,7 +46,10 @@ score = clf.predict(test_X)
 ## Tests
 You can run tests which produce data about evolution and pickle files of best optimized pipelines.
 
+Run Genens on a dataset specified in the config file.
 ``python ./genens/tests/run_datasets.py --out OUT_DIR config CONFIG``
 
-Runs Genens on the 
+Runs Genens on the [OpenML-CC18 benchmarking suite](https://www.openml.org/s/99)
 ``python ./genens/tests/run_openml.py --config CONFIG --out OUT_DIR``
+
+Sample config files are included in ``./genens/tests/config``
