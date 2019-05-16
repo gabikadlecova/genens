@@ -53,5 +53,4 @@ Sample config files are included in ``./genens/tests/config``.
 
 - Runs Genens on the [OpenML-CC18 benchmarking suite](https://www.openml.org/s/99)
 
-``python ./genens/tests/run_openml.py --config CONFIG --out OUT_DIR``
-
+``python ./genens/tests/run_openml.py --out OUT_DIR --config CONFIG``
