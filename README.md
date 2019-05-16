@@ -29,7 +29,7 @@ There may be some problems regarding the pygraphviz package on Windows. You can 
 
 ## Using Genens
 As for now, the GenensClassifier is fully functional. You can use it just as any scikit-learn classifier. When fit is called,
-it finds performs evolutionary optimization.
+it performs evolutionary optimization.
 
 ```
 from genens import GenensClassifier
