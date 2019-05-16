@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 
 """
-This module defines genetic operators used in the evolution.
+This module defines genetic operators used in the evolution as well as the main loop
+of the algorithm and initialization methods.
 """
 
 from deap import tools
@@ -13,10 +14,17 @@ from ..gp.types import GpTreeIndividual, GpFunctionTemplate, DeapTreeIndividual
 import numpy as np
 import random
 
-# TODO write docstrings
 
+def gen_individual(toolbox, config, out_type='out'):
+    """
+    Generates a random tree individual using the toolbox and arity and height configuration.
+    The ``ou_type`` parameter specifies the output type of the root of the tree.
 
-def gen_population(toolbox, config, out_type='out'):
+    :param toolbox: Toolbox which contains methods to create the individual.
+    :param GenensConfig config: Configuration of Genens
+    :param out_type: Output type of the root of the tree individual.
+    :return: A new random tree individual.
+    """
     arity = random.randint(2, config.max_arity)
     height = random.randint(1, config.max_height)
 
@@ -24,6 +32,13 @@ def gen_population(toolbox, config, out_type='out'):
 
 
 def choose_prim_weighted(config, prim_list):
+    """
+    Performs a weighted selection from the list of primitives.
+
+    :param GenensConfig config: Configuration of Genens which contains the weight configuration.
+    :param list prim_list: List of primitives to choose from.
+    :return GpPrimitive: The selected primitive.
+    """
     group_names = {prim.group for prim in prim_list}  # primitive groups to choose from
 
     # weighted choice
@@ -47,6 +62,15 @@ def choose_prim_weighted(config, prim_list):
 
 
 def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
+    """
+    Creates a random tree individual to be used in the DEAP framework.
+
+    :param config: Configuration of nodes, keyword arguments and arity and height limits.
+    :param max_height: Height limit of the tree; if not specified, the configuration limit is used.
+    :param max_arity: Artity limit of function nodes; if not specified, the configuration limit is used.
+    :param first_type: Output type of the root of the tree.
+    :return: A random tree individual.
+    """
     tree_list = []
     type_stack = [(first_type, 1, 1)]
     tree_height = 0
@@ -89,7 +113,7 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
 
 def mutate_subtree(toolbox, gp_tree, eps=4):
     """
-    Replaces a random subtree with a new random tree. The height of the generated subtree
+    Replaces a randomly chosen subtree with a new random tree. The height of the generated subtree
     is between 1 and previous subtree height + ``eps``.
 
     :param toolbox: Toolbox of the genetic algorithm.
@@ -120,6 +144,15 @@ def mutate_subtree(toolbox, gp_tree, eps=4):
 
 
 def _node_types_match(node, node_template):
+    """
+    Verifies whether input and output types of two nodes match. The first has fixed arities of
+    the input type whereas the second is a template with variable arities.
+
+    :param node: Node with fixed input types arities.
+    :param node_template: A node template with variable arities.
+
+    :return bool: True if the types of the nodes match.
+    """
     # out types match?
     if node.node_type[1] != node_template.out_type:
         return False
@@ -145,10 +178,11 @@ def _node_types_match(node, node_template):
 
 def mutate_node_swap(config, gp_tree):
     """
+    Mutates randomly a node of the tree --- replaces it with a new node with the same type.
 
-    :param GenensConfig config:
-    :param GpTreeIndividual gp_tree:
-    :return:
+    :param GenensConfig config: Configuration which contains node definitions.
+    :param GpTreeIndividual gp_tree: Individual to be mutated
+    :return: Mutated individual.
     """
 
     swap_ind = random.randrange(len(gp_tree.primitives))
@@ -182,9 +216,9 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
     than zero, performs a hill-climbing mutation of the argument.
 
     :param toolbox: GP toolbox.
-    :param config: Configuration of the evolution.
-    :param gp_tree: Individual to be mutated.
-    :param hc_repeat:
+    :param GenensConfig config: Configuration of the evolution.
+    :param DeapTreeIndividual gp_tree: Individual to be mutated.
+    :param int hc_repeat:
     If equal to n = 0, mutates a single argument and returns the mutated individual.
     If equal to n > 0, performs a hill-climbing mutation of n iterations, keeping the best
     individual.
@@ -232,7 +266,7 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
             continue
 
         # the mutant is better, keep it
-        if score > gp_tree.fitness.values:
+        if score >= gp_tree.fitness.values:
             gp_tree.primitives[mut_ind] = mut_node  # copy value to the mutated tree
             gp_tree.fitness.values = score
 
@@ -247,16 +281,24 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
 
 
 def _mut_args(config, node, key):
+    """
+    Mutates a keyword argument of a single node.
+
+    :param GenensConfig config: Configuration of Genens which contains lists of possible keyword arguments values.
+    :param node: Node to be mutated.
+    :param key: Key of the argument which will be mutated
+    """
+
     node.obj_kwargs[key] = random.choice(config.kwargs_config[node.name][key])
 
 
 def crossover_one_point(gp_tree_1, gp_tree_2):
     """
+    Performs a crossover of two tree individuals.
 
-
-    :param GpTreeIndividual gp_tree_1:
-    :param GpTreeIndividual gp_tree_2:
-    :return:
+    :param DeapTreeIndividual gp_tree_1: First individual.
+    :param DeapTreeIndividual gp_tree_2: Second individual.
+    :return: Tree individuals modified by the crossover.
     """
     type_set_1 = {gp_ind.out_type for gp_ind in gp_tree_1.primitives}
     type_set_2 = {gp_ind.out_type for gp_ind in gp_tree_2.primitives}
@@ -335,6 +377,14 @@ def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
 
 
 def gen_valid(toolbox, timeout=100):
+    """
+    Tries to generate an individual with a valid items. Raises an error if it does
+    not succeed in ``timeout`` iterations.
+
+    :param toolbox: Toolbox with initialization and evaluation methods.
+    :param timeout: Number of iterations to perform.
+    :return: A valid individual.
+    """
     i = 0
 
     while True:
@@ -369,8 +419,24 @@ def _perform_mut(mut_func, mut_pb, mut):
 
 
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb, n_jobs=1):
+    """
+    Performs a run of the evolutionary algorithm.
 
-    # TODO remove or verbose
+    :param population: Initial population of individuals.
+    :param toolbox: Toolbox with methods to use in the evolution.
+    :param n_gen: Number of generations.
+    :param pop_size: Population size.
+    :param cx_pb:
+    :param mut_pb:
+    :param mut_args_pb:
+    :param mut_node_pb:
+    :param n_jobs: Number of jobs for multiprocessing
+                   ``n_jobs = k, k processors are used
+                   ``n_jobs`` = 1, multiprocessing is not used
+                   ``n_jobs = k, k + 1 processors are used - for -1, all processors are used
+    """
+
+    # TODO later change to verbose
     print('Initial population generated.')
 
     # evaluate first gen 
@@ -399,7 +465,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
         # selection for operations
         population[:] = tools.selTournamentDCD(population, pop_size)
-        offspring = toolbox.map(toolbox.clone, population)  # TODO parallel?
+        offspring = toolbox.map(toolbox.clone, population)
 
         with Parallel(n_jobs=n_jobs) as parallel:
             # crossover - subtree

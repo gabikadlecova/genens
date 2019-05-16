@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+This module provides evaluators that can be used as fitness evaluators in Genens.
+"""
 
 from abc import ABC, abstractmethod
 from functools import wraps
@@ -48,6 +51,14 @@ def eval_time(fn):
 
 
 def default_score(workflow, test_X, test_y):
+    """
+    Default scoring method for evaluators.
+
+    :param workflow: Workflow to be evaluated.
+    :param test_X: Features.
+    :param test_y: Target vector.
+    :return: Accuracy score of ``workflow`` on the data.
+    """
     res_y = workflow.predict(test_X)
     return accuracy_score(test_y, res_y)
 
@@ -61,6 +72,9 @@ def _simple_eval(workflow, train_X, train_y, test_X, test_y, scorer=None):
 
 
 class EvaluatorBase(ABC):
+    """
+    Evaluator interface which is used in Genens during individual evaluation.
+    """
     def __init__(self, timeout_s=None):
         self.train_X = None
         self.train_y = None
@@ -72,11 +86,24 @@ class EvaluatorBase(ABC):
         return res
 
     def fit(self, train_X, train_y):
+        """
+        Sets the training data for evaluation.
+
+        :param train_X: Features.
+        :param train_y: Target vector.
+        """
         self.train_X = train_X
         self.train_y = train_y
 
     @abstractmethod
     def evaluate(self, workflow, scorer=None):
+        """
+        Evaluates a pipeline (workflow) learned on the training data from this evaluator. Evaluation method
+        differs between different evaluators.
+        :param workflow: Workflow to be evaluated.
+        :param scorer: Scorer to be used, default is the accuracy scorer.
+        :return: Score of the workflow.
+        """
         pass
 
     @abstractmethod
@@ -90,6 +117,12 @@ class EvaluatorBase(ABC):
     @timeout
     @eval_time
     def score(self, workflow, scorer=None):
+        """
+        Computes the score of a pipeline (workflow).
+        :param workflow: Workflow to be evaluated.
+        :param scorer: Scorer to be used, default is the accuracy scorer.
+        :return: Score of the workflow.
+        """
         self.check_is_fitted()
 
         try:
@@ -97,13 +130,15 @@ class EvaluatorBase(ABC):
                 warnings.simplefilter('ignore')
 
                 return self.evaluate(workflow, scorer)
-        # TODO think of a better exception handling
         except Exception as e:
             # TODO log exception
             return None
 
 
 class CrossValEvaluator(EvaluatorBase):
+    """
+    Evaluator which performs a k-fold cross-validation.
+    """
     def __init__(self, cv_k=7, timeout_s=None):
         super().__init__(timeout_s)
 
@@ -127,6 +162,9 @@ class CrossValEvaluator(EvaluatorBase):
 
 
 class FixedTrainTestEvaluator(EvaluatorBase):
+    """
+    Evaluator that uses fixed train and test samples.
+    """
     def __init__(self, test_size=None, random_state=None, timeout_s=None):
         super().__init__(timeout_s)
 
@@ -160,6 +198,9 @@ class FixedTrainTestEvaluator(EvaluatorBase):
 
 
 class RandomTrainTestEvaluator(EvaluatorBase):
+    """
+    Evaluator which performs the train-test split for every evaluation.
+    """
     def __init__(self, test_size=None, random_state=None, timeout_s=None):
         super().__init__(timeout_s)
 
@@ -190,6 +231,9 @@ class RandomTrainTestEvaluator(EvaluatorBase):
 
 
 class TrainTestEvaluator(EvaluatorBase):
+    """
+    Evaluator with a specified validation set.
+    """
     def __init__(self, test_X, test_y, timeout_s=None):
         super().__init__(timeout_s)
 
@@ -206,6 +250,9 @@ class TrainTestEvaluator(EvaluatorBase):
 
 
 class DataSampler:
+    """
+    Provides random samples of a given dataset.
+    """
     def __init__(self, sample_size=0.20, random_state=None, stratified=True):
         self.full_X = None
         self.full_y = None
@@ -225,6 +272,10 @@ class DataSampler:
         self.full_y = full_y
 
     def generate_sample(self):
+        """
+        Generates a random sample from full data.
+        :return: A random sample.
+        """
         stratify = self.full_y if self.stratified else None
 
         _, sample_X, _, sample_y = train_test_split(self.full_X, self.full_y,
@@ -235,6 +286,9 @@ class DataSampler:
 
 
 class SampleCrossValEvaluator(CrossValEvaluator):
+    """
+    Evaluator which uses a k-fold cross-validation based on sampling.
+    """
     def __init__(self, cv_k=7, timeout_s=None, sample_size=0.20, per_gen=False, random_state=None):
         super().__init__(cv_k=cv_k, timeout_s=timeout_s)
 
@@ -268,6 +322,9 @@ class SampleCrossValEvaluator(CrossValEvaluator):
 
 
 class SampleTrainTestEvaluator(FixedTrainTestEvaluator):
+    """
+    Evaluator which uses a train-test evaluation on samples.
+    """
     def __init__(self, test_size=None, timeout_s=None, sample_size=0.20,
                  per_gen=False, random_state=None):
 

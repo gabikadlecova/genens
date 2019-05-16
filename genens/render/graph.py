@@ -1,4 +1,7 @@
 # -*- coding: utf-8 -*-
+"""
+Module for visualization of the trees.
+"""
 
 import pygraphviz as pgv
 

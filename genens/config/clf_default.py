@@ -24,8 +24,16 @@ from sklearn import ensemble
 
 
 def clf_config(group_weights=None):
-    # FUNCTIONS
+    """
+    Creates Genens configuration for classifier problems.
 
+    :param dict group_weights: Dictionary of group weights.
+           If not provided, default setting is used.
+
+    :return GenensConfig: Genens configuration for classifier problems.
+    """
+
+    # FUNCTIONS
     ensembles_func = {
         'ada': ensemble_func(ensemble.AdaBoostClassifier),
         'bagging': ensemble_func(ensemble.BaggingClassifier),
@@ -199,7 +207,7 @@ def clf_config(group_weights=None):
     if group_weights is None:
         group_weights = {
             "pipeline": 1.0,
-            "union": 0.1,
+            "union": 0.3,
             "prepro": 1.0,
             "ensemble": 0.5,
             "ensemble_l": 1.0,

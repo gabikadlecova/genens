@@ -1,5 +1,9 @@
 # -*- coding: utf-8 -*-
 
+"""
+This module contains the Genens estimators.
+"""
+
 from .base import GenensBase
 from .config import clf_config
 from .config import regr_config

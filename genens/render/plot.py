@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+"""
+Module for visualization of the evolution process.
+"""
 
 import matplotlib.pyplot as plt
-import numpy as np
 import seaborn as sns
 
 

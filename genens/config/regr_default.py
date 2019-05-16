@@ -12,8 +12,20 @@ from sklearn import preprocessing
 
 from sklearn import ensemble
 
+import warnings
+
 
 def regr_config():
+    """
+    Creates Genens configuration for regression problems.
+    It does not contain regressors, will be extended in future releases.
+
+    :return GenensConfig: Genens configuration for regression problems.
+    """
+
+    warnings.warn("This configuration is incomplete. You can extend it with regressors to use it; in next releases,"
+                  " it will be finished.")
+
     config = get_default_config()
 
     ensembles_func = {

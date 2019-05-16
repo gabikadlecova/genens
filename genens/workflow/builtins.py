@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+"""
+This module contains builtin types which extend the standard scikit-learn models.
+"""
+
 
 import math
 
@@ -6,6 +10,9 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 
 class WeightedPipeline(BaseEstimator):
+    """
+    Pipeline that supports weights and can be therefore used as a base estimator.
+    """
     def __init__(self, pipe):
         self.pipe = pipe
 
@@ -25,6 +32,9 @@ class WeightedPipeline(BaseEstimator):
 
 
 class RelativeTransformer(BaseEstimator, TransformerMixin):
+    """
+    Transformer wrapper that enables the n_components or k to be specified by a fraction of the dataset size.
+    """
     def __init__(self, transformer, feat_frac):
         self.transformer = transformer
         self.feat_frac = feat_frac

@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
+"""
+This module contains the base estimator of Genens.
+"""
+
 from .gp.operators import gen_tree
-from .gp.operators import gen_population
+from .gp.operators import gen_individual
 from .gp.operators import mutate_subtree
 from .gp.operators import mutate_node_args
 from .gp.operators import mutate_node_swap
@@ -29,13 +33,27 @@ class GenensBase(BaseEstimator):
                  n_gen=15, hc_repeat=0, hc_keep_last=False, max_height=None,
                  max_arity=None, timeout=None, evaluator=None):
         """
-        TODO all parameters
+        Creates a new Genens estimator.
 
-        :param config:
-        :param cx_pb:
-        :param mut_pb:
-        :param scorer:
+        :param GenensConfig config: Configuration of Genens.
+        :param n_jobs: The n_jobs parameter for the process of evolution.
+        :param cx_pb: Crossover probability.
+        :param mut_pb: Subtree mutation probability.
+        :param mut_args_pb: Argument mutation probability.
+        :param mut_node_pb: Point (node) mutation probability.
+        :param scorer: Scorer to be used during all evaluation (must comply to scikit-learn scorer API).
+        :param pop_size: Population size.
+        :param n_gen: Number of generations.
+        :param hc_repeat: Number of hill-climbing iteration. If set to 0, hill-climbing is not performed.
+        :param hc_keep_last:
+            Whether the last individual should be mutated if the hill-climbing did not find a better individual.
+
+        :param max_height: Maximum height of tree individuals.
+        :param max_arity: Maximum arity of all nodes.
+        :param timeout: Timeout for a single method evaluation.
+        :param evaluator: Evaluator to be used (see genens.worflow.evaluate)
         """
+
         # accept config/load default config
         self.config = config
         if max_height is not None:
@@ -77,7 +95,7 @@ class GenensBase(BaseEstimator):
 
         self._toolbox.register("individual", gen_tree, self.config)
 
-        pop_func = partial(gen_population, self._toolbox, self.config)
+        pop_func = partial(gen_individual, self._toolbox, self.config)
         self._toolbox.register("population", tools.initRepeat, list, pop_func)
 
         self._toolbox.register("map", _map_parallel)

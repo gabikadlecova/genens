@@ -2,7 +2,7 @@
 
 """
 This module contains helper functions for the creation of GP primitives and
-construction functions of most common methods used in scikit-learn.
+construction functions for most common methods used in scikit-learn.
 
 The functions create node templates and wrappers of ensembles, simple predictors and transformers.
 Node templates are used in the GP evolution process, wrapper functions are used to convert nodes
@@ -29,6 +29,15 @@ from warnings import warn
 
 
 def default_group_weights(*args, groups=None):
+    """
+    Verifies whether all GpPrimitive instances contained in ``args`` (dictionaries of lists) belong to
+    a particular group in ``groups``. If a GpPrimitive does not have a group specified, creates a new
+    group for it with default weight.
+
+    :param args: Dictionaries of lists of GpPrimitive (grouped by output types as in GenensConfig)
+    :param groups: Dictionary of groups with weights
+    :return: Adjusted groups
+    """
     checked_groups = groups if groups is not None else {}
     for prim_list in args:
         # primitives are grouped by output nodes
@@ -54,8 +63,31 @@ def default_group_weights(*args, groups=None):
 
 
 class GenensConfig:
+    """
+    Configuration of Genens estimators. Contains settings of GP and configuration of
+    methods which decode nodes into scikit-learn methods.
+    """
     def __init__(self, func, full, term, kwargs_config, max_height=4, max_arity=3,
                  group_weights=None):
+        """
+        Creates a new instance of a Genens configuration. If ``group_weights`` are specified,
+        validity check is performed.
+
+        :param dict func: Function configuration dictionary, keys correspond do a particular primitive name.
+        :param dict full: Node configuration dictionary, nodes are grouped by output types,
+                          contains node templates used during the grow phase.
+
+        :param dict term: Node configuration dictionary, nodes are grouped by output types,
+                          contains node templates used to terminate a tree (in the last height level).
+
+        :param kwargs_config: Keyword arguments for nodes, which are passed to functions during the decoding.
+                              For every argument, there is a list of possibles values to choose from during the
+                              evolution.
+
+        :param max_height: Maximum height of trees.
+        :param max_arity: Maximum arity of a function node.
+        :param group_weights: Group weight configuration.
+        """
         self.func_config = func
 
         self.full_config = full
@@ -66,7 +98,11 @@ class GenensConfig:
         self.max_height = max_height
         self.max_arity = max_arity
 
-        self._group_weights = group_weights
+        # perform check if specified
+        if group_weights is None:
+            self._group_weights = None
+        else:
+            self.group_weights = group_weights
 
     def __repr__(self):
         res = "max_height: {}, max_arity: {}".format(self.max_height, self.max_arity)
@@ -79,6 +115,12 @@ class GenensConfig:
 
     @group_weights.setter
     def group_weights(self, value):
+        """
+        Sets the group weight and performs validity check, possibly adds a new group for primitives
+        without a group specified.
+
+        :param dict value: Dictionary of weights, keys are group names.
+        """
         self._group_weights = default_group_weights(self.full_config, self.term_config,
                                                     groups=value)
 
@@ -87,6 +129,14 @@ class GenensConfig:
         del self._group_weights
 
     def add_primitive(self, prim, term_only=False):
+        """
+        Adds a new primitive to the configuration. If ``term_only`` is True,
+        it is added only to the terminal set. If the primitive is a GpFunctionTemplate,
+        it is added only to the grow set.
+
+        :param GpPrimitive prim: Primitive to be added.
+        :param bool term_only: Specifies whether the primitive should be added only to the terminal set.
+        """
         if term_only and not isinstance(prim, GpTerminalTemplate):
             warn("Primitive is added neither to function nor terminal set.")
 
@@ -99,6 +149,18 @@ class GenensConfig:
             out_list.append(prim)
 
     def add_functions_args(self, func_dict, kwarg_dict):
+        """
+        Adds functions that decode a node along with keyword arguments for the node.
+        The function has the signature ``func(child_list, kwargs)``, where child_list contains
+        decoded values of child nodes, and kwargs are
+        specific keyword arguments set during the evolution.
+
+        :param func_dict: Dictionary of functions, the keys are names which should correspond to a node.
+                          Every function must have a keyword argument dictionary specified.
+
+        :param kwarg_dict: Dictionary of keyword argument dictionaries, the keys (names) corresponds to nodes
+                           from grow/terminals sets and also to methods in the ``func_dict``.
+        """
         for key, val in func_dict.items():
             if key in self.func_config.keys():
                 raise ValueError("Cannot insert to func - duplicate value.")  # TODO specific
@@ -112,6 +174,13 @@ class GenensConfig:
 
 
 def get_default_config(group_weights=None):
+    """
+    Creates the default config with pipeline construction nodes and functions.
+    
+    :param group_weights: Group weights of the config.
+    :return: The default configuration.
+    """
+    
     func_config = {
         'cPred': create_pipeline,
         'cPipe': create_pipeline,

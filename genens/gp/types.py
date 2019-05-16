@@ -91,6 +91,12 @@ class GpTreeIndividual:
         return stack.pop()
 
     def subtree(self, root_ind):
+        """
+        Returns the end position of the subtree in the tree individual.
+
+        :param root_ind: Position of the root (index of the beginning).
+        :return: The end index of the subtree.
+        """
         curr = self.primitives[root_ind]
 
         arity_rem = curr.arity
@@ -137,7 +143,7 @@ class GpTreeIndividual:
 
 class DeapTreeIndividual(GpTreeIndividual):
     """
-    Represents an individual which contains deap defined fitness.
+    Represents an individual which contains DEAP defined fitness.
     """
     def __init__(self, prim_list, max_height):
         super().__init__(prim_list, max_height)
@@ -384,10 +390,7 @@ class GpFunctionTemplate:
         :param int curr_height: Height at which the node is generated
         :param int max_arity: Maximum arity value which can be chosen for a single TypeArity.
         :param dict kwargs_dict: Dictionary which contains possible keyword argument values.
-        :param match_arity:
-        If true, arity of the resulting primitive matches exactly `max_arity`. Raises and
-        exception if it is not possible to create a primitive with this value.
-        :param in_type:
+        :param in_type: Input type; if provided, it is used instead of generating a new random type.
 
         :return: A new instance of GpPrimitive
         """
@@ -407,7 +410,7 @@ class GpFunctionTemplate:
             in_type = [create_type(t_a) for t_a in self.type_arities]
             in_type = [t for t in in_type if t is not None]
 
-        # TODO maybe check the provided in_type (and maybe change it a bit)
+        # TODO check the provided in_type (and maybe change it a bit)
 
         # sum of all arities
         arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)
