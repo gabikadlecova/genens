@@ -197,8 +197,8 @@ def run_tests(task_ids=None, out_dir='.', n_jobs=1, timeout=None, task_timeout=N
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Run OpenML task tests.")
-    parser.add_argument('--config', type=str, help='Configuration file location.')
-    parser.add_argument('--out', required=True)
+    parser.add_argument('--config', type=str, help='Configuration file location.', required=True)
+    parser.add_argument('--out', help='Output directory', required=True)
 
     args = parser.parse_args()
 
