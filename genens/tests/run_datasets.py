@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+
 import argparse
 
 import inspect
@@ -14,17 +15,14 @@ import pickle
 import time
 
 from genens import GenensClassifier, GenensRegressor
-from workflow.evaluate import get_evaluator_cls
-from config.clf_default import create_clf_config
-from render.plot import export_plot
-from render.graph import create_graph
-from tests.datasets.load_datasets import load_dataset
+from genens.workflow.evaluate import get_evaluator_cls
+from genens.config import clf_config
+from genens.render.plot import export_plot
+from genens.render.graph import create_graph
+from .datasets.load_datasets import load_dataset
 
 
 def run_tests(estimators, train_X, train_y, out_dir, test_X=None, test_y=None):
-    # np.random.seed(545)
-    # random.seed(545)
-
     try:
         os.mkdir(out_dir)
     except FileExistsError:
@@ -175,7 +173,7 @@ def load_config(cmd_args):
         params['evaluator'] = list(obj_kwargs_product(eval_cls, config['evaluator']['kwargs']))
 
     if 'group_weights' in config.keys():
-        params['config'] = [create_clf_config(gweight) for gweight in
+        params['config'] = [clf_config(gweight) for gweight in
                             product_dict(**config['group_weights'])]
 
     param_product = product_dict(**params)

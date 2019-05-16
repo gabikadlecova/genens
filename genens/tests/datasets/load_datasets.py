@@ -130,7 +130,7 @@ def load_from_openml(dataset_name, split_validation=False, random_state=None, te
     return features, target
 
 
-# 
+#
 load_functions = {}
 
 

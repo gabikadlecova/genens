@@ -1,7 +1,7 @@
 import os
 import sys
 
-from tests import process_results as pr
+from . import process_results as pr
 
 if __name__ == "__main__":
     x_axis = sys.argv[1]
