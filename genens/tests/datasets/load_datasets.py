@@ -130,6 +130,11 @@ def load_from_openml(dataset_name, split_validation=False, random_state=None, te
     return features, target
 
 
+# 
+load_functions = {}
+
+
+"""
 load_functions = {
     'iris': partial(load_from_sklearn, load_iris),
     'digits': partial(load_from_sklearn, load_digits),
@@ -139,6 +144,7 @@ load_functions = {
     'magic': load_magic,
     'mnist': load_mnist
 }
+"""
 
 
 def load_dataset(dataset_name, split_validation=False, random_state=None, test_size=None):

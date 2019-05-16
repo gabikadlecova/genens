@@ -6,10 +6,6 @@ import json
 
 import itertools
 
-import numpy as np
-import random
-
-import pprint
 import os
 
 from sklearn.metrics import make_scorer
@@ -18,10 +14,10 @@ import pickle
 import time
 
 from genens import GenensClassifier, GenensRegressor
-from genens.workflow.evaluate import get_evaluator_cls
-from genens.config.clf_default import create_clf_config
-from genens.render.plot import export_plot
-from genens.render.graph import create_graph
+from workflow.evaluate import get_evaluator_cls
+from config.clf_default import create_clf_config
+from render.plot import export_plot
+from render.graph import create_graph
 from tests.datasets.load_datasets import load_dataset
 
 

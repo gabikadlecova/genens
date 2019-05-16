@@ -14,9 +14,9 @@ from stopit import ThreadingTimeout as Timeout, TimeoutException
 import os
 
 from genens import GenensClassifier
-from genens.workflow.evaluate import SampleCrossValEvaluator, CrossValEvaluator
-from genens.render.plot import export_plot
-from genens.render.graph import create_graph
+from workflow import SampleCrossValEvaluator, CrossValEvaluator
+from render.plot import export_plot
+from render.graph import create_graph
 
 
 def evaluate_pipeline(pipe, X, y, out_dir):
