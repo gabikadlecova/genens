@@ -13,11 +13,13 @@ Set up a conda environment:
 on Windows
 ```
 conda env create -f environment-win.yml
+conda activate genenv
 ```
 
 on Linux
 ```
 conda env create -f environment-linux.yml
+conda activate genenv
 ```
 
 Finally, add ``path-to-repository/genens/`` to PYTHONPATH.
