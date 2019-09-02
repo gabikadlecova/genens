@@ -31,37 +31,48 @@ def gen_individual(toolbox, config, out_type='out'):
     return toolbox.individual(max_height=height, max_arity=arity, first_type=out_type)
 
 
-def choose_prim_weighted(config, prim_list):
-    """
-    Performs a weighted selection from the list of primitives.
-
-    :param GenensConfig config: Configuration of Genens which contains the weight configuration.
-    :param list prim_list: List of primitives to choose from.
-    :return GpPrimitive: The selected primitive.
-    """
-    group_names = {prim.group for prim in prim_list}  # primitive groups to choose from
-
+def _choose_group_weighted(config, groups):
     # weighted choice
-    total_sum = np.sum((config.group_weights[group] for group in group_names))
+    total_sum = np.sum((config.group_weights[group] for group in groups))
     rand_val = random.random() * total_sum
 
     # determine which group was chosen
     group_chosen = None
     partial_sum = 0.0
-    for group in group_names:
+    for group in groups:
         partial_sum += config.group_weights[group]
         if partial_sum > rand_val:
-            group_chosen = group
-            break
+            return group
 
     if group_chosen is None:
         raise RuntimeError("Invalid weight sum.")  # should never get here
+
+
+def choose_prim(config, prim_list, weighted=True, use_groups=True):
+    """
+    Performs a selection from list of primitives.
+
+    :param GenensConfig config: Configuration of Genens which contains the weight configuration.
+    :param list prim_list: List of primitives to choose from.
+    :param bool weighted: Determines whether the selection is weighted (according to primitive group weights).
+    :param bool use_groups: If false, primitive groups are ignored
+    :return GpPrimitive: The selected primitive.
+    """
+    if not use_groups:
+        return random.choice(prim_list)
+
+    group_names = {prim.group for prim in prim_list}  # primitive groups to choose from
+
+    if weighted:
+        group_chosen = _choose_group_weighted(config, group_names)
+    else:
+        group_chosen = random.choice(group_names)
 
     prim_possible = [prim for prim in prim_list if prim.group == group_chosen]
     return random.choice(prim_possible)
 
 
-def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
+def gen_tree(config, max_height=None, max_arity=None, first_type='out', weighted=True, use_groups=True):
     """
     Creates a random tree individual to be used in the DEAP framework.
 
@@ -69,6 +80,8 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
     :param max_height: Height limit of the tree; if not specified, the configuration limit is used.
     :param max_arity: Artity limit of function nodes; if not specified, the configuration limit is used.
     :param first_type: Output type of the root of the tree.
+    :param weighted: Determines whether the node selection is weighted.
+    :param bool use_groups: If false, primitive groups are ignored
     :return: A random tree individual.
     """
     tree_list = []
@@ -96,7 +109,7 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out'):
             choose_from = config.term_config[next_type]
 
         # template of the next primitive
-        next_prim_t = choose_prim_weighted(config, choose_from)
+        next_prim_t = choose_prim(config, choose_from, weighted=weighted, use_groups=use_groups)
 
         prim = next_prim_t.create_primitive(h, max_arity,
                                             config.kwargs_config[next_prim_t.name])

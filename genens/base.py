@@ -30,7 +30,7 @@ import numpy as np
 class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6,
                  mut_node_pb=0.3, scorer=None, pop_size=200,
-                 n_gen=15, hc_repeat=0, hc_keep_last=False, max_height=None,
+                 n_gen=15, hc_repeat=0, hc_keep_last=False, weighted=True, use_groups=True, max_height=None,
                  max_arity=None, timeout=None, evaluator=None):
         """
         Creates a new Genens estimator.
@@ -48,6 +48,9 @@ class GenensBase(BaseEstimator):
         :param hc_keep_last:
             Whether the last individual should be mutated if the hill-climbing did not find a better individual.
 
+        :param weighted: Determines whether the selection of nodes is weighted (according to groups).
+
+        :param bool use_groups: If false, primitive groups are ignored.
         :param max_height: Maximum height of tree individuals.
         :param max_arity: Maximum arity of all nodes.
         :param timeout: Timeout for a single method evaluation.
@@ -74,6 +77,8 @@ class GenensBase(BaseEstimator):
 
         self.hc_repeat = hc_repeat
         self.hc_keep_last = hc_keep_last
+        self.weighted = weighted
+        self.use_groups = use_groups
 
         self.scorer = scorer
 
@@ -93,7 +98,8 @@ class GenensBase(BaseEstimator):
     def _setup_toolbox(self):
         self._toolbox = base.Toolbox()
 
-        self._toolbox.register("individual", gen_tree, self.config)
+        self._toolbox.register("individual", gen_tree, self.config,
+                               weighted=self.weighted, use_groups=self.use_groups)
 
         pop_func = partial(gen_individual, self._toolbox, self.config)
         self._toolbox.register("population", tools.initRepeat, list, pop_func)
