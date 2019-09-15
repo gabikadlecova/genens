@@ -63,7 +63,7 @@ def clf_config(group_weights=None):
             "FA": estimator_func(decomposition.FactorAnalysis),
             "FastICA": estimator_func(decomposition.FastICA),
             "PCA": estimator_func(decomposition.PCA),
-            #"KernelPCA" : estimator_func(decomposition.KernelPCA),
+            # "KernelPCA" : estimator_func(decomposition.KernelPCA),
             "kBest": estimator_func(feature_selection.SelectKBest),
             "MaxAbsScaler": estimator_func(preprocessing.MaxAbsScaler),
             "MinMaxScaler":estimator_func(preprocessing.MinMaxScaler),
@@ -187,10 +187,10 @@ def clf_config(group_weights=None):
             'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
             'whiten': [False, True],
         },
-        #'KernelPCA': {
-        #   'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
-        #   'kernel': ['linear', 'poly', 'rbf', 'sigmoid', 'cosine']
-        #},
+        # 'KernelPCA': {
+        #    'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
+        #    'kernel': ['linear', 'poly', 'rbf', 'sigmoid', 'cosine']
+        # },
         'kBest': {
             'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
             'score_func': [feature_selection.chi2, feature_selection.f_classif]
@@ -207,7 +207,7 @@ def clf_config(group_weights=None):
     if group_weights is None:
         group_weights = {
             "pipeline": 1.0,
-            "union": 0.3,
+            # "union": 0.3,
             "prepro": 1.0,
             "ensemble": 0.5,
             "ensemble_l": 1.0,

@@ -184,7 +184,7 @@ def get_default_config(group_weights=None):
     func_config = {
         'cPred': create_pipeline,
         'cPipe': create_pipeline,
-        'dUnion': create_data_union,
+        # 'dUnion': create_data_union,
         'cData': create_transform_list,
         'cFeatSelect': create_transform_list,
         'cScale': create_transform_list,
@@ -197,7 +197,7 @@ def get_default_config(group_weights=None):
         'cData': {},
         'cFeatSelect': {},
         'cScale': {},
-        'dUnion': {},
+        # 'dUnion': {},
         'dTerm': {}
     }
 
@@ -209,7 +209,7 @@ def get_default_config(group_weights=None):
                                group='pipeline'),
         ],
         'data': [
-            GpFunctionTemplate('dUnion', [TypeArity('data', (2,3))], 'data', group='union'),
+            # GpFunctionTemplate('dUnion', [TypeArity('data', (2,3))], 'data', group='union'),
             GpFunctionTemplate('cData', [TypeArity('featsel', 1), TypeArity('scale', 1)], 'data',
                                group='prepro'),
             GpFunctionTemplate('cFeatSelect', [TypeArity('featsel', 1)], 'data',

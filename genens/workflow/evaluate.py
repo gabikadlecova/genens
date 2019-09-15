@@ -38,6 +38,7 @@ def timeout(fn):
 def eval_time(fn):
     @wraps(fn)
     def with_time(*args, **kwargs):
+        # TODO process time may be better
         start_time = time.time()
 
         res = fn(*args, **kwargs)
