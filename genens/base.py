@@ -91,6 +91,7 @@ class GenensBase(BaseEstimator):
 
         self.pareto = tools.ParetoFront()
         self.fitted_wf = None
+        self._population = None
 
         self._setup_log()
         self._setup_toolbox()
@@ -193,10 +194,10 @@ class GenensBase(BaseEstimator):
         self._fitness_evaluator.fit(train_X, train_y)
         self.pareto.clear()
 
-        pop = self._toolbox.population(n=self.pop_size)
-        ea_run(pop, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
-                   mut_pb=self.mut_pb,
-                   mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs)
+        self._population = self._toolbox.population(n=self.pop_size)
+        ea_run(self._population, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
+               mut_pb=self.mut_pb,
+               mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs)
 
         # TODO change later
         tree = self.pareto[0]
