@@ -11,6 +11,7 @@ from joblib import Parallel, delayed
 
 from ..gp.types import GpTreeIndividual, GpFunctionTemplate, DeapTreeIndividual
 
+import math
 import numpy as np
 import random
 
@@ -124,16 +125,15 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out', weighted
     return DeapTreeIndividual(list(reversed(tree_list)), tree_height)
 
 
-def mutate_subtree(toolbox, gp_tree, eps=4):
+def mutate_subtree(toolbox, gp_tree, eps=0.2):
     """
     Replaces a randomly chosen subtree with a new random tree. The height of the generated subtree
     is between 1 and previous subtree height + ``eps``.
 
     :param toolbox: Toolbox of the genetic algorithm.
     :param GpTreeIndividual gp_tree:
-    :param int eps:
-        Difference between the height of the new subtree and the previous subtree
-        must not be greater than this value.
+    :param float eps:
+        Height of the new subtree lies in the interval ((1-eps) * old_height, (1+eps) * old_height).
 
     :return: The mutated tree.
     """
@@ -145,8 +145,11 @@ def mutate_subtree(toolbox, gp_tree, eps=4):
     mut_end_point = random.randrange(len(gp_tree.primitives) - 1)
 
     _, subtree_height = gp_tree.subtree(mut_end_point)
-    new_height = random.randint(1, subtree_height + eps)  # generate a smaller or a bigger subtree
 
+    lower = math.floor((1.0 - eps) * subtree_height)
+    upper = math.ceil((1.0 + eps) * subtree_height)
+
+    new_height = random.randint(lower, upper + 1)  # generate a smaller or a bigger subtree
     new_tree = toolbox.individual(max_height=new_height,
                                   first_type=gp_tree.primitives[mut_end_point].out_type)
     new_root_point = len(new_tree.primitives) - 1
