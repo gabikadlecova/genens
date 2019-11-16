@@ -67,7 +67,7 @@ class GenensConfig:
     Configuration of Genens estimators. Contains settings of GP and configuration of
     methods which decode nodes into scikit-learn methods.
     """
-    def __init__(self, func, full, term, kwargs_config, max_height=4, max_arity=3,
+    def __init__(self, func, full, term, kwargs_config, min_height=1, max_height=4, min_arity=2, max_arity=3,
                  group_weights=None):
         """
         Creates a new instance of a Genens configuration. If ``group_weights`` are specified,
@@ -84,7 +84,9 @@ class GenensConfig:
                               For every argument, there is a list of possibles values to choose from during the
                               evolution.
 
+        :param min_height: Minimum height of trees.
         :param max_height: Maximum height of trees.
+        :param min_arity: Minimum arity of a function node.
         :param max_arity: Maximum arity of a function node.
         :param group_weights: Group weight configuration.
         """
@@ -95,7 +97,9 @@ class GenensConfig:
 
         self.kwargs_config = kwargs_config
 
+        self.min_height = min_height
         self.max_height = max_height
+        self.min_arity = min_arity
         self.max_arity = max_arity
 
         # perform check if specified

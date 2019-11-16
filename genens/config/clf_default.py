@@ -109,7 +109,7 @@ def clf_config(group_weights=None):
         },
         'Perceptron': {
             'penalty': ['None', 'l2', 'l1', 'elasticnet'],
-            'n_iter': [1, 2, 5, 10, 100],
+            'max_iter': [1, 2, 5, 10, 100],
             'alpha': [0.0001, 0.001, 0.01]
         },
         'SGD': {

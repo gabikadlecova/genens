@@ -18,7 +18,7 @@ def export_plot(estimator, out_file):
     test_avg = estimator.logbook.chapters["test_score"].select("avg")
 
     test_all_zero = all(tt == 0.0 for tt in test_max) and \
-                    all(tt == 0.0 for tt in test_avg)
+        all(tt == 0.0 for tt in test_avg)
 
     fig = plt.figure()
     fig.suptitle("Evolution of population scores")
