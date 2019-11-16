@@ -24,6 +24,7 @@ from deap import base, tools
 from functools import partial
 from joblib import delayed
 
+import logging
 import numpy as np
 
 

@@ -118,7 +118,8 @@ def load_from_openml(dataset_name, split_validation=False, random_state=None, te
         raise ValueError("Invalid dataset name.")
 
     dataset = openml.datasets.get_dataset(dataset_id)
-    features, target = dataset.get_data(target=dataset.default_target_attribute)
+
+    features, target, _, _ = dataset.get_data(target=dataset.default_target_attribute)
 
     if split_validation:
         train_X, test_X, train_y, test_y = train_test_split(features, target,
