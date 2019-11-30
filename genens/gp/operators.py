@@ -5,19 +5,19 @@ This module defines genetic operators used in the evolution as well as the main 
 of the algorithm and initialization methods.
 """
 
-from deap import tools
-from itertools import chain
-from joblib import Parallel, delayed
-from functools import wraps
-
-from ..gp.types import GpTreeIndividual, GpFunctionTemplate, DeapTreeIndividual
-
 import math
 import numpy as np
 import random
 
 import logging
-from logging.handlers import QueueHandler
+
+from deap import tools
+from itertools import chain
+from joblib import Parallel, delayed
+
+from genens.log_utils import set_log_handler
+from genens.gp.types import GpTreeIndividual, GpFunctionTemplate, DeapTreeIndividual
+from genens.render.graph import tree_str
 
 
 def gen_individual(toolbox, config, out_type='out'):
@@ -394,6 +394,7 @@ def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
     return tree_1, tree_2 if keep_2 else tree_1,
 
 
+@set_log_handler
 def gen_valid(toolbox, timeout=100):
     """
     Tries to generate an individual with a valid items. Raises an error if it does
@@ -403,44 +404,25 @@ def gen_valid(toolbox, timeout=100):
     :param timeout: Number of iterations to perform.
     :return: A valid individual.
     """
-    i = 0
 
-    while True:
-        if i >= timeout:
-            raise ValueError("Couldn't generate a valid individual.")  # TODO specific
-
+    for i in range(timeout):
         ind = toolbox.individual()
         score = toolbox.evaluate(ind)
+
+        logger = logging.getLogger("genens")
+        logger.debug(f"Generate valid ({i}/{timeout}):\n {tree_str(ind, with_hyperparams=True)}")
 
         if score is not None:
             ind.fitness.values = score
             return ind
 
-        i += 1
-
-
-def set_log_handler(func):
-    @wraps(func)
-    def with_set_log_handler(*args, **kwargs):
-        log_setup = kwargs.pop('log_setup', None)
-        if log_setup is None:
-            return func(*args, **kwargs)
-
-        handl = log_setup()
-        res = func(*args, **kwargs)
-
-        # remove unused handler
-        logger = logging.getLogger("genens")
-        logger.removeHandler(handl)
-        return res
-
-    return with_set_log_handler
+    raise ValueError("Couldn't generate a valid individual.")  # TODO specific
 
 
 @set_log_handler
 def _perform_cx(cx_func, cx_pb, ch1, ch2):
-    parent1_str = repr(ch1)
-    parent2_str = repr(ch2)
+    parent1_str = tree_str(ch1)
+    parent2_str = tree_str(ch2)
 
     if random.random() < cx_pb:
         ch1, ch2 = cx_func(ch1, ch2)
@@ -448,21 +430,21 @@ def _perform_cx(cx_func, cx_pb, ch1, ch2):
         ch2.reset()
 
     logger = logging.getLogger("genens")
-    logger.debug(f"Crossover: {parent1_str} x {parent2_str} -> {ch1}, {ch2}")
+    logger.debug(f"Crossover:\n {parent1_str}\n x \n{parent2_str}\n ->\nCh1:\n{tree_str(ch1)}\nCh2:\n{tree_str(ch2)}")
 
     return ch1, ch2
 
 
 @set_log_handler
 def _perform_mut(mut_func, mut_pb, mut):
-    parent_str = repr(mut)
+    parent_str = tree_str(mut, with_hyperparams=True)
 
     if random.random() < mut_pb:
         mut = mut_func(mut)
         mut.reset()
 
     logger = logging.getLogger("genens")
-    logger.debug(f"Mutation: {parent_str} -> {mut}")
+    logger.debug(f"Mutation:\n {parent_str}\n -> \n{tree_str(mut, with_hyperparams=True)}")
 
     return mut
 
@@ -491,6 +473,10 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
     if verbose >= 1:
         print('Initial population generated.')
 
+    logger = logging.getLogger("genens")
+    for i, ind in enumerate(population):
+        logger.debug(f"Generation 0, individual {i}:\n{tree_str(ind, with_hyperparams=True)}")
+
     # evaluate first gen 
     with Parallel(n_jobs=n_jobs) as parallel:
         scores = toolbox.map(toolbox.evaluate, population, parallel=parallel)
@@ -507,7 +493,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
     # remove individuals which threw exceptions and generate new valid individuals
     population[:] = [ind for ind in population if ind.fitness.valid]
 
-    valid = Parallel(n_jobs=n_jobs)(delayed(gen_valid)(toolbox) for i in range(pop_size - len(population)))
+    valid = Parallel(n_jobs=n_jobs)(delayed(gen_valid)(toolbox) for _ in range(pop_size - len(population)))
     population += valid
 
     toolbox.log(population, 0)
@@ -517,6 +503,10 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
     for g in range(n_gen):
         if verbose >= 1:
             print("Gen {}".format(g))
+
+        for i, ind in enumerate(population):
+            logger.debug(f"Generation {g}, individual {i}:\n{tree_str(ind, with_hyperparams=True)}")
+
         toolbox.next_gen()
 
         # selection for operations
@@ -525,7 +515,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
         with Parallel(n_jobs=n_jobs) as parallel:
             if verbose >= 2:
-                print("Gen {} - crossover")
+                print(f"Gen {g} - crossover")
 
             # crossover - subtree
             offspring = parallel(
@@ -538,7 +528,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
             offspring = list(chain.from_iterable(offspring))  # chain cx tuples to list of offspring
 
             if verbose >= 2:
-                print("Gen {} - mutation")
+                print(f"Gen {g} - mutation")
 
             # mutation - subtree
             offspring = parallel(

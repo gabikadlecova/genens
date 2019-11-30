@@ -43,4 +43,3 @@ def export_plot(estimator, out_file):
     ax1.legend(lines, labels, loc="best")
 
     plt.savefig(out_file)
-    plt.close()

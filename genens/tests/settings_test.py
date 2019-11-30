@@ -27,10 +27,11 @@ def run_test(arg_dict):
         use_groups=arg_dict['use_groups'],
         max_arity=arg_dict['max_arity'],
         max_height=arg_dict['max_height'],
-        timeout=arg_dict['timeout']
+        timeout=arg_dict['timeout'],
+        log_path=arg_dict['log_path']
     )
 
-    clf.fit(X, y)
+    clf.fit(X, y, verbose=2)
     return clf
 
 
@@ -57,6 +58,7 @@ if __name__ == "__main__":
     parser.add_argument('--cv_k', default=3, type=int)
     parser.add_argument('--size', default=0.25, type=float)
     parser.add_argument('--timeout', default=240, type=int)
+    parser.add_argument('--log_path', default=None)
 
     args = parser.parse_args()
 

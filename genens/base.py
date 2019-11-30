@@ -42,7 +42,8 @@ class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6,
                  mut_node_pb=0.3, scorer=None, pop_size=200,
                  n_gen=15, hc_repeat=0, hc_keep_last=False, weighted=True, use_groups=True, max_height=None,
-                 max_arity=None, timeout=None, evaluator=None):
+                 max_arity=None, timeout=None, evaluator=None,
+                 log_path=None):
         """
         Creates a new Genens estimator.
 
@@ -104,6 +105,7 @@ class GenensBase(BaseEstimator):
         self.fitted_wf = None
         self._population = None
 
+        self._log_path = log_path
         self._logging_config = DEFAULT_LOGGING_CONFIG
         self._setup_debug_logging()
         self._setup_stats_logging()
@@ -240,9 +242,13 @@ class GenensBase(BaseEstimator):
 
         # handlers do not work well with pickling (required for multiprocessing)
         formatter = logging.Formatter(fmt=self.log_format)
-        stream_handl = logging.StreamHandler()
-        stream_handl.setFormatter(formatter)
-        log_queue_listener = QueueListener(self._log_queue, stream_handl)
+        if self._log_path is not None:
+            handl = logging.FileHandler(self._log_path)
+        else:
+            handl = logging.StreamHandler()
+
+        handl.setFormatter(formatter)
+        log_queue_listener = QueueListener(self._log_queue, handl)
 
         try:
             log_queue_listener.start()
@@ -254,9 +260,9 @@ class GenensBase(BaseEstimator):
         finally:
             # close local logging handlers
             log_queue_listener.stop()
-            stream_handl.close()
+            handl.close()
             del log_queue_listener
-            del stream_handl
+            del handl
 
 
         # TODO change later
