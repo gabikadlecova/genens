@@ -12,6 +12,7 @@ import random
 import logging
 
 from deap import tools
+from functools import partial
 from itertools import chain
 from joblib import Parallel, delayed
 
@@ -449,6 +450,11 @@ def _perform_mut(mut_func, mut_pb, mut):
     return mut
 
 
+@set_log_handler
+def _perform_eval(eval_func, ind):
+    return eval_func(ind)
+
+
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb, n_jobs=1,
            verbose=1):
     """
@@ -470,6 +476,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
     :param verbose: Print verbosity
     """
 
+    evaluate_func = partial(_perform_eval, toolbox.evaluate, log_setup=toolbox.log_setup)
+
     if verbose >= 1:
         print('Initial population generated.')
 
@@ -479,7 +487,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
     # evaluate first gen 
     with Parallel(n_jobs=n_jobs) as parallel:
-        scores = toolbox.map(toolbox.evaluate, population, parallel=parallel)
+       scores = toolbox.map(evaluate_func, population, parallel=parallel)
 
     for ind, score in zip(population, scores):
         if score is None:
@@ -493,7 +501,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
     # remove individuals which threw exceptions and generate new valid individuals
     population[:] = [ind for ind in population if ind.fitness.valid]
 
-    valid = Parallel(n_jobs=n_jobs)(delayed(gen_valid)(toolbox) for _ in range(pop_size - len(population)))
+    valid = Parallel(n_jobs=n_jobs)(delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
+                                    for _ in range(pop_size - len(population)))
     population += valid
 
     toolbox.log(population, 0)
@@ -560,7 +569,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
             offs_to_eval = [ind for ind in offspring if not ind.fitness.valid]
 
             # evaluation of changed offspring
-            scores = toolbox.map(toolbox.evaluate, offs_to_eval, parallel=parallel)
+            scores = toolbox.map(evaluate_func, offs_to_eval, parallel=parallel)
             for off, score in zip(offs_to_eval, scores):
                 if score is None:
                     continue

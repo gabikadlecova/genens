@@ -18,6 +18,8 @@ from stopit import ThreadingTimeout as Timeout, TimeoutException
 import time
 import warnings
 
+from genens.log_utils import set_log_handler
+
 
 def timeout(fn):
     @wraps(fn)
@@ -47,12 +49,12 @@ def eval_time(fn):
         if res is None:
             return None
 
-        elapsed_time = np.log(time.process_time_ns() - start_time)
+        elapsed_time = time.process_time_ns() - start_time
 
         logger = logging.getLogger("genens")
-        logger.debug(f"Evaluation time - {elapsed_time},\n{workflow}")
+        logger.debug(f"Evaluation time - {elapsed_time / 10e9},\n{workflow}")
 
-        return res, elapsed_time
+        return res, np.log(elapsed_time)
 
     return with_time
 

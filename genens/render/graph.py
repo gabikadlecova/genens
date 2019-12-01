@@ -40,7 +40,7 @@ def tree_str(gp_tree: GpTreeIndividual, with_hyperparams=False):
         str_res += "  " * indent + node.name + "\n"
         if with_hyperparams:
             for k, val in node.obj_kwargs.items():
-                str_res += "  " * (indent + 1) + "| " + f"{k}: {val}"
+                str_res += "  " * (indent + 1) + "| " + f"{k}: {val}\n"
 
         for child, next_list in ch_l:
             str_res = print_node(child, next_list, indent + 1, str_res)
