@@ -430,8 +430,8 @@ def _perform_cx(cx_func, cx_pb, ch1, ch2):
         ch1.reset()
         ch2.reset()
 
-    logger = logging.getLogger("genens")
-    logger.debug(f"Crossover:\n {parent1_str}\n x \n{parent2_str}\n ->\nCh1:\n{tree_str(ch1)}\nCh2:\n{tree_str(ch2)}")
+        logger = logging.getLogger("genens")
+        logger.debug(f"Crossover:\n {parent1_str}\n x \n{parent2_str}\n ->\nCh1:\n{tree_str(ch1)}\nCh2:\n{tree_str(ch2)}")
 
     return ch1, ch2
 
@@ -444,8 +444,8 @@ def _perform_mut(mut_func, mut_pb, mut):
         mut = mut_func(mut)
         mut.reset()
 
-    logger = logging.getLogger("genens")
-    logger.debug(f"Mutation:\n {parent_str}\n -> \n{tree_str(mut, with_hyperparams=True)}")
+        logger = logging.getLogger("genens")
+        logger.debug(f"Mutation:\n {parent_str}\n -> \n{tree_str(mut, with_hyperparams=True)}")
 
     return mut
 
@@ -487,7 +487,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
     # evaluate first gen 
     with Parallel(n_jobs=n_jobs) as parallel:
-       scores = toolbox.map(evaluate_func, population, parallel=parallel)
+        scores = toolbox.map(evaluate_func, population, parallel=parallel)
 
     for ind, score in zip(population, scores):
         if score is None:
@@ -500,13 +500,11 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
     # remove individuals which threw exceptions and generate new valid individuals
     population[:] = [ind for ind in population if ind.fitness.valid]
-
     valid = Parallel(n_jobs=n_jobs)(delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
                                     for _ in range(pop_size - len(population)))
     population += valid
 
     toolbox.log(population, 0)
-
     population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
 
     for g in range(n_gen):
@@ -578,10 +576,13 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
             # remove offspring which threw exceptions
             offspring[:] = [ind for ind in offspring if ind.fitness.valid]
-
-            valid = parallel(delayed(gen_valid)(toolbox) for i in range(pop_size - len(offspring)))
+            valid = parallel(delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
+                             for _ in range(pop_size - len(offspring)))
             offspring += valid
 
         population[:] = toolbox.select(population + offspring, pop_size)
 
         toolbox.log(population, g + 1)
+
+    if verbose >= 1:
+        print("Evolution completed")

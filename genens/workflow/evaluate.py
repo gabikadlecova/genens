@@ -18,8 +18,6 @@ from stopit import ThreadingTimeout as Timeout, TimeoutException
 import time
 import warnings
 
-from genens.log_utils import set_log_handler
-
 
 def timeout(fn):
     @wraps(fn)
@@ -33,6 +31,7 @@ def timeout(fn):
         except TimeoutException:
             logger = logging.getLogger("genens")
             logger.debug(f"Timeouted:\n {workflow}")
+            print(f"Timeouted:\n {workflow}")
 
             res = None
 
