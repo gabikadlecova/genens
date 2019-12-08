@@ -123,7 +123,7 @@ class EvaluatorBase(ABC):
             raise ValueError("Evaluator is not fitted with training data.")  # TODO specific
 
     @timeout
-    @eval_time
+    # @eval_time
     def score(self, workflow, scorer=None):
         """
         Computes the score of a pipeline (workflow).

@@ -153,7 +153,8 @@ class DeapTreeIndividual(GpTreeIndividual):
 
     class Fitness(base.Fitness):
         def __init__(self, values=()):
-            self.weights = (1.0, -1.0)
+            # self.weights = (1.0, -1.0)
+            self.weights = (1.0,)
             super().__init__(values)
 
     def reset(self):

@@ -414,7 +414,7 @@ def gen_valid(toolbox, timeout=100):
         logger.debug(f"Generate valid ({i}/{timeout}):\n {tree_str(ind, with_hyperparams=True)}")
 
         if score is not None:
-            ind.fitness.values = score
+            ind.fitness.values = score,
             return ind
 
     raise ValueError("Couldn't generate a valid individual.")  # TODO specific
@@ -493,7 +493,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
         if score is None:
             continue
 
-        ind.fitness.values = score
+        ind.fitness.values = score,
 
     if verbose >= 1:
         print("First gen evaluated")
@@ -505,7 +505,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
     population += valid
 
     toolbox.log(population, 0)
-    population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
+    # population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
+    offspring = []
 
     for g in range(n_gen):
         if verbose >= 1:
@@ -517,7 +518,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
         toolbox.next_gen()
 
         # selection for operations
-        population[:] = tools.selTournamentDCD(population, pop_size)
+        # population[:] = tools.selTournamentDCD(population, pop_size)
+        population[:] = tools.selTournament(population + offspring, pop_size, 4)
         offspring = toolbox.map(toolbox.clone, population)
 
         with Parallel(n_jobs=n_jobs) as parallel:
@@ -572,7 +574,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 if score is None:
                     continue
 
-                off.fitness.values = score
+                off.fitness.values = score,
 
             # remove offspring which threw exceptions
             offspring[:] = [ind for ind in offspring if ind.fitness.valid]
@@ -580,7 +582,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                              for _ in range(pop_size - len(offspring)))
             offspring += valid
 
-        population[:] = toolbox.select(population + offspring, pop_size)
+        # population[:] = toolbox.select(population + offspring, pop_size)
 
         toolbox.log(population, g + 1)
 

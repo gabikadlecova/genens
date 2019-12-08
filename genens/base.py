@@ -264,7 +264,6 @@ class GenensBase(BaseEstimator):
             del log_queue_listener
             del handl
 
-
         # TODO change later
         tree = self.pareto[0]
         self.fitted_wf = self._toolbox.compile(tree)
