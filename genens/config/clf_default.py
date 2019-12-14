@@ -210,7 +210,6 @@ def clf_config(group_weights=None):
             # "union": 0.3,
             "prepro": 1.0,
             "ensemble": 0.5,
-            "ensemble_l": 1.0,
             "predictor": 1.0,
             "transform": 1.0
         }
@@ -224,7 +223,7 @@ def clf_config(group_weights=None):
     # ensemble config
     config.add_primitive(ensemble_primitive('ada', 1))
     config.add_primitive(ensemble_primitive('bagging', 1))
-    config.add_primitive(ensemble_primitive('voting', (2, 'n'), group='ensemble_l'))
+    config.add_primitive(ensemble_primitive('voting', (2, 'n')))
 
     # classifier config
     config.add_primitive(predictor_primitive("KNeighbors"))
