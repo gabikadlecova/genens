@@ -31,7 +31,7 @@ def gen_individual(toolbox, config, out_type='out'):
     :param out_type: Output type of the root of the tree individual.
     :return: A new random tree individual.
     """
-    arity = random.randint(config.min_arity, config.max_arity + 1)
+    arity = random.randint(config.min_arity, config.max_arity)  # randint is inclusive for both limits
     height = random.randint(config.min_height, config.max_height + 1)
 
     return toolbox.individual(max_height=height, max_arity=arity, first_type=out_type)
