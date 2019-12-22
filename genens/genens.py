@@ -14,6 +14,7 @@ from sklearn.base import ClassifierMixin, RegressorMixin
 class GenensClassifier(GenensBase, ClassifierMixin):
     def __init__(self, config=None, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6, mut_node_pb=0.3,
                  scorer=None, pop_size=200, n_gen=15, hc_repeat=0, hc_keep_last=False,
+                 mut_multiple_args=False, mut_multiple_nodes=False,
                  weighted=True, use_groups=True,
                  max_height=None, max_arity=None, timeout=None, evaluator=None, **kwargs):
         if config is None:
@@ -30,6 +31,8 @@ class GenensClassifier(GenensBase, ClassifierMixin):
                          n_gen=n_gen,
                          hc_repeat=hc_repeat,
                          hc_keep_last=hc_keep_last,
+                         mut_multiple_args=mut_multiple_args,
+                         mut_multiple_nodes=mut_multiple_nodes,
                          weighted=weighted,
                          use_groups=use_groups,
                          max_height=max_height,
@@ -42,6 +45,7 @@ class GenensClassifier(GenensBase, ClassifierMixin):
 class GenensRegressor(GenensBase, RegressorMixin):
     def __init__(self, config=None, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6, mut_node_pb=0.3,
                  scorer=None, pop_size=200, n_gen=15, hc_repeat=0, hc_keep_last=False,
+                 mut_multiple_args=False, mut_multiple_nodes=False,
                  weighted=True, use_groups=True,
                  max_height=None, max_arity=None, timeout=None, evaluator=None,
                  **kwargs):
@@ -59,6 +63,8 @@ class GenensRegressor(GenensBase, RegressorMixin):
                          n_gen=n_gen,
                          hc_repeat=hc_repeat,
                          hc_keep_last=hc_keep_last,
+                         mut_multiple_args=mut_multiple_args,
+                         mut_multiple_nodes=mut_multiple_nodes,
                          weighted=weighted,
                          use_groups=use_groups,
                          max_height=max_height,
