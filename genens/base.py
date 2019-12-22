@@ -4,36 +4,34 @@
 This module contains the base estimator of Genens.
 """
 
-from .gp.operators import gen_tree
-from .gp.operators import gen_individual
-from .gp.operators import mutate_subtree
-from .gp.operators import mutate_node_args
-from .gp.operators import mutate_node_swap
-from .gp.operators import crossover_one_point
-from .gp.operators import ea_run
+import json
+import logging
+import logging.config
+import numpy as np
+import os
 
-from .workflow.evaluate import CrossValEvaluator, TrainTestEvaluator, default_score
-from .workflow.model_creation import create_workflow
+from genens.gp.tree import gen_tree
+from genens.gp.evolution import gen_individual
+from genens.gp.mutation import mutate_subtree
+from genens.gp.mutation import mutate_node_args
+from genens.gp.mutation import mutate_node_swap
+from genens.gp.crossover import crossover_one_point
+from genens.gp.evolution import ea_run
 
-from sklearn.base import BaseEstimator, is_classifier
-
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from sklearn.utils.multiclass import unique_labels
+from genens.workflow.evaluate import CrossValEvaluator, TrainTestEvaluator, default_score
+from genens.workflow.model_creation import create_workflow
 
 from deap import base, tools
 from functools import partial
 from joblib import delayed
-
-import logging
-import logging.config
-import json
-
 from multiprocessing import Manager
 from logging.handlers import QueueListener, QueueHandler
 
-import numpy as np
+from sklearn.base import BaseEstimator, is_classifier
+from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.multiclass import unique_labels
 
-import os
+
 file_dir = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_LOGGING_CONFIG = file_dir + '/.logging_config.json'
 

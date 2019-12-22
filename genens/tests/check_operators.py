@@ -1,6 +1,6 @@
 from genens import GenensClassifier
 from genens.workflow.evaluate import SampleCrossValEvaluator
-from genens.gp.operators import mutate_node_swap, mutate_node_args, mutate_subtree, crossover_one_point
+from genens.gp.evolution import mutate_node_swap, mutate_node_args, mutate_subtree, crossover_one_point
 from genens.tests.datasets.load_datasets import load_dataset
 
 
