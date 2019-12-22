@@ -106,114 +106,37 @@ def mutate_node_swap(config, gp_tree):
     return gp_tree
 
 
-def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
-    """
-    Mutates a random argument of a node from the GP tree. If ``hc_repeat`` is greater
-    than zero, performs a hill-climbing mutation of the argument.
+def mutate_args(config, gp_tree, multiple_nodes=False, multiple_args=False):
+    prims = gp_tree.primitives
 
-    :param toolbox: GP toolbox.
-    :param GenensConfig config: Configuration of the evolution.
-    :param DeapTreeIndividual gp_tree: Individual to be mutated.
-    :param int hc_repeat:
-        If equal to n = 0, mutates a single argument and returns the mutated individual.
-        If equal to n > 0, performs a hill-climbing mutation of n iterations, keeping the best
-        individual.
+    if multiple_nodes:
+        mut_inds = random.sample([i for i in range(len(prims))])
+        for ind in mut_inds:
+            _mutate_node_args(config, prims[ind], multiple=multiple_args)
 
-    :param bool keep_last:
-        If True, returns the last mutant even if the best individual was the original individual.
+    else:
+        mut_node = random.choice(prims)
+        _mutate_node_args(config, mut_node, multiple=multiple_args)
 
-    :return: The mutated individual.
-    """
-    mut_ind = random.randint(0, len(gp_tree.primitives) - 1)
-    mut_node = gp_tree.primitives[mut_ind]
-
-    # no parameters to mutate
-    if not len(mut_node.obj_kwargs):
-        return gp_tree
-
-    mut_arg = random.choice(list(mut_node.obj_kwargs.keys()))
-
-    # mutate one parameter, do not perform hillclimbing
-    if hc_repeat < 1:
-        _mut_arg(config, mut_node, mut_arg)
-        return gp_tree
-
-    gp_tree = _arg_hillclimbing(toolbox, config, gp_tree, mut_ind, mut_arg, hc_repeat=hc_repeat, keep_last=keep_last)
     return gp_tree
 
 
-def _arg_hillclimbing(toolbox, config, gp_tree, mut_ind, mut_arg, hc_repeat=1, keep_last=False):
-    # hill-climbing initial fitness
-    if not gp_tree.fitness.valid:
-        score = toolbox.evaluate(gp_tree)
+def _mutate_node_args(config, mut_node, multiple=False):
+    # no parameters to mutate
+    if not len(mut_node.obj_kwargs):
+        return mut_node
 
-        # mutate only valid individuals
-        if score is None:
-            return gp_tree
-        gp_tree.fitness.values = score
+    all_keys = list(mut_node.obj_kwargs.keys())
 
-    # hill-climbing procedure
-    has_mutated = False
-    for i in range(hc_repeat):
-        mutant = toolbox.clone(gp_tree)
-        mut_node = mutant.primitives[mut_ind]
-
+    if multiple:
+        mut_kwargs = random.sample(all_keys)
+        for key in mut_kwargs:
+            _mut_arg(config, mut_node, key)
+    else:
+        mut_arg = random.choice(all_keys)
         _mut_arg(config, mut_node, mut_arg)
 
-        score = toolbox.evaluate(mutant)
-        # skip invalid mutants
-        if score is None:
-            continue
-
-        # the mutant is better, keep it
-        if score >= gp_tree.fitness.values:
-            gp_tree.primitives[mut_ind] = mut_node  # copy value to the mutated tree
-            gp_tree.fitness.values = score
-
-            has_mutated = True
-
-        else:
-            # return the last one if no mutant was better than the first individual
-            if keep_last and i == hc_repeat - 1 and not has_mutated:
-                gp_tree.primitives[mut_ind] = mut_node
-                gp_tree.fitness.values = score
-
-    return gp_tree
-
-
-# TODO mutate
-#   1) single node, one arg
-#   2) single node, multiple args
-#   (3) multiple nodes, single/multiple args)
-#   4) reset args
-
-def mutate_single_arg(config, gp_tree):
-    mut_ind = random.randint(0, len(gp_tree.primitives) - 1)
-    mut_node = gp_tree.primitives[mut_ind]
-
-    # no parameters to mutate
-    if not len(mut_node.obj_kwargs):
-        return gp_tree
-
-    mut_arg = random.choice(list(mut_node.obj_kwargs.keys()))
-    _mut_arg(config, mut_node, mut_arg)
-    return gp_tree
-
-
-def mutate_multiple_args(config, gp_tree):
-    mut_inds = random.sample([i for i in range(len(gp_tree))])
-
-    # no parameters to mutate
-    if not len(mut_node.obj_kwargs):
-        return gp_tree
-
-    mut_arg = random.choice(list(mut_node.obj_kwargs.keys()))
-    _mut_arg(config, mut_node, mut_arg)
-    return gp_tree
-
-
-def _mut_random_arg(config, gp_tree):
-
+    return mut_node
 
 
 def _perform_hillclimbing(toolbox, gp_tree, mut_func,
