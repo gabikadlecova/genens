@@ -24,14 +24,26 @@ from deap import base, tools
 from functools import partial
 from joblib import delayed
 
+import logging
+import logging.config
+import json
+
+from multiprocessing import Manager
+from logging.handlers import QueueListener, QueueHandler
+
 import numpy as np
+
+import os
+file_dir = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_LOGGING_CONFIG = file_dir + '/.logging_config.json'
 
 
 class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6,
                  mut_node_pb=0.3, scorer=None, pop_size=200,
                  n_gen=15, hc_repeat=0, hc_keep_last=False, weighted=True, use_groups=True, max_height=None,
-                 max_arity=None, timeout=None, evaluator=None):
+                 max_arity=None, timeout=None, evaluator=None,
+                 log_path=None):
         """
         Creates a new Genens estimator.
 
@@ -93,7 +105,10 @@ class GenensBase(BaseEstimator):
         self.fitted_wf = None
         self._population = None
 
-        self._setup_log()
+        self._log_path = log_path
+        self._logging_config = DEFAULT_LOGGING_CONFIG
+        self._setup_debug_logging()
+        self._setup_stats_logging()
         self._setup_toolbox()
 
     def _setup_toolbox(self):
@@ -119,7 +134,36 @@ class GenensBase(BaseEstimator):
         self._toolbox.register("evaluate", self._eval_tree_individual)
         self._toolbox.register("log", self._log_pop_stats)
 
-    def _setup_log(self):
+        self._toolbox.register("log_setup", self._setup_child_logging)
+
+    def _load_log_config(self):
+        if self._logging_config is not None:
+            with open(self._logging_config, 'r') as f:
+                return json.load(f)
+
+    def _setup_debug_logging(self):
+        config = self._load_log_config()
+        logging.config.dictConfig(config)
+        self.log_format = config['format']
+
+        mp_manager = Manager()
+        self._log_queue = mp_manager.Queue()
+
+        handl = QueueHandler(self._log_queue)
+        logger = logging.getLogger("genens")
+
+        logger.addHandler(handl)
+
+    def _setup_child_logging(self):
+        config = self._load_log_config()
+        logging.config.dictConfig(config)
+
+        handl = QueueHandler(self._log_queue)
+        logger = logging.getLogger("genens")
+        logger.addHandler(handl)
+        return handl
+
+    def _setup_stats_logging(self):
         score_stats = tools.Statistics(lambda ind: ind.fitness.values[0])
         test_stats = tools.Statistics(lambda ind: self._compute_test(ind))
 
@@ -185,7 +229,7 @@ class GenensBase(BaseEstimator):
         else:
             return list(map(self._toolbox.compile, self.pareto))
 
-    def fit(self, train_X, train_y):
+    def fit(self, train_X, train_y, verbose=1):
         train_X, train_y = check_X_y(train_X, train_y, accept_sparse=True)
 
         if is_classifier(self):
@@ -195,9 +239,31 @@ class GenensBase(BaseEstimator):
         self.pareto.clear()
 
         self._population = self._toolbox.population(n=self.pop_size)
-        ea_run(self._population, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
-               mut_pb=self.mut_pb,
-               mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs)
+
+        # handlers do not work well with pickling (required for multiprocessing)
+        formatter = logging.Formatter(fmt=self.log_format)
+        if self._log_path is not None:
+            handl = logging.FileHandler(self._log_path)
+        else:
+            handl = logging.StreamHandler()
+
+        handl.setFormatter(formatter)
+        log_queue_listener = QueueListener(self._log_queue, handl)
+
+        try:
+            log_queue_listener.start()
+            ea_run(self._population, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
+                   mut_pb=self.mut_pb,
+                   mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs,
+                   verbose=verbose)
+
+        finally:
+            # close local logging handlers
+            log_queue_listener.stop()
+            handl.close()
+            del log_queue_listener
+            del handl
+
 
         # TODO change later
         tree = self.pareto[0]

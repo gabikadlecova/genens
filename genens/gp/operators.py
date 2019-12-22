@@ -5,15 +5,20 @@ This module defines genetic operators used in the evolution as well as the main 
 of the algorithm and initialization methods.
 """
 
-from deap import tools
-from itertools import chain
-from joblib import Parallel, delayed
-
-from ..gp.types import GpTreeIndividual, GpFunctionTemplate, DeapTreeIndividual
-
 import math
 import numpy as np
 import random
+
+import logging
+
+from deap import tools
+from functools import partial
+from itertools import chain
+from joblib import Parallel, delayed
+
+from genens.log_utils import set_log_handler
+from genens.gp.types import GpTreeIndividual, GpFunctionTemplate, DeapTreeIndividual
+from genens.render.graph import tree_str
 
 
 def gen_individual(toolbox, config, out_type='out'):
@@ -26,8 +31,8 @@ def gen_individual(toolbox, config, out_type='out'):
     :param out_type: Output type of the root of the tree individual.
     :return: A new random tree individual.
     """
-    arity = random.randint(2, config.max_arity)
-    height = random.randint(1, config.max_height)
+    arity = random.randint(config.min_arity, config.max_arity)  # randint is inclusive for both limits
+    height = random.randint(config.min_height, config.max_height + 1)
 
     return toolbox.individual(max_height=height, max_arity=arity, first_type=out_type)
 
@@ -62,7 +67,7 @@ def choose_prim(config, prim_list, weighted=True, use_groups=True):
     if not use_groups:
         return random.choice(prim_list)
 
-    group_names = {prim.group for prim in prim_list}  # primitive groups to choose from
+    group_names = list({prim.group for prim in prim_list})  # primitive groups to choose from
 
     if weighted:
         group_chosen = _choose_group_weighted(config, group_names)
@@ -79,7 +84,7 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out', weighted
 
     :param config: Configuration of nodes, keyword arguments and arity and height limits.
     :param max_height: Height limit of the tree; if not specified, the configuration limit is used.
-    :param max_arity: Artity limit of function nodes; if not specified, the configuration limit is used.
+    :param max_arity: Arity limit of function nodes; if not specified, the configuration limit is used.
     :param first_type: Output type of the root of the tree.
     :param weighted: Determines whether the node selection is weighted.
     :param bool use_groups: If false, primitive groups are ignored
@@ -111,7 +116,6 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out', weighted
 
         # template of the next primitive
         next_prim_t = choose_prim(config, choose_from, weighted=weighted, use_groups=use_groups)
-
         prim = next_prim_t.create_primitive(h, max_arity,
                                             config.kwargs_config[next_prim_t.name])
 
@@ -235,17 +239,16 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
     :param GenensConfig config: Configuration of the evolution.
     :param DeapTreeIndividual gp_tree: Individual to be mutated.
     :param int hc_repeat:
-    If equal to n = 0, mutates a single argument and returns the mutated individual.
-    If equal to n > 0, performs a hill-climbing mutation of n iterations, keeping the best
-    individual.
+        If equal to n = 0, mutates a single argument and returns the mutated individual.
+        If equal to n > 0, performs a hill-climbing mutation of n iterations, keeping the best
+        individual.
 
     :param bool keep_last:
-    If True, returns the last mutant even if the best individual was the original individual.
+        If True, returns the last mutant even if the best individual was the original individual.
 
     :return: The mutated individual.
     """
     mut_ind = random.randint(0, len(gp_tree.primitives) - 1)
-
     mut_node = gp_tree.primitives[mut_ind]
 
     # no parameters to mutate
@@ -259,6 +262,11 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
         _mut_args(config, mut_node, mut_arg)
         return gp_tree
 
+    gp_tree = _arg_hillclimbing(toolbox, config, gp_tree, mut_ind, mut_arg, hc_repeat=hc_repeat, keep_last=keep_last)
+    return gp_tree
+
+
+def _arg_hillclimbing(toolbox, config, gp_tree, mut_ind, mut_arg, hc_repeat=1, keep_last=False):
     # hill-climbing initial fitness
     if not gp_tree.fitness.valid:
         score = toolbox.evaluate(gp_tree)
@@ -287,10 +295,11 @@ def mutate_node_args(toolbox, config, gp_tree, hc_repeat=0, keep_last=False):
             gp_tree.fitness.values = score
 
             has_mutated = True
+
         else:
             # return the last one if no mutant was better than the first individual
             if keep_last and i == hc_repeat - 1 and not has_mutated:
-                gp_tree.primitives[ mut_ind] = mut_node
+                gp_tree.primitives[mut_ind] = mut_node
                 gp_tree.fitness.values = score
 
     return gp_tree
@@ -379,19 +388,14 @@ def _swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
         tree_2.primitives[ind_begin_2 : ind_end_2] = subtree_1
         tree_2.max_height = max(prim.height for prim in tree_2.primitives)  # update height
 
-        # TODO remove
-        tree_2.validate_tree()
-
     # insert into tree_1 - insert subtree
     tree_1.primitives[ind_begin_1: ind_end_1] = subtree_2
     tree_1.max_height = max(prim.height for prim in tree_1.primitives)  # update height
 
-    # TODO remove
-    tree_1.validate_tree()
-
     return tree_1, tree_2 if keep_2 else tree_1,
 
 
+@set_log_handler
 def gen_valid(toolbox, timeout=100):
     """
     Tries to generate an individual with a valid items. Raises an error if it does
@@ -401,40 +405,58 @@ def gen_valid(toolbox, timeout=100):
     :param timeout: Number of iterations to perform.
     :return: A valid individual.
     """
-    i = 0
 
-    while True:
-        if i >= timeout:
-            raise ValueError("Couldn't generate a valid individual.")  # TODO specific
-
+    for i in range(timeout):
         ind = toolbox.individual()
         score = toolbox.evaluate(ind)
+
+        logger = logging.getLogger("genens")
+        logger.debug(f"Generate valid ({i}/{timeout}):\n {tree_str(ind, with_hyperparams=True)}")
 
         if score is not None:
             ind.fitness.values = score
             return ind
 
-        i += 1
+    raise ValueError("Couldn't generate a valid individual.")  # TODO specific
 
 
+@set_log_handler
 def _perform_cx(cx_func, cx_pb, ch1, ch2):
+    parent1_str = tree_str(ch1)
+    parent2_str = tree_str(ch2)
+
     if random.random() < cx_pb:
         ch1, ch2 = cx_func(ch1, ch2)
         ch1.reset()
         ch2.reset()
 
+        logger = logging.getLogger("genens")
+        logger.debug(f"Crossover:\n {parent1_str}\n x \n{parent2_str}\n ->\nCh1:\n{tree_str(ch1)}\nCh2:\n{tree_str(ch2)}")
+
     return ch1, ch2
 
 
+@set_log_handler
 def _perform_mut(mut_func, mut_pb, mut):
+    parent_str = tree_str(mut, with_hyperparams=True)
+
     if random.random() < mut_pb:
         mut = mut_func(mut)
         mut.reset()
 
+        logger = logging.getLogger("genens")
+        logger.debug(f"Mutation:\n {parent_str}\n -> \n{tree_str(mut, with_hyperparams=True)}")
+
     return mut
 
 
-def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb, n_jobs=1):
+@set_log_handler
+def _perform_eval(eval_func, ind):
+    return eval_func(ind)
+
+
+def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb, n_jobs=1,
+           verbose=1):
     """
     Performs a run of the evolutionary algorithm.
 
@@ -450,14 +472,22 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                    ``n_jobs = k, k processors are used
                    ``n_jobs`` = 1, multiprocessing is not used
                    ``n_jobs = k, k + 1 processors are used - for -1, all processors are used
+
+    :param verbose: Print verbosity
     """
 
-    # TODO later change to verbose
-    print('Initial population generated.')
+    evaluate_func = partial(_perform_eval, toolbox.evaluate, log_setup=toolbox.log_setup)
+
+    if verbose >= 1:
+        print('Initial population generated.')
+
+    logger = logging.getLogger("genens")
+    for i, ind in enumerate(population):
+        logger.debug(f"Generation 0, individual {i}:\n{tree_str(ind, with_hyperparams=True)}")
 
     # evaluate first gen 
     with Parallel(n_jobs=n_jobs) as parallel:
-        scores = toolbox.map(toolbox.evaluate, population, parallel=parallel)
+        scores = toolbox.map(evaluate_func, population, parallel=parallel)
 
     for ind, score in zip(population, scores):
         if score is None:
@@ -465,18 +495,25 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
         ind.fitness.values = score
 
+    if verbose >= 1:
+        print("First gen evaluated")
+
     # remove individuals which threw exceptions and generate new valid individuals
     population[:] = [ind for ind in population if ind.fitness.valid]
-
-    valid = Parallel(n_jobs=n_jobs)(delayed(gen_valid)(toolbox) for i in range(pop_size - len(population)))
+    valid = Parallel(n_jobs=n_jobs)(delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
+                                    for _ in range(pop_size - len(population)))
     population += valid
 
     toolbox.log(population, 0)
-
     population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
 
     for g in range(n_gen):
-        print("Gen {}".format(g))
+        if verbose >= 1:
+            print("Gen {}".format(g))
+
+        for i, ind in enumerate(population):
+            logger.debug(f"Generation {g}, individual {i}:\n{tree_str(ind, with_hyperparams=True)}")
+
         toolbox.next_gen()
 
         # selection for operations
@@ -484,27 +521,53 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
         offspring = toolbox.map(toolbox.clone, population)
 
         with Parallel(n_jobs=n_jobs) as parallel:
+            if verbose >= 2:
+                print(f"Gen {g} - crossover")
+
             # crossover - subtree
-            offspring = parallel(delayed(_perform_cx)(toolbox.cx_one_point, cx_pb, ch1, ch2)
-                                 for ch1, ch2 in zip(offspring[::2], offspring[1::2]))
-            offspring = list(chain.from_iterable(offspring))  # chain cx tuple elements
+            offspring = parallel(
+                delayed(_perform_cx)(
+                    toolbox.cx_one_point,  # func
+                    cx_pb, ch1, ch2, log_setup=toolbox.log_setup  # args
+                )
+                for ch1, ch2 in zip(offspring[::2], offspring[1::2])
+            )
+            offspring = list(chain.from_iterable(offspring))  # chain cx tuples to list of offspring
+
+            if verbose >= 2:
+                print(f"Gen {g} - mutation")
 
             # mutation - subtree
-            offspring = parallel(delayed(_perform_mut)(toolbox.mutate_subtree, mut_pb, mut)
-                                 for mut in offspring)
+            offspring = parallel(
+                delayed(_perform_mut)(
+                    toolbox.mutate_subtree,  # func
+                    mut_pb, mut, log_setup=toolbox.log_setup  # args
+                )
+                for mut in offspring
+            )
 
             # mutation - node args
-            offspring = parallel(delayed(_perform_mut)(toolbox.mutate_node_args, mut_args_pb, mut)
-                                 for mut in offspring)
+            offspring = parallel(
+                delayed(_perform_mut)(
+                    toolbox.mutate_node_args,  # func
+                    mut_args_pb, mut, log_setup=toolbox.log_setup  # args
+                )
+                for mut in offspring
+            )
 
             # mutation - node swap
-            offspring = parallel(delayed(_perform_mut)(toolbox.mutate_node_swap, mut_node_pb, mut)
-                                 for mut in offspring)
+            offspring = parallel(
+                delayed(_perform_mut)(
+                    toolbox.mutate_node_swap,  # func
+                    mut_node_pb, mut, log_setup=toolbox.log_setup  # args
+                )
+                for mut in offspring
+            )
 
             offs_to_eval = [ind for ind in offspring if not ind.fitness.valid]
 
             # evaluation of changed offspring
-            scores = toolbox.map(toolbox.evaluate, offs_to_eval, parallel=parallel)
+            scores = toolbox.map(evaluate_func, offs_to_eval, parallel=parallel)
             for off, score in zip(offs_to_eval, scores):
                 if score is None:
                     continue
@@ -513,10 +576,13 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
             # remove offspring which threw exceptions
             offspring[:] = [ind for ind in offspring if ind.fitness.valid]
-
-            valid = parallel(delayed(gen_valid)(toolbox) for i in range(pop_size - len(offspring)))
+            valid = parallel(delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
+                             for _ in range(pop_size - len(offspring)))
             offspring += valid
 
         population[:] = toolbox.select(population + offspring, pop_size)
 
         toolbox.log(population, g + 1)
+
+    if verbose >= 1:
+        print("Evolution completed")
