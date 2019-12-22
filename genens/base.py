@@ -13,7 +13,7 @@ import os
 from genens.gp.tree import gen_tree
 from genens.gp.evolution import gen_individual
 from genens.gp.mutation import mutate_subtree
-from genens.gp.mutation import mutate_node_args
+from genens.gp.mutation import perform_hillclimbing, mutate_args
 from genens.gp.mutation import mutate_node_swap
 from genens.gp.crossover import crossover_one_point
 from genens.gp.evolution import ea_run
@@ -39,6 +39,7 @@ DEFAULT_LOGGING_CONFIG = file_dir + '/.logging_config.json'
 class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6,
                  mut_node_pb=0.3, scorer=None, pop_size=200,
+                 mut_multiple_args=False, mut_multiple_nodes=False,
                  n_gen=15, hc_repeat=0, hc_keep_last=False, weighted=True, use_groups=True, max_height=None,
                  max_arity=None, timeout=None, evaluator=None,
                  log_path=None):
@@ -65,6 +66,8 @@ class GenensBase(BaseEstimator):
         :param max_arity: Maximum arity of all nodes.
         :param timeout: Timeout for a single method evaluation.
         :param evaluator: Evaluator to be used (see genens.worflow.evaluate)
+
+        TODO document mut multiple
         """
 
         # accept config/load default config
@@ -84,6 +87,9 @@ class GenensBase(BaseEstimator):
 
         self.pop_size = pop_size
         self.n_gen = n_gen
+
+        self.mut_multiple_args = mut_multiple_args
+        self.mut_multiple_nodes = mut_multiple_nodes
 
         self.hc_repeat = hc_repeat
         self.hc_keep_last = hc_keep_last
@@ -109,6 +115,20 @@ class GenensBase(BaseEstimator):
         self._setup_stats_logging()
         self._setup_toolbox()
 
+    def _setup_arg_mut(self):
+        mut_fun = partial(mutate_args, self.config,
+                          multiple_nodes=self.mut_multiple_nodes,
+                          multiple_args=self.mut_multiple_args)
+
+        if self.hc_repeat > 0:
+            self._toolbox.register("mutate_args", perform_hillclimbing,
+                                   self._toolbox,
+                                   mut_fun=mut_fun,
+                                   hc_repeat=self.hc_repeat,
+                                   keep_last=self.hc_keep_last)
+        else:
+            self._toolbox.register("mutate_args", mut_fun)
+
     def _setup_toolbox(self):
         self._toolbox = base.Toolbox()
 
@@ -122,8 +142,7 @@ class GenensBase(BaseEstimator):
 
         self._toolbox.register("select", tools.selNSGA2)
         self._toolbox.register("mutate_subtree", mutate_subtree, self._toolbox)
-        self._toolbox.register("mutate_node_args", mutate_node_args, self._toolbox, self.config,
-                               hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
+        self._setup_arg_mut()
         self._toolbox.register("mutate_node_swap", mutate_node_swap, self.config)
         self._toolbox.register("cx_one_point", crossover_one_point)
 

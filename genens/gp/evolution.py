@@ -187,7 +187,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
             # mutation - node args
             offspring = parallel(
                 delayed(_perform_mut)(
-                    toolbox.mutate_node_args,  # func
+                    toolbox.mutate_args,  # func
                     mut_args_pb, mut, log_setup=toolbox.log_setup  # args
                 )
                 for mut in offspring

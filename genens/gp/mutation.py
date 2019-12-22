@@ -139,8 +139,8 @@ def _mutate_node_args(config, mut_node, multiple=False):
     return mut_node
 
 
-def _perform_hillclimbing(toolbox, gp_tree, mut_func,
-                          hc_repeat=1, keep_last=False):
+def perform_hillclimbing(toolbox, gp_tree, mut_func,
+                         hc_repeat=1, keep_last=False):
     # hill-climbing initial fitness
     if not gp_tree.fitness.valid:
         score = toolbox.evaluate(gp_tree)
