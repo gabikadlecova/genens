@@ -35,12 +35,12 @@ def clf_config(group_weights=None):
 
     # FUNCTIONS
     ensembles_func = {
-        'ada': ensemble_func(ensemble.AdaBoostClassifier),
-        'bagging': ensemble_func(ensemble.BaggingClassifier),
         'voting': ensemble_func(ensemble.VotingClassifier)
     }
 
     clf_func = {
+        'ada': estimator_func(ensemble.AdaBoostClassifier),
+        'bagging': estimator_func(ensemble.BaggingClassifier),
         "KNeighbors": estimator_func(neighbors.KNeighborsClassifier),
         "LinearSVC": estimator_func(svm.LinearSVC),
         "SVC": estimator_func(svm.SVC),
@@ -72,6 +72,13 @@ def clf_config(group_weights=None):
     }
 
     ensemble_kwargs = {
+        'voting': {
+            # 'soft' not included - a lot of classifiers does not support predict_proba
+            'voting': ['hard', 'soft']
+        }
+    }
+
+    clf_kwargs = {
         'ada': {
             'n_estimators': [5, 10, 50, 100, 200],
             'algorithm': ['SAMME', 'SAMME.R']
@@ -79,13 +86,6 @@ def clf_config(group_weights=None):
         'bagging': {
             'n_estimators': [5, 10, 50, 100, 200]
         },
-        'voting': {
-            # 'soft' not included - a lot of classifiers does not support predict_proba
-            'voting': ['hard']
-        }
-    }
-
-    clf_kwargs = {
         'KNeighbors': {
             'n_neighbors': [1, 2, 5],
             'algorithm': ['auto', 'ball_tree', 'kd_tree', 'brute']
@@ -221,11 +221,11 @@ def clf_config(group_weights=None):
     # PRIMITIVES
 
     # ensemble config
-    config.add_primitive(ensemble_primitive('ada', 1))
-    config.add_primitive(ensemble_primitive('bagging', 1))
     config.add_primitive(ensemble_primitive('voting', (2, 'n')))
 
     # classifier config
+    config.add_primitive(predictor_primitive('ada'))
+    config.add_primitive(predictor_primitive('bagging'))
     config.add_primitive(predictor_primitive("KNeighbors"))
     config.add_primitive(predictor_primitive("LinearSVC"))
     config.add_primitive(predictor_primitive("SVC"))

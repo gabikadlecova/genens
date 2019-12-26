@@ -51,7 +51,7 @@ def eval_time(fn):
         elapsed_time = time.process_time_ns() - start_time
 
         logger = logging.getLogger("genens")
-        logger.debug(f"Evaluation time - {elapsed_time / 10e9},\n{workflow}")
+        logger.debug(f"Evaluation time - {elapsed_time / 10e9}s,\n{workflow}")
 
         return res, np.log(elapsed_time)
 
@@ -139,7 +139,8 @@ class EvaluatorBase(ABC):
 
                 return self.evaluate(workflow, scorer)
         except Exception as e:
-            # TODO log exception
+            logger = logging.getLogger("genens")
+            logger.debug(f"Workflow failed:\n {e}\nWorkflow: {workflow}.")
             return None
 
 

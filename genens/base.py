@@ -18,6 +18,8 @@ from genens.gp.mutation import mutate_node_swap
 from genens.gp.crossover import crossover_one_point
 from genens.gp.evolution import ea_run
 
+from genens.log_utils import set_log_handler
+
 from genens.workflow.evaluate import CrossValEvaluator, TrainTestEvaluator, default_score
 from genens.workflow.model_creation import create_workflow
 
@@ -280,7 +282,6 @@ class GenensBase(BaseEstimator):
             handl.close()
             del log_queue_listener
             del handl
-
 
         # TODO change later
         tree = self.pareto[0]
