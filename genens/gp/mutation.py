@@ -110,6 +110,8 @@ def mutate_node_swap(config, gp_tree):
 def mutate_args(config, gp_tree, multiple_nodes=False, multiple_args=False):
     # choose only nodes with hyperparameters
     prims = [prim for prim in gp_tree.primitives if len(prim.obj_kwargs)]
+    if not len(prims):
+        return gp_tree
 
     if multiple_nodes:
         mut_inds = random.sample([i for i in range(len(prims))])
