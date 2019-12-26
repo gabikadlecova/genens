@@ -76,7 +76,7 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out', weighted
             type_stack.append((next_type, ar - 1, h))
 
         # choose only terminals in the last level
-        if h < max_height:
+        if h < max_height - 1:
             choose_from = config.full_config[next_type]
         else:
             choose_from = config.term_config[next_type]
