@@ -69,7 +69,8 @@ def _perform_cx(cx_func, cx_pb, ch1, ch2):
         ch2.reset()
 
         logger = logging.getLogger("genens")
-        logger.debug(f"Crossover:\n {parent1_str}\n x \n{parent2_str}\n ->\nCh1:\n{tree_str(ch1)}\nCh2:\n{tree_str(ch2)}")
+        logger.debug(f"Crossover ({cx_func}):\n {parent1_str}\n x \n{parent2_str}\n ->"
+                     f"\nCh1:\n{tree_str(ch1)}\nCh2:\n{tree_str(ch2)}")
 
     return ch1, ch2
 
@@ -83,7 +84,7 @@ def _perform_mut(mut_func, mut_pb, mut):
         mut.reset()
 
         logger = logging.getLogger("genens")
-        logger.debug(f"Mutation:\n {parent_str}\n -> \n{tree_str(mut, with_hyperparams=True)}")
+        logger.debug(f"Mutation ({mut_func}):\n {parent_str}\n -> \n{tree_str(mut, with_hyperparams=True)}")
 
     return mut
 

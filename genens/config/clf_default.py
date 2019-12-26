@@ -99,7 +99,8 @@ def clf_config(group_weights=None):
         'SVC': {
             'C': [0.1, 0.5, 1.0, 2, 5, 10, 15],
             'gamma': ['scale', 0.0001, 0.001, 0.01, 0.1, 0.5],
-            'tol': [0.0001, 0.001, 0.01]
+            'tol': [0.0001, 0.001, 0.01],
+            'probability': [True, False]
         },
         'logR': {
             'penalty': ['l1', 'l2'],

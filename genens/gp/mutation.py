@@ -1,3 +1,4 @@
+import logging
 import math
 import random
 
@@ -107,7 +108,8 @@ def mutate_node_swap(config, gp_tree):
 
 
 def mutate_args(config, gp_tree, multiple_nodes=False, multiple_args=False):
-    prims = gp_tree.primitives
+    # choose only nodes with hyperparameters
+    prims = [prim for prim in gp_tree.primitives if len(prim.obj_kwargs)]
 
     if multiple_nodes:
         mut_inds = random.sample([i for i in range(len(prims))])
@@ -150,6 +152,8 @@ def perform_hillclimbing(toolbox, gp_tree, mut_func,
             return gp_tree
         gp_tree.fitness.values = score
 
+    logger = logging.getLogger("genens")
+
     # hill-climbing procedure
     has_mutated = False
     for i in range(hc_repeat):
@@ -166,6 +170,9 @@ def perform_hillclimbing(toolbox, gp_tree, mut_func,
 
         # the mutant is better, keep it
         if score >= gp_tree.fitness.values or should_keep_last:
+            logger.debug(f"Hillclimbing {i}/{hc_repeat}: score {gp_tree.fitness.values} -> {score},"
+                         f"\n{gp_tree}\n>\n{mutant}")
+
             gp_tree = mutant
             has_mutated = True
 
