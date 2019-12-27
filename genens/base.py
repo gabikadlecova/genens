@@ -118,6 +118,9 @@ class GenensBase(BaseEstimator):
         self._setup_toolbox()
 
     def _setup_arg_mut(self):
+        print(self.mut_multiple_nodes)
+        print(self.mut_multiple_args)
+
         mut_fun = partial(mutate_args, self.config,
                           multiple_nodes=self.mut_multiple_nodes,
                           multiple_args=self.mut_multiple_args)

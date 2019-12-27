@@ -7,28 +7,21 @@ from genens.workflow.evaluate import SampleCrossValEvaluator
 from .datasets.load_datasets import load_dataset
 
 
-def run_test(arg_dict):
-    X, y = load_dataset(arg_dict['dataset'], random_state=arg_dict['random_state'])
-    evaluator = SampleCrossValEvaluator(cv_k=arg_dict['cv_k'], sample_size=arg_dict['size'],
-                                        per_gen=True, random_state=arg_dict['random_state'])
+def run_test(kwarg_dict):
+    random_state = kwarg_dict.pop('random_state')
+    np.random.seed(random_state)
+    random.seed(random_state)
 
-    np.random.seed(arg_dict['random_state'])
-    random.seed(arg_dict['random_state'])
+    dataset = kwarg_dict.pop('dataset')
+    X, y = load_dataset(dataset)
+
+    cv_k = kwarg_dict.pop('cv_k')
+    size = kwarg_dict.pop('size')
+    evaluator = SampleCrossValEvaluator(cv_k=cv_k, sample_size=size, per_gen=True)
 
     clf = GenensClassifier(
-        n_jobs=arg_dict['n_jobs'],
-        cx_pb=arg_dict['cx_pb'],
-        mut_pb=arg_dict['mut_pb'],
-        mut_args_pb=arg_dict['mut_args_pb'],
-        mut_node_pb=arg_dict['mut_node_pb'],
-        pop_size=arg_dict['pop_size'],
-        n_gen=arg_dict['n_gen'],
-        weighted=arg_dict['weighted'],
-        use_groups=arg_dict['use_groups'],
-        max_arity=arg_dict['max_arity'],
-        max_height=arg_dict['max_height'],
-        timeout=arg_dict['timeout'],
-        log_path=arg_dict['log_path']
+        evaluator=evaluator,
+        **kwarg_dict
     )
 
     clf.fit(X, y, verbose=2)
