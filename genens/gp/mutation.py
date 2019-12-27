@@ -133,8 +133,8 @@ def _mutate_node_args(config, mut_node, multiple=False):
     all_keys = list(mut_node.obj_kwargs.keys())
 
     if multiple:
-        mut_kwargs = random.sample(all_keys)
-        print(len(mut_kwargs))
+        n_kwargs = random.randint(1, len(all_keys))
+        mut_kwargs = random.sample(all_keys, n_kwargs)
 
         for key in mut_kwargs:
             _mut_arg(config, mut_node, key)

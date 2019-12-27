@@ -20,9 +20,6 @@ class GenensClassifier(GenensBase, ClassifierMixin):
         if config is None:
             config = clf_config()
 
-        print(mut_multiple_args)
-        print(mut_multiple_nodes)
-
         super().__init__(config,
                          n_jobs=n_jobs,
                          cx_pb=cx_pb,
