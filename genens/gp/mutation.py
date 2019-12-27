@@ -114,9 +114,10 @@ def mutate_args(config, gp_tree, multiple_nodes=False, multiple_args=False):
         return gp_tree
 
     if multiple_nodes:
-        mut_inds = random.sample([i for i in range(len(prims))])
-        for ind in mut_inds:
-            _mutate_node_args(config, prims[ind], multiple=multiple_args)
+        n_nodes = random.randint(1, len(prims))
+        mut_nodes = random.sample(prims, n_nodes)
+        for node in mut_nodes:
+            _mutate_node_args(config, node, multiple=multiple_args)
 
     else:
         mut_node = random.choice(prims)
