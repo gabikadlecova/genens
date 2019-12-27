@@ -118,18 +118,18 @@ class GenensBase(BaseEstimator):
         self._setup_toolbox()
 
     def _setup_arg_mut(self):
-        mut_fun = partial(mutate_args, self.config,
+        mut_func = partial(mutate_args, self.config,
                           multiple_nodes=self.mut_multiple_nodes,
                           multiple_args=self.mut_multiple_args)
 
         if self.hc_repeat > 0:
             self._toolbox.register("mutate_args", perform_hillclimbing,
                                    self._toolbox,
-                                   mut_fun=mut_fun,
+                                   mut_func=mut_func,
                                    hc_repeat=self.hc_repeat,
                                    keep_last=self.hc_keep_last)
         else:
-            self._toolbox.register("mutate_args", mut_fun)
+            self._toolbox.register("mutate_args", mut_func)
 
     def _setup_toolbox(self):
         self._toolbox = base.Toolbox()
