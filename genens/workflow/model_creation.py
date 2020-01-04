@@ -28,6 +28,18 @@ def create_workflow(gp_tree, config_dict):
     return gp_tree.run_tree(wf_step_from_node)
 
 
+def create_stacking(ens_cls, const_kwargs, child_list, evolved_kwargs):
+    if not len(child_list) or len(child_list) < 2:
+        raise ValueError("Not enough estimators provided to the ensemble.")
+
+    estimator_list = child_list[:-1]
+    final_estimator = child_list[-1]
+
+    return ens_cls(estimators=estimator_list,
+                   final_estimator=final_estimator,
+                   **const_kwargs, **evolved_kwargs)
+
+
 def create_ensemble(ens_cls, const_kwargs, child_list, evolved_kwargs):
     """
     Creates an ensemble with its children set as base-learners.

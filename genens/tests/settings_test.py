@@ -25,7 +25,7 @@ def run_test(kwarg_dict):
     )
 
     clf.fit(X, y, verbose=2)
-    return clf
+    return clf, X, y
 
 
 if __name__ == "__main__":
