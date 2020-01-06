@@ -33,6 +33,7 @@ def create_stacking(ens_cls, const_kwargs, child_list, evolved_kwargs):
         raise ValueError("Not enough estimators provided to the ensemble.")
 
     estimator_list = child_list[:-1]
+    estimator_list = [(f'clf{i}', clf) for i, clf in enumerate(estimator_list)]
     final_estimator = child_list[-1]
 
     return ens_cls(estimators=estimator_list,
