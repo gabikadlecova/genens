@@ -163,7 +163,7 @@ class CrossValEvaluator(EvaluatorBase):
 
     def evaluate(self, workflow, scorer=None):
         scores = cross_val_score(workflow, self.train_X, self.train_y,
-                                 cv=self.cv_k, scoring=scorer)
+                                 cv=self.cv_k, scoring=scorer, error_score='raise')
         return np.mean(scores)
 
     def reset(self):
