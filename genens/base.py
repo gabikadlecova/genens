@@ -4,34 +4,44 @@
 This module contains the base estimator of Genens.
 """
 
-from .gp.operators import gen_tree
-from .gp.operators import gen_individual
-from .gp.operators import mutate_subtree
-from .gp.operators import mutate_node_args
-from .gp.operators import mutate_node_swap
-from .gp.operators import crossover_one_point
-from .gp.operators import ea_run
+import json
+import logging
+import logging.config
+import numpy as np
+import os
 
-from .workflow.evaluate import CrossValEvaluator, TrainTestEvaluator, default_score
-from .workflow.model_creation import create_workflow
+from genens.gp.tree import gen_tree
+from genens.gp.evolution import gen_individual
+from genens.gp.mutation import mutate_subtree
+from genens.gp.mutation import mutate_node_args
+from genens.gp.mutation import mutate_node_swap
+from genens.gp.crossover import crossover_one_point
+from genens.gp.evolution import ea_run
 
-from sklearn.base import BaseEstimator, is_classifier
-
-from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
-from sklearn.utils.multiclass import unique_labels
+from genens.workflow.evaluate import CrossValEvaluator, TrainTestEvaluator, default_score
+from genens.workflow.model_creation import create_workflow
 
 from deap import base, tools
 from functools import partial
 from joblib import delayed
+from multiprocessing import Manager
+from logging.handlers import QueueListener, QueueHandler
 
-import numpy as np
+from sklearn.base import BaseEstimator, is_classifier
+from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
+from sklearn.utils.multiclass import unique_labels
+
+
+file_dir = os.path.dirname(os.path.abspath(__file__))
+DEFAULT_LOGGING_CONFIG = file_dir + '/.logging_config.json'
 
 
 class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6,
                  mut_node_pb=0.3, scorer=None, pop_size=200,
-                 n_gen=15, hc_repeat=0, hc_keep_last=False, max_height=None,
-                 max_arity=None, timeout=None, evaluator=None):
+                 n_gen=15, hc_repeat=0, hc_keep_last=False, weighted=True, use_groups=True, max_height=None,
+                 max_arity=None, timeout=None, evaluator=None,
+                 log_path=None):
         """
         Creates a new Genens estimator.
 
@@ -48,6 +58,9 @@ class GenensBase(BaseEstimator):
         :param hc_keep_last:
             Whether the last individual should be mutated if the hill-climbing did not find a better individual.
 
+        :param weighted: Determines whether the selection of nodes is weighted (according to groups).
+
+        :param bool use_groups: If false, primitive groups are ignored.
         :param max_height: Maximum height of tree individuals.
         :param max_arity: Maximum arity of all nodes.
         :param timeout: Timeout for a single method evaluation.
@@ -74,6 +87,8 @@ class GenensBase(BaseEstimator):
 
         self.hc_repeat = hc_repeat
         self.hc_keep_last = hc_keep_last
+        self.weighted = weighted
+        self.use_groups = use_groups
 
         self.scorer = scorer
 
@@ -86,14 +101,19 @@ class GenensBase(BaseEstimator):
 
         self.pareto = tools.ParetoFront()
         self.fitted_wf = None
+        self._population = None
 
-        self._setup_log()
+        self._log_path = log_path
+        self._logging_config = DEFAULT_LOGGING_CONFIG
+        self._setup_debug_logging()
+        self._setup_stats_logging()
         self._setup_toolbox()
 
     def _setup_toolbox(self):
         self._toolbox = base.Toolbox()
 
-        self._toolbox.register("individual", gen_tree, self.config)
+        self._toolbox.register("individual", gen_tree, self.config,
+                               weighted=self.weighted, use_groups=self.use_groups)
 
         pop_func = partial(gen_individual, self._toolbox, self.config)
         self._toolbox.register("population", tools.initRepeat, list, pop_func)
@@ -112,7 +132,36 @@ class GenensBase(BaseEstimator):
         self._toolbox.register("evaluate", self._eval_tree_individual)
         self._toolbox.register("log", self._log_pop_stats)
 
-    def _setup_log(self):
+        self._toolbox.register("log_setup", self._setup_child_logging)
+
+    def _load_log_config(self):
+        if self._logging_config is not None:
+            with open(self._logging_config, 'r') as f:
+                return json.load(f)
+
+    def _setup_debug_logging(self):
+        config = self._load_log_config()
+        logging.config.dictConfig(config)
+        self.log_format = config['format']
+
+        mp_manager = Manager()
+        self._log_queue = mp_manager.Queue()
+
+        handl = QueueHandler(self._log_queue)
+        logger = logging.getLogger("genens")
+
+        logger.addHandler(handl)
+
+    def _setup_child_logging(self):
+        config = self._load_log_config()
+        logging.config.dictConfig(config)
+
+        handl = QueueHandler(self._log_queue)
+        logger = logging.getLogger("genens")
+        logger.addHandler(handl)
+        return handl
+
+    def _setup_stats_logging(self):
         score_stats = tools.Statistics(lambda ind: ind.fitness.values[0])
         test_stats = tools.Statistics(lambda ind: self._compute_test(ind))
 
@@ -178,7 +227,7 @@ class GenensBase(BaseEstimator):
         else:
             return list(map(self._toolbox.compile, self.pareto))
 
-    def fit(self, train_X, train_y):
+    def fit(self, train_X, train_y, verbose=1):
         train_X, train_y = check_X_y(train_X, train_y, accept_sparse=True)
 
         if is_classifier(self):
@@ -187,10 +236,32 @@ class GenensBase(BaseEstimator):
         self._fitness_evaluator.fit(train_X, train_y)
         self.pareto.clear()
 
-        pop = self._toolbox.population(n=self.pop_size)
-        ea_run(pop, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
+        self._population = self._toolbox.population(n=self.pop_size)
+
+        # handlers do not work well with pickling (required for multiprocessing)
+        formatter = logging.Formatter(fmt=self.log_format)
+        if self._log_path is not None:
+            handl = logging.FileHandler(self._log_path)
+        else:
+            handl = logging.StreamHandler()
+
+        handl.setFormatter(formatter)
+        log_queue_listener = QueueListener(self._log_queue, handl)
+
+        try:
+            log_queue_listener.start()
+            ea_run(self._population, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
                    mut_pb=self.mut_pb,
-                   mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs)
+                   mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs,
+                   verbose=verbose)
+
+        finally:
+            # close local logging handlers
+            log_queue_listener.stop()
+            handl.close()
+            del log_queue_listener
+            del handl
+
 
         # TODO change later
         tree = self.pareto[0]

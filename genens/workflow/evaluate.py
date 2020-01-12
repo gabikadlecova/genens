@@ -6,6 +6,7 @@ This module provides evaluators that can be used as fitness evaluators in Genens
 from abc import ABC, abstractmethod
 from functools import wraps
 
+import logging
 import numpy as np
 
 from sklearn.model_selection import train_test_split
@@ -20,15 +21,18 @@ import warnings
 
 def timeout(fn):
     @wraps(fn)
-    def with_timeout(self, *args, **kwargs):
+    def with_timeout(self, workflow, *args, **kwargs):
         if not hasattr(self, 'timeout') or self.timeout is None:
-            return fn(self, *args, **kwargs)
+            return fn(self, workflow, *args, **kwargs)
 
         try:
             with Timeout(self.timeout, swallow_exc=False):
-                res = fn(self, *args, **kwargs)
+                res = fn(self, workflow, *args, **kwargs)
         except TimeoutException:
-            # TODO log cause
+            logger = logging.getLogger("genens")
+            logger.debug(f"Timeouted:\n {workflow}")
+            print(f"Timeouted:\n {workflow}")
+
             res = None
 
         return res
@@ -37,15 +41,19 @@ def timeout(fn):
 
 def eval_time(fn):
     @wraps(fn)
-    def with_time(*args, **kwargs):
-        start_time = time.time()
+    def with_time(self, workflow, *args, **kwargs):
+        start_time = time.process_time_ns()
 
-        res = fn(*args, **kwargs)
+        res = fn(self, workflow, *args, **kwargs)
         if res is None:
             return None
 
-        elapsed_time = np.log(time.time() - start_time + np.finfo(float).eps)
-        return res, elapsed_time
+        elapsed_time = time.process_time_ns() - start_time
+
+        logger = logging.getLogger("genens")
+        logger.debug(f"Evaluation time - {elapsed_time / 10e9},\n{workflow}")
+
+        return res, np.log(elapsed_time)
 
     return with_time
 

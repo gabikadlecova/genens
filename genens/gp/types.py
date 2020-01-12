@@ -218,7 +218,7 @@ class GpPrimitive:
         return True
 
     def __repr__(self):
-        return 'GpPrimitive( name=' + self.name + ", arity={}".format(self.arity)\
+        return 'GpPrimitive(name=' + self.name + ", arity={}".format(self.arity)\
                + ", height={})".format(self.height)
 
     @property

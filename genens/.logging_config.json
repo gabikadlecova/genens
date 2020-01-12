@@ -1,0 +1,9 @@
+{
+	"version": 1,
+	"format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+	"loggers": {
+		"genens": {
+			"level": "DEBUG"
+		}
+	}
+}

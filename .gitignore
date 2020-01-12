@@ -1,7 +1,10 @@
 # Picture output
 *.png
+
+# Genens
 genens/tests/res/*
 genens/.idea/*
+.idea/*
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
