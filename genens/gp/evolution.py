@@ -157,12 +157,13 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
         # selection for operations
         population[:] = tools.selTournamentDCD(population, pop_size)
-        offspring = toolbox.map(toolbox.clone, population)
+        all_offspring = []
 
         with Parallel(n_jobs=n_jobs) as parallel:
             if verbose >= 2:
                 print(f"Gen {g} - crossover")
 
+            offspring = toolbox.map(toolbox.clone, population)
             # crossover - subtree
             offspring = parallel(
                 delayed(_perform_cx)(
@@ -172,10 +173,12 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 for ch1, ch2 in zip(offspring[::2], offspring[1::2])
             )
             offspring = list(chain.from_iterable(offspring))  # chain cx tuples to list of offspring
+            all_offspring += offspring
 
             if verbose >= 2:
                 print(f"Gen {g} - mutation")
 
+            offspring = toolbox.map(toolbox.clone, population)
             # mutation - subtree
             offspring = parallel(
                 delayed(_perform_mut)(
@@ -184,7 +187,9 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 )
                 for mut in offspring
             )
+            all_offspring += offspring
 
+            offspring = toolbox.map(toolbox.clone, population)
             # mutation - node args
             offspring = parallel(
                 delayed(_perform_mut)(
@@ -193,7 +198,9 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 )
                 for mut in offspring
             )
+            all_offspring += offspring
 
+            offspring = toolbox.map(toolbox.clone, population)
             # mutation - node swap
             offspring = parallel(
                 delayed(_perform_mut)(
@@ -202,8 +209,9 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 )
                 for mut in offspring
             )
+            all_offspring += offspring
 
-            offs_to_eval = [ind for ind in offspring if not ind.fitness.valid]
+            offs_to_eval = [ind for ind in all_offspring if not ind.fitness.valid]
 
             # evaluation of changed offspring
             scores = toolbox.map(evaluate_func, offs_to_eval, parallel=parallel)
@@ -214,12 +222,12 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 off.fitness.values = score
 
             # remove offspring which threw exceptions
-            offspring[:] = [ind for ind in offspring if ind.fitness.valid]
+            all_offspring[:] = [ind for ind in all_offspring if ind.fitness.valid]
             valid = parallel(delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
-                             for _ in range(pop_size - len(offspring)))
-            offspring += valid
+                             for _ in range(pop_size - len(all_offspring)))
+            all_offspring += valid
 
-        population[:] = toolbox.select(population + offspring, pop_size)
+        population[:] = toolbox.select(population + all_offspring, pop_size)
 
         toolbox.log(population, g + 1)
 
