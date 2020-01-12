@@ -45,13 +45,13 @@ def eval_time(fn):
         start_time = time.process_time_ns()
 
         res = fn(self, workflow, *args, **kwargs)
-        if res is None:
+        if res is None or np.isnan(res):
             return None
 
         elapsed_time = time.process_time_ns() - start_time
 
         logger = logging.getLogger("genens")
-        logger.debug(f"Evaluation time - {elapsed_time / 10e9}s,\n{workflow}")
+        logger.debug(f"Score: {res}, evaluation time - {elapsed_time / 10e9}s,\n{workflow}")
 
         return res, np.log(elapsed_time)
 
@@ -163,7 +163,7 @@ class CrossValEvaluator(EvaluatorBase):
 
     def evaluate(self, workflow, scorer=None):
         scores = cross_val_score(workflow, self.train_X, self.train_y,
-                                 cv=self.cv_k, scoring=scorer)
+                                 cv=self.cv_k, scoring=scorer, error_score='raise')
         return np.mean(scores)
 
     def reset(self):

@@ -3,7 +3,7 @@ import numpy as np
 import random
 
 from genens import GenensClassifier
-from genens.workflow.evaluate import SampleCrossValEvaluator
+from genens.workflow.evaluate import SampleCrossValEvaluator, CrossValEvaluator
 from .datasets.load_datasets import load_dataset
 
 
@@ -17,7 +17,11 @@ def run_test(kwarg_dict):
 
     cv_k = kwarg_dict.pop('cv_k')
     size = kwarg_dict.pop('size')
-    evaluator = SampleCrossValEvaluator(cv_k=cv_k, sample_size=size, per_gen=True)
+
+    if size == 1.0:
+        evaluator = CrossValEvaluator(cv_k=cv_k)
+    else:
+        evaluator = SampleCrossValEvaluator(cv_k=cv_k, sample_size=size, per_gen=True)
 
     clf = GenensClassifier(
         evaluator=evaluator,
@@ -25,7 +29,7 @@ def run_test(kwarg_dict):
     )
 
     clf.fit(X, y, verbose=2)
-    return clf
+    return clf, X, y
 
 
 if __name__ == "__main__":
