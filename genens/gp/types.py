@@ -100,13 +100,13 @@ class GpTreeIndividual:
         curr = self.primitives[root_ind]
 
         arity_rem = curr.arity
-        init_h = curr.height
+        init_h = curr.depth
         max_h = init_h
 
         while arity_rem > 0:
             root_ind = root_ind - 1
             curr = self.primitives[root_ind]
-            max_h = max(max_h, curr.height)
+            max_h = max(max_h, curr.depth)
 
             arity_rem = arity_rem - 1 + curr.arity
 
@@ -128,7 +128,7 @@ class GpTreeIndividual:
                     if child.node_type[1] != in_type.name:
                         raise ValueError("Invalid child type.")  # TODO specific
 
-                    if child.height != node.height + 1:
+                    if child.depth != node.depth + 1:
                         raise ValueError("Invalid child height.")  # TODO specific
 
                 child_id += in_type.arity
@@ -137,7 +137,7 @@ class GpTreeIndividual:
 
         self.run_tree(validate_node)
 
-        if self.max_height != max(prim.height for prim in self.primitives):
+        if self.max_height != max(prim.depth + 1 for prim in self.primitives):
             raise ValueError("Invalid tree height.")  # TODO specific
 
 
@@ -172,7 +172,7 @@ class GpPrimitive:
     or object, which is associated with the node.
     """
 
-    def __init__(self, name, obj_kwargs, node_type, arity, height):
+    def __init__(self, name, obj_kwargs, node_type, arity, depth):
         """
         Creates an instance of a GP tree node. Number of its children
         is specified by its arity, types of children are determined by its
@@ -185,12 +185,13 @@ class GpPrimitive:
             A tuple, where first item is a list of input types with arities
             and the second item is output type name.
         :param int arity: Sum of all arities of types.
+        :param int height: Depth of the node.
         """
         self.name = name
         self.obj_kwargs = obj_kwargs
         self.node_type = node_type
         self.arity = arity
-        self.height = height
+        self.depth = depth
 
     def __deepcopy__(self, memo=None):
         if memo is None:
@@ -219,7 +220,7 @@ class GpPrimitive:
 
     def __repr__(self):
         return 'GpPrimitive(name=' + self.name + ", arity={}".format(self.arity)\
-               + ", height={})".format(self.height)
+               + ", height={})".format(self.depth)
 
     @property
     def out_type(self):

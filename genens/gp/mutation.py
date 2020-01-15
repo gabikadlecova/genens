@@ -6,7 +6,7 @@ from genens.gp.tree import swap_subtrees
 from genens.gp.types import GpFunctionTemplate
 
 
-def mutate_subtree(toolbox, gp_tree, eps=0.2):
+def mutate_subtree(toolbox, gp_tree, eps=0.2, min_node_depth=0):
     """
     Replaces a randomly chosen subtree with a new random tree. The height of the generated subtree
     is between 1 and previous subtree height + ``eps``.
@@ -16,15 +16,22 @@ def mutate_subtree(toolbox, gp_tree, eps=0.2):
     :param float eps:
         Height of the new subtree lies in the interval ((1-eps) * old_height, (1+eps) * old_height).
 
+    :param int min_node_depth: Minimal mutation point depth in both trees.
+
     :return: The mutated tree.
     """
     # mutation does not replace the whole tree
-    if len(gp_tree.primitives) < 2:
+    if gp_tree.max_height < 2:
         return gp_tree
 
     # select a node other than the root
-    mut_end_point = random.randrange(len(gp_tree.primitives) - 1)
+    eligible_inds = [ind for ind, node in enumerate(gp_tree.primitives) if node.depth >= min_node_depth]
+    if not len(eligible_inds):
+        logger = logging.getLogger("genens")
+        logger.debug(f"Mutation (subtree) - tree too small:\n{gp_tree}")
+        return gp_tree
 
+    mut_end_point = random.choice(eligible_inds)
     _, subtree_height = gp_tree.subtree(mut_end_point)
 
     lower = math.floor((1.0 - eps) * subtree_height)
@@ -96,11 +103,11 @@ def mutate_node_swap(config, gp_tree):
     chosen_tm = random.choice(possible_templates)
 
     if isinstance(chosen_tm, GpFunctionTemplate):
-        new_node = chosen_tm.create_primitive(swap_node.height, config.max_arity,
+        new_node = chosen_tm.create_primitive(swap_node.depth, config.max_arity,
                                               config.kwargs_config[chosen_tm.name],
                                               in_type=swap_node.node_type[0])
     else:
-        new_node = chosen_tm.create_primitive(swap_node.height, config.max_arity,
+        new_node = chosen_tm.create_primitive(swap_node.depth, config.max_arity,
                                               config.kwargs_config[chosen_tm.name])
 
     gp_tree.primitives[swap_ind] = new_node

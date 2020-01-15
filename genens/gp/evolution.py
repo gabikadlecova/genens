@@ -95,7 +95,7 @@ def _perform_eval(eval_func, ind):
 
 
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb, n_jobs=1,
-           verbose=1):
+           min_large_tree_height=3, verbose=1):
     """
     Performs a run of the evolutionary algorithm.
 
@@ -112,6 +112,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                    ``n_jobs`` = 1, multiprocessing is not used
                    ``n_jobs = k, k + 1 processors are used - for -1, all processors are used
 
+    :param  min_large_tree_height: Perform structural changes only on trees of at least this height.
     :param verbose: Print verbosity
     """
 
@@ -157,18 +158,19 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
         # selection for operations
         population[:] = tools.selTournamentDCD(population, pop_size)
+        larger_trees = [tree for tree in population if tree.max_height >= min_large_tree_height]
         all_offspring = []
 
         with Parallel(n_jobs=n_jobs) as parallel:
             if verbose >= 2:
                 print(f"Gen {g} - crossover")
 
-            offspring = toolbox.map(toolbox.clone, population)
             # crossover - subtree
+            offspring = toolbox.map(toolbox.clone, larger_trees)
             offspring = parallel(
                 delayed(_perform_cx)(
                     toolbox.cx_one_point,  # func
-                    cx_pb, ch1, ch2, log_setup=toolbox.log_setup  # args
+                    cx_pb, ch1, ch2, min_node_depth=min_large_tree_height - 1, log_setup=toolbox.log_setup  # args
                 )
                 for ch1, ch2 in zip(offspring[::2], offspring[1::2])
             )
@@ -178,8 +180,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
             if verbose >= 2:
                 print(f"Gen {g} - mutation")
 
-            offspring = toolbox.map(toolbox.clone, population)
             # mutation - subtree
+            offspring = toolbox.map(toolbox.clone, larger_trees)
             offspring = parallel(
                 delayed(_perform_mut)(
                     toolbox.mutate_subtree,  # func
@@ -189,8 +191,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
             )
             all_offspring += offspring
 
-            offspring = toolbox.map(toolbox.clone, population)
             # mutation - node args
+            offspring = toolbox.map(toolbox.clone, population)
             offspring = parallel(
                 delayed(_perform_mut)(
                     toolbox.mutate_args,  # func
@@ -200,8 +202,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
             )
             all_offspring += offspring
 
-            offspring = toolbox.map(toolbox.clone, population)
             # mutation - node swap
+            offspring = toolbox.map(toolbox.clone, population)
             offspring = parallel(
                 delayed(_perform_mut)(
                     toolbox.mutate_node_swap,  # func
