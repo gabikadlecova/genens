@@ -93,7 +93,6 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out', weighted
                 type_stack.append((child_type.name, child_type.arity, h + 1))
 
         tree_list.append(prim)
-        print(prim.depth)
 
     return DeapTreeIndividual(list(reversed(tree_list)), tree_height)
 

@@ -59,12 +59,12 @@ def gen_valid(toolbox, timeout=100):
 
 
 @set_log_handler
-def _perform_cx(cx_func, cx_pb, ch1, ch2):
+def _perform_cx(cx_func, cx_pb, ch1, ch2, **kwargs):
     parent1_str = tree_str(ch1)
     parent2_str = tree_str(ch2)
 
     if random.random() < cx_pb:
-        ch1, ch2 = cx_func(ch1, ch2)
+        ch1, ch2 = cx_func(ch1, ch2, **kwargs)
         ch1.reset()
         ch2.reset()
 
@@ -76,11 +76,11 @@ def _perform_cx(cx_func, cx_pb, ch1, ch2):
 
 
 @set_log_handler
-def _perform_mut(mut_func, mut_pb, mut):
+def _perform_mut(mut_func, mut_pb, mut, **kwargs):
     parent_str = tree_str(mut, with_hyperparams=True)
 
     if random.random() < mut_pb:
-        mut = mut_func(mut)
+        mut = mut_func(mut, **kwargs)
         mut.reset()
 
         logger = logging.getLogger("genens")
