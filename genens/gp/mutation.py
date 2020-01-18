@@ -1,9 +1,10 @@
 import logging
 import math
 import random
+from functools import partial
 
 from genens.gp.tree import swap_subtrees
-from genens.gp.types import GpFunctionTemplate
+from genens.gp.types import GpFunctionTemplate, GpTreeIndividual
 
 
 def mutate_subtree(toolbox, gp_tree, eps=0.2, min_node_depth=0):
@@ -115,22 +116,27 @@ def mutate_node_swap(config, gp_tree):
 
 
 def mutate_args(config, gp_tree, multiple_nodes=False, multiple_args=False):
-    # choose only nodes with hyperparameters
+    mut_nodes = _get_nodes_for_mut(gp_tree, multiple_nodes=multiple_nodes)
+    if not len(mut_nodes):
+        return gp_tree
+
+    for node in mut_nodes:
+        _mutate_node_args(config, node, multiple=multiple_args)
+
+    return gp_tree
+
+
+def _get_nodes_for_mut(gp_tree, multiple_nodes=False):
     prims = [prim for prim in gp_tree.primitives if len(prim.obj_kwargs)]
     if not len(prims):
-        return gp_tree
+        return []
 
     if multiple_nodes:
         n_nodes = random.randint(1, len(prims))
-        mut_nodes = random.sample(prims, n_nodes)
-        for node in mut_nodes:
-            _mutate_node_args(config, node, multiple=multiple_args)
-
     else:
-        mut_node = random.choice(prims)
-        _mutate_node_args(config, mut_node, multiple=multiple_args)
+        n_nodes = 1
 
-    return gp_tree
+    return random.sample(prims, n_nodes)
 
 
 def _mutate_node_args(config, mut_node, multiple=False):
@@ -151,6 +157,16 @@ def _mutate_node_args(config, mut_node, multiple=False):
         _mut_arg(config, mut_node, mut_arg)
 
     return mut_node
+
+
+def mutate_gradual_hillclimbing(toolbox, config, gp_tree: GpTreeIndividual, multiple_args=True,
+                                hc_repeat=5, keep_last=False):
+    mut_nodes = _get_nodes_for_mut(gp_tree, multiple_nodes=True)
+    for node in mut_nodes:
+        mut_func = partial(_mutate_node_args, config, node, multiple=multiple_args)
+        gp_tree = perform_hillclimbing(toolbox, gp_tree, mut_func, hc_repeat=hc_repeat, keep_last=keep_last)
+
+    return gp_tree
 
 
 def perform_hillclimbing(toolbox, gp_tree, mut_func,

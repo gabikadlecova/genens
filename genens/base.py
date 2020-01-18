@@ -12,7 +12,7 @@ import os
 
 from genens.gp.tree import gen_tree
 from genens.gp.evolution import gen_individual
-from genens.gp.mutation import mutate_subtree
+from genens.gp.mutation import mutate_subtree, mutate_gradual_hillclimbing
 from genens.gp.mutation import perform_hillclimbing, mutate_args
 from genens.gp.mutation import mutate_node_swap
 from genens.gp.crossover import crossover_one_point
@@ -119,17 +119,21 @@ class GenensBase(BaseEstimator):
 
     def _setup_arg_mut(self):
         mut_func = partial(mutate_args, self.config,
-                          multiple_nodes=self.mut_multiple_nodes,
-                          multiple_args=self.mut_multiple_args)
+                           multiple_nodes=self.mut_multiple_nodes,
+                           multiple_args=self.mut_multiple_args)
 
         if self.hc_repeat > 0:
-            self._toolbox.register("mutate_args", perform_hillclimbing,
-                                   self._toolbox,
-                                   mut_func=mut_func,
-                                   hc_repeat=self.hc_repeat,
-                                   keep_last=self.hc_keep_last)
-        else:
-            self._toolbox.register("mutate_args", mut_func)
+            print("TEST - hc parameter used elsewhere")
+            self._toolbox.register("gradual_hillclimbing", mutate_gradual_hillclimbing,
+                                   self._toolbox, self.config,
+                                   hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
+            #self._toolbox.register("mutate_args", perform_hillclimbing,
+            #                       self._toolbox,
+            #                       mut_func=mut_func,
+            #                       hc_repeat=self.hc_repeat,
+            #                       keep_last=self.hc_keep_last)
+        #else:
+        self._toolbox.register("mutate_args", mut_func)
 
     def _setup_toolbox(self):
         self._toolbox = base.Toolbox()

@@ -191,23 +191,32 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
             )
             all_offspring += offspring
 
-            # mutation - node args
-            offspring = toolbox.map(toolbox.clone, population)
-            offspring = parallel(
-                delayed(_perform_mut)(
-                    toolbox.mutate_args,  # func
-                    mut_args_pb, mut, log_setup=toolbox.log_setup  # args
-                )
-                for mut in offspring
-            )
-            all_offspring += offspring
-
             # mutation - node swap
             offspring = toolbox.map(toolbox.clone, population)
             offspring = parallel(
                 delayed(_perform_mut)(
                     toolbox.mutate_node_swap,  # func
                     mut_node_pb, mut, log_setup=toolbox.log_setup  # args
+                )
+                for mut in offspring
+            )
+            all_offspring += offspring
+
+            # for large new offspring, perform hc to make them competitive
+            for offs in all_offspring:
+                if offs.height < min_large_tree_height:
+                    continue
+
+                toolbox.gradual_hillclimbing(offs)
+
+            # ----------------
+
+            # mutation - node args
+            offspring = toolbox.map(toolbox.clone, population)
+            offspring = parallel(
+                delayed(_perform_mut)(
+                    toolbox.mutate_args,  # func
+                    mut_args_pb, mut, log_setup=toolbox.log_setup  # args
                 )
                 for mut in offspring
             )
