@@ -5,31 +5,13 @@ Genens is an AutoML system for pipeline optimization based on developmental gene
 Clone the repository.
 ```
 git clone https://github.com/gabrielasuchopar/genens.git
-cd genens
+pip install genens
 ```
 
-Set up a conda environment:
-
-on Windows
-```
-conda env create -f environment-win.yml
-conda activate genenv
-```
-
-on Linux
-```
-conda env create -f environment-linux.yml
-conda activate genenv
-```
-
-Finally, add ``path-to-repository/genens/`` to PYTHONPATH.
 
 -----
-There may be some problems regarding the pygraphviz package on Windows. You can contact me if any problems occur.
-
 ## Using Genens
-As for now, the GenensClassifier is fully functional. You can use it just as any scikit-learn classifier. When fit is called,
-it performs evolutionary optimization.
+As for now, the GenensClassifier is fully functional. It can be used just as any scikit-learn classifier. When `fit()` is called, evolutionary optimization is run. After it finishes, `predict()` produces a prediction with the best of optimized pipelines. Alternatively, you can call get\_best\_pipelines() to get pipelines from the pareto front.
 
 ```
 from genens import GenensClassifier
@@ -42,11 +24,11 @@ clf = GenensClassifier()
 clf.fit(train_X, train_y)
 ... # process of evolution
 
-score = clf.predict(test_X)
+pred = clf.predict(test_X)
 ```
 
 ## Tests
-You can run tests which produce data about evolution and pickle files of best optimized pipelines. 
+You can run tests which produce data about evolution process and pickle files of best optimized pipelines. 
 Sample config files are included in ``./genens/tests/config``.
 
 - Run Genens on a dataset specified in the config file.

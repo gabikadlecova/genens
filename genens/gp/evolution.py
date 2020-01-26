@@ -94,7 +94,8 @@ def _perform_eval(eval_func, ind):
     return eval_func(ind)
 
 
-def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb, n_jobs=1,
+def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb,
+           hc_mut_pb=0.2, hc_n_nodes=3, n_jobs=1,
            min_large_tree_height=3, verbose=1):
     """
     Performs a run of the evolutionary algorithm.
@@ -203,11 +204,18 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
             all_offspring += offspring
 
             # for large new offspring, perform hc to make them competitive
-            for offs in all_offspring:
-                if offs.height < min_large_tree_height:
-                    continue
+            def apply_gradual(offs, mut_pb, n_nodes):
+                if offs.max_height < min_large_tree_height:
+                    return offs
 
-                toolbox.gradual_hillclimbing(offs)
+                return _perform_mut(toolbox.gradual_hillclimbing, mut_pb, offs, n_nodes=n_nodes)
+
+            all_offspring = parallel(
+                delayed(apply_gradual)(
+                    off, hc_mut_pb, hc_n_nodes
+                )
+                for off in all_offspring
+            )
 
             # ----------------
 

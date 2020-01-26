@@ -116,7 +116,7 @@ def mutate_node_swap(config, gp_tree):
 
 
 def mutate_args(config, gp_tree, multiple_nodes=False, multiple_args=False):
-    mut_nodes = _get_nodes_for_mut(gp_tree, multiple_nodes=multiple_nodes)
+    _, mut_nodes = _get_nodes_for_mut(gp_tree, multiple_nodes=multiple_nodes)
     if not len(mut_nodes):
         return gp_tree
 
@@ -127,16 +127,17 @@ def mutate_args(config, gp_tree, multiple_nodes=False, multiple_args=False):
 
 
 def _get_nodes_for_mut(gp_tree, multiple_nodes=False):
-    prims = [prim for prim in gp_tree.primitives if len(prim.obj_kwargs)]
-    if not len(prims):
-        return []
+    prim_inds = [i for i, prim in enumerate(gp_tree.primitives) if len(prim.obj_kwargs)]
+    if not len(prim_inds):
+        return [], []
 
     if multiple_nodes:
-        n_nodes = random.randint(1, len(prims))
+        n_nodes = random.randint(1, len(prim_inds))
     else:
         n_nodes = 1
 
-    return random.sample(prims, n_nodes)
+    ind_sample = random.sample(prim_inds, n_nodes)
+    return ind_sample, [gp_tree.primitives[i] for i in ind_sample]
 
 
 def _mutate_node_args(config, mut_node, multiple=False):
@@ -160,10 +161,20 @@ def _mutate_node_args(config, mut_node, multiple=False):
 
 
 def mutate_gradual_hillclimbing(toolbox, config, gp_tree: GpTreeIndividual, multiple_args=True,
-                                hc_repeat=5, keep_last=False):
-    mut_nodes = _get_nodes_for_mut(gp_tree, multiple_nodes=True)
-    for node in mut_nodes:
-        mut_func = partial(_mutate_node_args, config, node, multiple=multiple_args)
+                                hc_repeat=5, n_nodes=3, keep_last=False):
+    def mut_ind(ind, gp_tree):
+        _mutate_node_args(config, gp_tree.primitives[ind], multiple=multiple_args)
+
+    mut_inds, _ = _get_nodes_for_mut(gp_tree, multiple_nodes=True)
+    if not len(mut_inds):
+        return gp_tree
+
+    n_nodes = min(n_nodes, len(mut_inds))
+    mut_inds = random.sample(mut_inds, n_nodes)
+    mut_inds = random.sample(mut_inds, n_nodes)
+
+    for i in mut_inds:
+        mut_func = partial(mut_ind, i)
         gp_tree = perform_hillclimbing(toolbox, gp_tree, mut_func, hc_repeat=hc_repeat, keep_last=keep_last)
 
     return gp_tree

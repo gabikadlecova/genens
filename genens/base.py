@@ -42,7 +42,8 @@ class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6,
                  mut_node_pb=0.3, scorer=None, pop_size=200,
                  mut_multiple_args=False, mut_multiple_nodes=False,
-                 n_gen=15, hc_repeat=0, hc_keep_last=False, weighted=True, use_groups=True, max_height=None,
+                 n_gen=15, hc_repeat=0, hc_keep_last=False, hc_mut_pb=0.1, hc_n_nodes=3,
+                 weighted=True, use_groups=True, max_height=None,
                  max_arity=None, timeout=None, evaluator=None,
                  log_path=None):
         """
@@ -95,6 +96,8 @@ class GenensBase(BaseEstimator):
 
         self.hc_repeat = hc_repeat
         self.hc_keep_last = hc_keep_last
+        self.hc_n_nodes = hc_n_nodes
+        self.hc_mut_pb = hc_mut_pb
         self.weighted = weighted
         self.use_groups = use_groups
 
@@ -276,7 +279,7 @@ class GenensBase(BaseEstimator):
         try:
             log_queue_listener.start()
             ea_run(self._population, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
-                   mut_pb=self.mut_pb,
+                   mut_pb=self.mut_pb, hc_mut_pb=self.hc_mut_pb, hc_n_nodes=self.hc_n_nodes,
                    mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs,
                    verbose=verbose)
 
