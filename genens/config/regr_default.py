@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
+from sklearn.linear_model import LinearRegression, Ridge, Lasso, ElasticNet, Lars
 
-from ..config.utils import get_default_config
+from ..config.utils import get_default_config, predictor_primitive, predictor_terminal
 from ..config.utils import estimator_func
 from ..config.utils import ensemble_func
 from ..config.utils import ensemble_primitive
@@ -13,6 +14,8 @@ from sklearn import preprocessing
 from sklearn import ensemble
 
 import warnings
+
+from ..gp.types import GpFunctionTemplate, TypeArity
 
 
 def regr_config():
@@ -29,12 +32,19 @@ def regr_config():
     config = get_default_config()
 
     ensembles_func = {
-        'ada': ensemble_func(ensemble.AdaBoostRegressor),
-        'bagging': ensemble_func(ensemble.BaggingRegressor)
+        'voting': ensemble_func(ensemble.VotingRegressor),
+        'stacking': ensemble_func(ensemble.StackingRegressor)
     }
 
     # TODO
     regr_func = {
+        'ada': estimator_func(ensemble.AdaBoostRegressor),
+        'bagging': estimator_func(ensemble.BaggingRegressor),
+        'LinearRegression': estimator_func(LinearRegression),
+        'Ridge': estimator_func(Ridge),
+        'Lasso': estimator_func(Lasso),
+        'ElasticNet': estimator_func(ElasticNet),
+        'Lars': estimator_func(Lars)
 
     }
 
@@ -52,6 +62,17 @@ def regr_config():
     }
 
     ensemble_kwargs = {
+        'voting': {
+            # 'soft' not included - a lot of classifiers does not support predict_proba
+            'voting': ['hard', 'soft']
+        },
+        'stacking': {
+            'stack_method': ['auto', 'predict_proba', 'predict'],
+            'cv': [3, 5]
+        }
+    }
+
+    regr_kwargs = {
         'ada': {
             'n_estimators': [5, 10, 50, 100, 200],
             'loss': ['linear', 'square', 'exponential']
@@ -59,10 +80,6 @@ def regr_config():
         'bagging': {
             'n_estimators': [5, 10, 50, 100, 200]
         }
-    }
-
-    regr_kwargs = {
-
     }
 
     transform_kwargs = {
@@ -101,8 +118,20 @@ def regr_config():
     config.add_functions_args(func_dict, kwargs_dict)
 
     # ensemble config
-    config.add_primitive(ensemble_primitive('ada', 1))
-    config.add_primitive(ensemble_primitive('bagging', 1))
+    config.add_primitive(ensemble_primitive('voting', (2, 'n')))
+    config.add_primitive(
+        GpFunctionTemplate('stacking',
+                           [TypeArity('out', (1, 'n')), TypeArity('out', 1)],
+                           'ens',
+                           group='ensemble')
+    )
+
+    # regressor config
+    config.add_primitive(predictor_primitive('ada', 1))
+    config.add_primitive(predictor_primitive('bagging', 1))
+
+    config.add_primitive(predictor_primitive('ada', 1), term_only=True)
+    config.add_primitive(predictor_primitive('bagging', 1), term_only=True)
 
     # transformer config
     config.add_primitive(transformer_primitive("NMF", 'featsel'))

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from ..config.utils import ensemble_func
+from ..config.utils import ensemble_func, stacking_func
 from ..config.utils import estimator_func
 from ..config.utils import get_default_config
 from ..config.utils import ensemble_primitive
@@ -22,6 +22,8 @@ from sklearn import neighbors
 
 from sklearn import ensemble
 
+from genens.gp.types import GpFunctionTemplate, TypeArity
+
 
 def clf_config(group_weights=None):
     """
@@ -35,7 +37,8 @@ def clf_config(group_weights=None):
 
     # FUNCTIONS
     ensembles_func = {
-        'voting': ensemble_func(ensemble.VotingClassifier)
+        'voting': ensemble_func(ensemble.VotingClassifier),
+        'stacking': stacking_func(ensemble.StackingClassifier)
     }
 
     clf_func = {
@@ -75,6 +78,10 @@ def clf_config(group_weights=None):
         'voting': {
             # 'soft' not included - a lot of classifiers does not support predict_proba
             'voting': ['hard', 'soft']
+        },
+        'stacking': {
+            'stack_method': ['auto', 'predict_proba', 'predict'],
+            'cv': [3, 5]
         }
     }
 
@@ -223,6 +230,12 @@ def clf_config(group_weights=None):
 
     # ensemble config
     config.add_primitive(ensemble_primitive('voting', (2, 'n')))
+    config.add_primitive(
+        GpFunctionTemplate('stacking',
+                           [TypeArity('out', (1, 'n')), TypeArity('out', 1)],
+                           'ens',
+                           group='ensemble')
+    )
 
     # classifier config
     config.add_primitive(predictor_primitive('ada'))
@@ -241,6 +254,8 @@ def clf_config(group_weights=None):
     config.add_primitive(predictor_primitive("extraTrees"))
 
     # terminals used only as leaves
+    config.add_primitive(predictor_primitive('ada'), term_only=True)
+    config.add_primitive(predictor_primitive('bagging'), term_only=True)
     config.add_primitive(predictor_terminal("KNeighbors"), term_only=True)
     config.add_primitive(predictor_terminal("LinearSVC"), term_only=True)
     config.add_primitive(predictor_terminal("SVC"), term_only=True)

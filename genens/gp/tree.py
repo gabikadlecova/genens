@@ -69,6 +69,7 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out', weighted
 
     while len(type_stack):
         next_type, ar, h = type_stack.pop()
+        node_depth = h - 1
         tree_height = max(h, tree_height)
 
         # more children should be generated
@@ -76,14 +77,14 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out', weighted
             type_stack.append((next_type, ar - 1, h))
 
         # choose only terminals in the last level
-        if h < max_height:
+        if h < max_height - 1:
             choose_from = config.full_config[next_type]
         else:
             choose_from = config.term_config[next_type]
 
         # template of the next primitive
         next_prim_t = choose_prim(config, choose_from, weighted=weighted, use_groups=use_groups)
-        prim = next_prim_t.create_primitive(h, max_arity,
+        prim = next_prim_t.create_primitive(node_depth, max_arity,
                                             config.kwargs_config[next_prim_t.name])
 
         # append child types and arities to the stack
@@ -116,12 +117,12 @@ def swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
     """
 
     # update node heights
-    root_height_1 = tree_1.primitives[ind_1].height
-    root_height_2 = tree_2.primitives[ind_2].height
+    root_height_1 = tree_1.primitives[ind_1].depth
+    root_height_2 = tree_2.primitives[ind_2].depth
     height_diff = root_height_1 - root_height_2
 
     def move_node(prim, diff):
-        prim.height = prim.height + diff
+        prim.height = prim.depth + diff
         return prim
 
     # subtree indices
@@ -141,10 +142,10 @@ def swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
                      for prim in tree_1.primitives[ind_begin_1 : ind_end_1])
 
         tree_2.primitives[ind_begin_2 : ind_end_2] = subtree_1
-        tree_2.max_height = max(prim.height for prim in tree_2.primitives)  # update height
+        tree_2.max_height = max(prim.depth + 1 for prim in tree_2.primitives)  # update height
 
     # insert into tree_1 - insert subtree
     tree_1.primitives[ind_begin_1: ind_end_1] = subtree_2
-    tree_1.max_height = max(prim.height for prim in tree_1.primitives)  # update height
+    tree_1.max_height = max(prim.depth + 1 for prim in tree_1.primitives)  # update height
 
     return tree_1, tree_2 if keep_2 else tree_1,

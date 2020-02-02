@@ -1,11 +1,13 @@
+import logging
 import math
 import random
+from functools import partial
 
 from genens.gp.tree import swap_subtrees
-from genens.gp.types import GpFunctionTemplate
+from genens.gp.types import GpFunctionTemplate, GpTreeIndividual
 
 
-def mutate_subtree(toolbox, gp_tree, eps=0.2):
+def mutate_subtree(toolbox, gp_tree, eps=0.2, min_node_depth=0):
     """
     Replaces a randomly chosen subtree with a new random tree. The height of the generated subtree
     is between 1 and previous subtree height + ``eps``.
@@ -15,15 +17,22 @@ def mutate_subtree(toolbox, gp_tree, eps=0.2):
     :param float eps:
         Height of the new subtree lies in the interval ((1-eps) * old_height, (1+eps) * old_height).
 
+    :param int min_node_depth: Minimal mutation point depth in both trees.
+
     :return: The mutated tree.
     """
     # mutation does not replace the whole tree
-    if len(gp_tree.primitives) < 2:
+    if gp_tree.max_height < 2:
         return gp_tree
 
     # select a node other than the root
-    mut_end_point = random.randrange(len(gp_tree.primitives) - 1)
+    eligible_inds = [ind for ind, node in enumerate(gp_tree.primitives) if node.depth >= min_node_depth]
+    if not len(eligible_inds):
+        logger = logging.getLogger("genens")
+        logger.debug(f"Mutation (subtree) - tree too small:\n{gp_tree}")
+        return gp_tree
 
+    mut_end_point = random.choice(eligible_inds)
     _, subtree_height = gp_tree.subtree(mut_end_point)
 
     lower = math.floor((1.0 - eps) * subtree_height)
@@ -95,11 +104,11 @@ def mutate_node_swap(config, gp_tree):
     chosen_tm = random.choice(possible_templates)
 
     if isinstance(chosen_tm, GpFunctionTemplate):
-        new_node = chosen_tm.create_primitive(swap_node.height, config.max_arity,
+        new_node = chosen_tm.create_primitive(swap_node.depth, config.max_arity,
                                               config.kwargs_config[chosen_tm.name],
                                               in_type=swap_node.node_type[0])
     else:
-        new_node = chosen_tm.create_primitive(swap_node.height, config.max_arity,
+        new_node = chosen_tm.create_primitive(swap_node.depth, config.max_arity,
                                               config.kwargs_config[chosen_tm.name])
 
     gp_tree.primitives[swap_ind] = new_node
@@ -107,18 +116,28 @@ def mutate_node_swap(config, gp_tree):
 
 
 def mutate_args(config, gp_tree, multiple_nodes=False, multiple_args=False):
-    prims = gp_tree.primitives
+    _, mut_nodes = _get_nodes_for_mut(gp_tree, multiple_nodes=multiple_nodes)
+    if not len(mut_nodes):
+        return gp_tree
 
-    if multiple_nodes:
-        mut_inds = random.sample([i for i in range(len(prims))])
-        for ind in mut_inds:
-            _mutate_node_args(config, prims[ind], multiple=multiple_args)
-
-    else:
-        mut_node = random.choice(prims)
-        _mutate_node_args(config, mut_node, multiple=multiple_args)
+    for node in mut_nodes:
+        _mutate_node_args(config, node, multiple=multiple_args)
 
     return gp_tree
+
+
+def _get_nodes_for_mut(gp_tree, multiple_nodes=False):
+    prim_inds = [i for i, prim in enumerate(gp_tree.primitives) if len(prim.obj_kwargs)]
+    if not len(prim_inds):
+        return [], []
+
+    if multiple_nodes:
+        n_nodes = random.randint(1, len(prim_inds))
+    else:
+        n_nodes = 1
+
+    ind_sample = random.sample(prim_inds, n_nodes)
+    return ind_sample, [gp_tree.primitives[i] for i in ind_sample]
 
 
 def _mutate_node_args(config, mut_node, multiple=False):
@@ -129,7 +148,9 @@ def _mutate_node_args(config, mut_node, multiple=False):
     all_keys = list(mut_node.obj_kwargs.keys())
 
     if multiple:
-        mut_kwargs = random.sample(all_keys)
+        n_kwargs = random.randint(1, len(all_keys))
+        mut_kwargs = random.sample(all_keys, n_kwargs)
+
         for key in mut_kwargs:
             _mut_arg(config, mut_node, key)
     else:
@@ -139,8 +160,28 @@ def _mutate_node_args(config, mut_node, multiple=False):
     return mut_node
 
 
-def _perform_hillclimbing(toolbox, gp_tree, mut_func,
-                          hc_repeat=1, keep_last=False):
+def mutate_gradual_hillclimbing(toolbox, config, gp_tree: GpTreeIndividual, multiple_args=True,
+                                hc_repeat=5, n_nodes=3, keep_last=False):
+    def mut_ind(ind, gp_tree):
+        _mutate_node_args(config, gp_tree.primitives[ind], multiple=multiple_args)
+
+    mut_inds, _ = _get_nodes_for_mut(gp_tree, multiple_nodes=True)
+    if not len(mut_inds):
+        return gp_tree
+
+    n_nodes = min(n_nodes, len(mut_inds))
+    mut_inds = random.sample(mut_inds, n_nodes)
+    mut_inds = random.sample(mut_inds, n_nodes)
+
+    for i in mut_inds:
+        mut_func = partial(mut_ind, i)
+        gp_tree = perform_hillclimbing(toolbox, gp_tree, mut_func, hc_repeat=hc_repeat, keep_last=keep_last)
+
+    return gp_tree
+
+
+def perform_hillclimbing(toolbox, gp_tree, mut_func,
+                         hc_repeat=1, keep_last=False):
     # hill-climbing initial fitness
     if not gp_tree.fitness.valid:
         score = toolbox.evaluate(gp_tree)
@@ -149,6 +190,8 @@ def _perform_hillclimbing(toolbox, gp_tree, mut_func,
         if score is None:
             return gp_tree
         gp_tree.fitness.values = score
+
+    logger = logging.getLogger("genens")
 
     # hill-climbing procedure
     has_mutated = False
@@ -166,6 +209,9 @@ def _perform_hillclimbing(toolbox, gp_tree, mut_func,
 
         # the mutant is better, keep it
         if score >= gp_tree.fitness.values or should_keep_last:
+            logger.debug(f"Hillclimbing {i}/{hc_repeat}: score {gp_tree.fitness.values} -> {score},"
+                         f"\n{gp_tree}\n>\n{mutant}")
+
             gp_tree = mutant
             has_mutated = True
 

@@ -18,7 +18,7 @@ arguments.
 from functools import partial
 
 from ..gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
-from ..workflow.model_creation import create_pipeline
+from ..workflow.model_creation import create_pipeline, create_stacking
 from ..workflow.model_creation import create_data_union
 from ..workflow.model_creation import create_transform_list
 from ..workflow.model_creation import create_empty_data
@@ -266,6 +266,10 @@ def ensemble_func(ens_cls, **kwargs):
     :return: Function which constructs a new instance of the ensemble.
     """
     return partial(create_ensemble, ens_cls, kwargs)
+
+
+def stacking_func(ens_cls, **kwargs):
+    return partial(create_stacking, ens_cls, kwargs)
 
 
 def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens', group='ensemble'):

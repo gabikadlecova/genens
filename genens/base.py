@@ -7,16 +7,20 @@ This module contains the base estimator of Genens.
 import json
 import logging
 import logging.config
+import warnings
+
 import numpy as np
 import os
 
 from genens.gp.tree import gen_tree
 from genens.gp.evolution import gen_individual
-from genens.gp.mutation import mutate_subtree
-from genens.gp.mutation import mutate_node_args
+from genens.gp.mutation import mutate_subtree, mutate_gradual_hillclimbing
+from genens.gp.mutation import perform_hillclimbing, mutate_args
 from genens.gp.mutation import mutate_node_swap
 from genens.gp.crossover import crossover_one_point
 from genens.gp.evolution import ea_run
+
+from genens.log_utils import set_log_handler
 
 from genens.workflow.evaluate import CrossValEvaluator, TrainTestEvaluator, default_score
 from genens.workflow.model_creation import create_workflow
@@ -37,11 +41,13 @@ DEFAULT_LOGGING_CONFIG = file_dir + '/.logging_config.json'
 
 
 class GenensBase(BaseEstimator):
-    def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6,
-                 mut_node_pb=0.3, scorer=None, pop_size=200,
-                 n_gen=15, hc_repeat=0, hc_keep_last=False, weighted=True, use_groups=True, max_height=None,
+    def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.9,
+                 mut_node_pb=0.9, scorer=None, pop_size=100,
+                 mut_multiple_args=False, mut_multiple_nodes=False,
+                 n_gen=15, hc_repeat=0, hc_keep_last=False, hc_mut_pb=0.2, hc_n_nodes=3,
+                 weighted=True, use_groups=True, max_height=None,
                  max_arity=None, timeout=None, evaluator=None,
-                 log_path=None):
+                 log_path=None, max_evo_seconds=None):
         """
         Creates a new Genens estimator.
 
@@ -58,6 +64,10 @@ class GenensBase(BaseEstimator):
         :param hc_keep_last:
             Whether the last individual should be mutated if the hill-climbing did not find a better individual.
 
+        :param hc_mut_pb: Probability of additional hillclimbing performed on offspring.
+        :param hc_n_nodes: Number of nodes mutated during hillclimbing (`hc_repeat` times, `hc_keep_last` has effect)
+
+
         :param weighted: Determines whether the selection of nodes is weighted (according to groups).
 
         :param bool use_groups: If false, primitive groups are ignored.
@@ -65,6 +75,7 @@ class GenensBase(BaseEstimator):
         :param max_arity: Maximum arity of all nodes.
         :param timeout: Timeout for a single method evaluation.
         :param evaluator: Evaluator to be used (see genens.worflow.evaluate)
+
         """
 
         # accept config/load default config
@@ -85,8 +96,13 @@ class GenensBase(BaseEstimator):
         self.pop_size = pop_size
         self.n_gen = n_gen
 
+        self.mut_multiple_args = mut_multiple_args
+        self.mut_multiple_nodes = mut_multiple_nodes
+
         self.hc_repeat = hc_repeat
         self.hc_keep_last = hc_keep_last
+        self.hc_n_nodes = hc_n_nodes
+        self.hc_mut_pb = hc_mut_pb
         self.weighted = weighted
         self.use_groups = use_groups
 
@@ -96,6 +112,8 @@ class GenensBase(BaseEstimator):
         self._fitness_evaluator = evaluator if evaluator is not None \
             else CrossValEvaluator(timeout_s=timeout)
         self._fitness_evaluator.timeout = timeout
+
+        self.max_evo_seconds = max_evo_seconds
 
         self.test_evaluator = None
 
@@ -108,6 +126,24 @@ class GenensBase(BaseEstimator):
         self._setup_debug_logging()
         self._setup_stats_logging()
         self._setup_toolbox()
+
+    def _setup_arg_mut(self):
+        mut_func = partial(mutate_args, self.config,
+                           multiple_nodes=self.mut_multiple_nodes,
+                           multiple_args=self.mut_multiple_args)
+
+        if self.hc_repeat > 0:
+            print("TEST - hc parameter used elsewhere")
+            self._toolbox.register("gradual_hillclimbing", mutate_gradual_hillclimbing,
+                                   self._toolbox, self.config,
+                                   hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
+            #self._toolbox.register("mutate_args", perform_hillclimbing,
+            #                       self._toolbox,
+            #                       mut_func=mut_func,
+            #                       hc_repeat=self.hc_repeat,
+            #                       keep_last=self.hc_keep_last)
+        #else:
+        self._toolbox.register("mutate_args", mut_func)
 
     def _setup_toolbox(self):
         self._toolbox = base.Toolbox()
@@ -122,16 +158,14 @@ class GenensBase(BaseEstimator):
 
         self._toolbox.register("select", tools.selNSGA2)
         self._toolbox.register("mutate_subtree", mutate_subtree, self._toolbox)
-        self._toolbox.register("mutate_node_args", mutate_node_args, self._toolbox, self.config,
-                               hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
+        self._setup_arg_mut()
         self._toolbox.register("mutate_node_swap", mutate_node_swap, self.config)
         self._toolbox.register("cx_one_point", crossover_one_point)
 
-        self._toolbox.register("next_gen", self._prepare_next_gen)
         self._toolbox.register("compile", self._compile_pipe)
         self._toolbox.register("evaluate", self._eval_tree_individual)
-        self._toolbox.register("log", self._log_pop_stats)
 
+        self._toolbox.register("update", self._update_population)
         self._toolbox.register("log_setup", self._setup_child_logging)
 
     def _load_log_config(self):
@@ -178,6 +212,10 @@ class GenensBase(BaseEstimator):
         self.logbook.chapters["score"].header = "min", "avg", "max", "std"
         self.logbook.chapters["test_score"].header = "min", "avg", "max", "std"
 
+    def _update_population(self, population, gen_i):
+        self._fitness_evaluator.reset()
+        self._log_pop_stats(population, gen_i)
+
     def _compile_pipe(self, ind):
         if ind.compiled_pipe is not None:
             return ind.compiled_pipe
@@ -187,9 +225,6 @@ class GenensBase(BaseEstimator):
     def _eval_tree_individual(self, gp_tree):
         wf = self._toolbox.compile(gp_tree)
         return self._fitness_evaluator.score(wf, scorer=self.scorer)
-
-    def _prepare_next_gen(self):
-        self._fitness_evaluator.reset()
 
     @property
     def can_log_score(self):
@@ -251,9 +286,9 @@ class GenensBase(BaseEstimator):
         try:
             log_queue_listener.start()
             ea_run(self._population, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
-                   mut_pb=self.mut_pb,
+                   mut_pb=self.mut_pb, hc_mut_pb=self.hc_mut_pb, hc_n_nodes=self.hc_n_nodes,
                    mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs,
-                   verbose=verbose)
+                   timeout=self.max_evo_seconds, verbose=verbose)
 
         finally:
             # close local logging handlers
@@ -262,8 +297,10 @@ class GenensBase(BaseEstimator):
             del log_queue_listener
             del handl
 
+        if not len(self.pareto):
+            warnings.warn("The algorithm did not have enough time to evaluate first generation and was not fitted.")
+            return self
 
-        # TODO change later
         tree = self.pareto[0]
         self.fitted_wf = self._toolbox.compile(tree)
         self.fitted_wf.fit(train_X, train_y)
