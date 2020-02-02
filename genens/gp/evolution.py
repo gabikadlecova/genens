@@ -9,12 +9,14 @@ import logging
 import random
 
 from deap import tools
-from functools import partial
+from functools import partial, wraps
 from itertools import chain
 from joblib import Parallel, delayed
 
 from genens.log_utils import set_log_handler
 from genens.render.graph import tree_str
+
+from stopit import ThreadingTimeout as Timeout, TimeoutException
 
 
 def gen_individual(toolbox, config, out_type='out'):
@@ -94,6 +96,24 @@ def _perform_eval(eval_func, ind):
     return eval_func(ind)
 
 
+def evolution_timeout(fn):
+    @wraps(fn)
+    def with_timeout(*args, **kwargs):
+        if not 'timeout' in kwargs or kwargs['timeout'] is None:
+            return fn(*args, **kwargs)
+
+        try:
+            timeout = kwargs.pop('timeout')
+            with Timeout(timeout, swallow_exc=False):
+                fn(*args, **kwargs)
+        except TimeoutException:
+            logger = logging.getLogger("genens")
+            logger.debug(f"Time limit exceeded: {timeout}.")
+
+    return with_timeout
+
+
+@evolution_timeout
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb,
            hc_mut_pb=0.2, hc_n_nodes=3, n_jobs=1,
            min_large_tree_height=3, verbose=1):
@@ -145,7 +165,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                                     for _ in range(pop_size - len(population)))
     population += valid
 
-    toolbox.log(population, 0)
+    toolbox.update(population, 0)
     population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
 
     for g in range(n_gen):
@@ -154,8 +174,6 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
         for i, ind in enumerate(population):
             logger.debug(f"Generation {g}, individual {i}:\n{tree_str(ind, with_hyperparams=True)}")
-
-        toolbox.next_gen()
 
         # selection for operations
         population[:] = tools.selTournamentDCD(population, pop_size)
@@ -248,7 +266,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
         population[:] = toolbox.select(population + all_offspring, pop_size)
 
-        toolbox.log(population, g + 1)
+        toolbox.update(population, g + 1)
 
     if verbose >= 1:
         print("Evolution completed")

@@ -7,6 +7,8 @@ This module contains the base estimator of Genens.
 import json
 import logging
 import logging.config
+import warnings
+
 import numpy as np
 import os
 
@@ -39,13 +41,13 @@ DEFAULT_LOGGING_CONFIG = file_dir + '/.logging_config.json'
 
 
 class GenensBase(BaseEstimator):
-    def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.6,
-                 mut_node_pb=0.3, scorer=None, pop_size=200,
+    def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.9,
+                 mut_node_pb=0.9, scorer=None, pop_size=100,
                  mut_multiple_args=False, mut_multiple_nodes=False,
-                 n_gen=15, hc_repeat=0, hc_keep_last=False, hc_mut_pb=0.1, hc_n_nodes=3,
+                 n_gen=15, hc_repeat=0, hc_keep_last=False, hc_mut_pb=0.2, hc_n_nodes=3,
                  weighted=True, use_groups=True, max_height=None,
                  max_arity=None, timeout=None, evaluator=None,
-                 log_path=None):
+                 log_path=None, max_evo_seconds=None):
         """
         Creates a new Genens estimator.
 
@@ -62,6 +64,10 @@ class GenensBase(BaseEstimator):
         :param hc_keep_last:
             Whether the last individual should be mutated if the hill-climbing did not find a better individual.
 
+        :param hc_mut_pb: Probability of additional hillclimbing performed on offspring.
+        :param hc_n_nodes: Number of nodes mutated during hillclimbing (`hc_repeat` times, `hc_keep_last` has effect)
+
+
         :param weighted: Determines whether the selection of nodes is weighted (according to groups).
 
         :param bool use_groups: If false, primitive groups are ignored.
@@ -70,7 +76,6 @@ class GenensBase(BaseEstimator):
         :param timeout: Timeout for a single method evaluation.
         :param evaluator: Evaluator to be used (see genens.worflow.evaluate)
 
-        TODO document mut multiple
         """
 
         # accept config/load default config
@@ -107,6 +112,8 @@ class GenensBase(BaseEstimator):
         self._fitness_evaluator = evaluator if evaluator is not None \
             else CrossValEvaluator(timeout_s=timeout)
         self._fitness_evaluator.timeout = timeout
+
+        self.max_evo_seconds = max_evo_seconds
 
         self.test_evaluator = None
 
@@ -155,11 +162,10 @@ class GenensBase(BaseEstimator):
         self._toolbox.register("mutate_node_swap", mutate_node_swap, self.config)
         self._toolbox.register("cx_one_point", crossover_one_point)
 
-        self._toolbox.register("next_gen", self._prepare_next_gen)
         self._toolbox.register("compile", self._compile_pipe)
         self._toolbox.register("evaluate", self._eval_tree_individual)
-        self._toolbox.register("log", self._log_pop_stats)
 
+        self._toolbox.register("update", self._update_population)
         self._toolbox.register("log_setup", self._setup_child_logging)
 
     def _load_log_config(self):
@@ -206,6 +212,10 @@ class GenensBase(BaseEstimator):
         self.logbook.chapters["score"].header = "min", "avg", "max", "std"
         self.logbook.chapters["test_score"].header = "min", "avg", "max", "std"
 
+    def _update_population(self, population, gen_i):
+        self._fitness_evaluator.reset()
+        self._log_pop_stats(population, gen_i)
+
     def _compile_pipe(self, ind):
         if ind.compiled_pipe is not None:
             return ind.compiled_pipe
@@ -215,9 +225,6 @@ class GenensBase(BaseEstimator):
     def _eval_tree_individual(self, gp_tree):
         wf = self._toolbox.compile(gp_tree)
         return self._fitness_evaluator.score(wf, scorer=self.scorer)
-
-    def _prepare_next_gen(self):
-        self._fitness_evaluator.reset()
 
     @property
     def can_log_score(self):
@@ -281,7 +288,7 @@ class GenensBase(BaseEstimator):
             ea_run(self._population, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
                    mut_pb=self.mut_pb, hc_mut_pb=self.hc_mut_pb, hc_n_nodes=self.hc_n_nodes,
                    mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs,
-                   verbose=verbose)
+                   timeout=self.max_evo_seconds, verbose=verbose)
 
         finally:
             # close local logging handlers
@@ -290,7 +297,10 @@ class GenensBase(BaseEstimator):
             del log_queue_listener
             del handl
 
-        # TODO change later
+        if not len(self.pareto):
+            warnings.warn("The algorithm did not have enough time to evaluate first generation and was not fitted.")
+            return self
+
         tree = self.pareto[0]
         self.fitted_wf = self._toolbox.compile(tree)
         self.fitted_wf.fit(train_X, train_y)
