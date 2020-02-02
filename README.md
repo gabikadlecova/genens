@@ -1,5 +1,5 @@
-# Genens
-Genens is an AutoML system for pipeline optimization based on developmental genetic programming.
+# genEns
+genEns is an AutoML system for pipeline optimization based on developmental genetic programming.
 
 ## Installation
 Clone the repository.
@@ -10,8 +10,8 @@ pip install genens
 
 
 -----
-## Using Genens
-As for now, the GenensClassifier is fully functional. It can be used just as any scikit-learn classifier. When `fit()` is called, evolutionary optimization is run. After it finishes, `predict()` produces a prediction with the best of optimized pipelines. Alternatively, you can call get\_best\_pipelines() to get pipelines from the pareto front.
+## Using genEns
+As for now, the GenensClassifier is ready to be used. It has an interface similar to other scikit-learn estimators. When `fit()` is called, the evolutionary optimization is run. After it finishes, `predict()` produces a prediction with the best of optimized pipelines. Alternatively, you can call `get\_best\_pipelines()` to get pipelines from the pareto front.
 
 ```
 from genens import GenensClassifier
@@ -28,13 +28,15 @@ pred = clf.predict(test_X)
 ```
 
 ## Tests
-You can run tests which produce data about evolution process and pickle files of best optimized pipelines. 
+Directory ./genens/tests contains scripts for running dataset tests and produce data about evolution process along with pickle files of best optimized pipelines. 
 Sample config files are included in ``./genens/tests/config``.
 
-- Run Genens on a dataset specified in the config file.
+- Run genEns on a dataset specified in the config file.
 
 ``python ./genens/tests/run_datasets.py --out OUT_DIR config CONFIG``
 
-- Runs Genens on the [OpenML-CC18 benchmarking suite](https://www.openml.org/s/99)
+- Runs genEns on the [OpenML-CC18 benchmarking suite](https://www.openml.org/s/99)
 
 ``python ./genens/tests/run_openml.py --out OUT_DIR --config CONFIG``
+
+More tests are to be included in later releases.
