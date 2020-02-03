@@ -1,8 +1,6 @@
 from genens import GenensClassifier
 from genens.workflow.evaluate import SampleCrossValEvaluator
 from genens.gp.crossover import crossover_one_point
-from genens.tests.datasets.load_datasets import load_dataset
-
 
 if __name__ == "__main__":
     #X, y = load_dataset('wilt')

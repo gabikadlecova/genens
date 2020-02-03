@@ -7,6 +7,7 @@ of the algorithm and initialization methods.
 
 import logging
 import random
+import time
 
 from deap import tools
 from functools import partial, wraps
@@ -99,11 +100,11 @@ def _perform_eval(eval_func, ind):
 def evolution_timeout(fn):
     @wraps(fn)
     def with_timeout(*args, **kwargs):
-        if not 'timeout' in kwargs or kwargs['timeout'] is None:
+        if 'timeout' not in kwargs or kwargs['timeout'] is None:
             return fn(*args, **kwargs)
 
         try:
-            timeout = kwargs.pop('timeout')
+            timeout = kwargs['timeout']
             with Timeout(timeout, swallow_exc=False):
                 fn(*args, **kwargs)
         except TimeoutException:
@@ -113,9 +114,17 @@ def evolution_timeout(fn):
     return with_timeout
 
 
+def _get_time_left(start_time, timeout=None):
+    if timeout is None:
+        return None
+
+    remaining = time.monotonic() - start_time
+    return timeout - remaining
+
+
 @evolution_timeout
 def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb,
-           hc_mut_pb=0.2, hc_n_nodes=3, n_jobs=1,
+           hc_mut_pb=0.2, hc_n_nodes=3, n_jobs=1, timeout=None,
            min_large_tree_height=3, verbose=1):
     """
     Performs a run of the evolutionary algorithm.
@@ -136,137 +145,143 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
     :param  min_large_tree_height: Perform structural changes only on trees of at least this height.
     :param verbose: Print verbosity
     """
+    try:
+        start_time = time.monotonic()
 
-    evaluate_func = partial(_perform_eval, toolbox.evaluate, log_setup=toolbox.log_setup)
+        evaluate_func = partial(_perform_eval, toolbox.evaluate, log_setup=toolbox.log_setup)
 
-    if verbose >= 1:
-        print('Initial population generated.')
-
-    logger = logging.getLogger("genens")
-    for i, ind in enumerate(population):
-        logger.debug(f"Generation 0, individual {i}:\n{tree_str(ind, with_hyperparams=True)}")
-
-    # evaluate first gen 
-    with Parallel(n_jobs=n_jobs) as parallel:
-        scores = toolbox.map(evaluate_func, population, parallel=parallel)
-
-    for ind, score in zip(population, scores):
-        if score is None:
-            continue
-
-        ind.fitness.values = score
-
-    if verbose >= 1:
-        print("First gen evaluated")
-
-    # remove individuals which threw exceptions and generate new valid individuals
-    population[:] = [ind for ind in population if ind.fitness.valid]
-    valid = Parallel(n_jobs=n_jobs)(delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
-                                    for _ in range(pop_size - len(population)))
-    population += valid
-
-    toolbox.update(population, 0)
-    population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
-
-    for g in range(n_gen):
         if verbose >= 1:
-            print("Gen {}".format(g))
+            print('Initial population generated.')
 
+        logger = logging.getLogger("genens")
         for i, ind in enumerate(population):
-            logger.debug(f"Generation {g}, individual {i}:\n{tree_str(ind, with_hyperparams=True)}")
+            logger.debug(f"Generation 0, individual {i}:\n{tree_str(ind, with_hyperparams=True)}")
 
-        # selection for operations
-        population[:] = tools.selTournamentDCD(population, pop_size)
-        larger_trees = [tree for tree in population if tree.max_height >= min_large_tree_height]
-        all_offspring = []
+        # evaluate first gen
+        with Parallel(n_jobs=n_jobs, timeout=_get_time_left(start_time, timeout=timeout)) as parallel:
+            scores = toolbox.map(evaluate_func, population, parallel=parallel)
 
-        with Parallel(n_jobs=n_jobs) as parallel:
-            if verbose >= 2:
-                print(f"Gen {g} - crossover")
+        for ind, score in zip(population, scores):
+            if score is None:
+                continue
 
-            # crossover - subtree
-            offspring = toolbox.map(toolbox.clone, larger_trees)
-            offspring = parallel(
-                delayed(_perform_cx)(
-                    toolbox.cx_one_point,  # func
-                    cx_pb, ch1, ch2, min_node_depth=min_large_tree_height - 1, log_setup=toolbox.log_setup  # args
+            ind.fitness.values = score
+
+        if verbose >= 1:
+            print("First gen evaluated")
+
+        # remove individuals which threw exceptions and generate new valid individuals
+        population[:] = [ind for ind in population if ind.fitness.valid]
+        valid = Parallel(n_jobs=n_jobs, timeout=_get_time_left(start_time, timeout=timeout))(
+                delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
+                for _ in range(pop_size - len(population))
+        )
+        population += valid
+
+        toolbox.update(population, 0)
+        population[:] = toolbox.select(population, pop_size)  # assigns crowding distance
+
+        for g in range(n_gen):
+            if verbose >= 1:
+                print("Gen {}".format(g))
+
+            for i, ind in enumerate(population):
+                logger.debug(f"Generation {g}, individual {i}:\n{tree_str(ind, with_hyperparams=True)}")
+
+            # selection for operations
+            population[:] = tools.selTournamentDCD(population, pop_size)
+            larger_trees = [tree for tree in population if tree.max_height >= min_large_tree_height]
+            all_offspring = []
+
+            with Parallel(n_jobs=n_jobs, timeout=_get_time_left(start_time, timeout=timeout)) as parallel:
+                if verbose >= 2:
+                    print(f"Gen {g} - crossover")
+
+                # crossover - subtree
+                offspring = toolbox.map(toolbox.clone, larger_trees)
+                offspring = parallel(
+                    delayed(_perform_cx)(
+                        toolbox.cx_one_point,  # func
+                        cx_pb, ch1, ch2, min_node_depth=min_large_tree_height - 1, log_setup=toolbox.log_setup  # args
+                    )
+                    for ch1, ch2 in zip(offspring[::2], offspring[1::2])
                 )
-                for ch1, ch2 in zip(offspring[::2], offspring[1::2])
-            )
-            offspring = list(chain.from_iterable(offspring))  # chain cx tuples to list of offspring
-            all_offspring += offspring
+                offspring = list(chain.from_iterable(offspring))  # chain cx tuples to list of offspring
+                all_offspring += offspring
 
-            if verbose >= 2:
-                print(f"Gen {g} - mutation")
+                if verbose >= 2:
+                    print(f"Gen {g} - mutation")
 
-            # mutation - subtree
-            offspring = toolbox.map(toolbox.clone, larger_trees)
-            offspring = parallel(
-                delayed(_perform_mut)(
-                    toolbox.mutate_subtree,  # func
-                    mut_pb, mut, log_setup=toolbox.log_setup  # args
+                # mutation - subtree
+                offspring = toolbox.map(toolbox.clone, larger_trees)
+                offspring = parallel(
+                    delayed(_perform_mut)(
+                        toolbox.mutate_subtree,  # func
+                        mut_pb, mut, log_setup=toolbox.log_setup  # args
+                    )
+                    for mut in offspring
                 )
-                for mut in offspring
-            )
-            all_offspring += offspring
+                all_offspring += offspring
 
-            # mutation - node swap
-            offspring = toolbox.map(toolbox.clone, population)
-            offspring = parallel(
-                delayed(_perform_mut)(
-                    toolbox.mutate_node_swap,  # func
-                    mut_node_pb, mut, log_setup=toolbox.log_setup  # args
+                # mutation - node swap
+                offspring = toolbox.map(toolbox.clone, population)
+                offspring = parallel(
+                    delayed(_perform_mut)(
+                        toolbox.mutate_node_swap,  # func
+                        mut_node_pb, mut, log_setup=toolbox.log_setup  # args
+                    )
+                    for mut in offspring
                 )
-                for mut in offspring
-            )
-            all_offspring += offspring
+                all_offspring += offspring
 
-            # for large new offspring, perform hc to make them competitive
-            def apply_gradual(offs, mut_pb, n_nodes):
-                if offs.max_height < min_large_tree_height:
-                    return offs
+                # for large new offspring, perform hc to make them competitive
+                def apply_gradual(offs, mut_pb, n_nodes):
+                    if offs.max_height < min_large_tree_height:
+                        return offs
 
-                return _perform_mut(toolbox.gradual_hillclimbing, mut_pb, offs, n_nodes=n_nodes)
+                    return _perform_mut(toolbox.gradual_hillclimbing, mut_pb, offs, n_nodes=n_nodes)
 
-            all_offspring = parallel(
-                delayed(apply_gradual)(
-                    off, hc_mut_pb, hc_n_nodes
+                all_offspring = parallel(
+                    delayed(apply_gradual)(
+                        off, hc_mut_pb, hc_n_nodes
+                    )
+                    for off in all_offspring
                 )
-                for off in all_offspring
-            )
 
-            # ----------------
+                # ----------------
 
-            # mutation - node args
-            offspring = toolbox.map(toolbox.clone, population)
-            offspring = parallel(
-                delayed(_perform_mut)(
-                    toolbox.mutate_args,  # func
-                    mut_args_pb, mut, log_setup=toolbox.log_setup  # args
+                # mutation - node args
+                offspring = toolbox.map(toolbox.clone, population)
+                offspring = parallel(
+                    delayed(_perform_mut)(
+                        toolbox.mutate_args,  # func
+                        mut_args_pb, mut, log_setup=toolbox.log_setup  # args
+                    )
+                    for mut in offspring
                 )
-                for mut in offspring
-            )
-            all_offspring += offspring
+                all_offspring += offspring
 
-            offs_to_eval = [ind for ind in all_offspring if not ind.fitness.valid]
+                offs_to_eval = [ind for ind in all_offspring if not ind.fitness.valid]
 
-            # evaluation of changed offspring
-            scores = toolbox.map(evaluate_func, offs_to_eval, parallel=parallel)
-            for off, score in zip(offs_to_eval, scores):
-                if score is None:
-                    continue
+                # evaluation of changed offspring
+                scores = toolbox.map(evaluate_func, offs_to_eval, parallel=parallel)
+                for off, score in zip(offs_to_eval, scores):
+                    if score is None:
+                        continue
 
-                off.fitness.values = score
+                    off.fitness.values = score
 
-            # remove offspring which threw exceptions
-            all_offspring[:] = [ind for ind in all_offspring if ind.fitness.valid]
-            valid = parallel(delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
-                             for _ in range(pop_size - len(all_offspring)))
-            all_offspring += valid
+                # remove offspring which threw exceptions
+                all_offspring[:] = [ind for ind in all_offspring if ind.fitness.valid]
+                valid = parallel(delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
+                                 for _ in range(pop_size - len(all_offspring)))
+                all_offspring += valid
 
-        population[:] = toolbox.select(population + all_offspring, pop_size)
+            population[:] = toolbox.select(population + all_offspring, pop_size)
 
-        toolbox.update(population, g + 1)
+            toolbox.update(population, g + 1)
 
-    if verbose >= 1:
-        print("Evolution completed")
+        if verbose >= 1:
+            print("Evolution completed")
+    except TimeoutError:
+        print("Evolution timed out.")

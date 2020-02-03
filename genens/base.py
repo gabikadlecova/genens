@@ -298,8 +298,14 @@ class GenensBase(BaseEstimator):
             del handl
 
         if not len(self.pareto):
-            warnings.warn("The algorithm did not have enough time to evaluate first generation and was not fitted.")
-            return self
+            # try to get individuals that were evaluated before time limit end
+            evaluated_inds = [ind for ind in self._population if ind.fitness.valid]
+
+            if not len(evaluated_inds):
+                warnings.warn("The algorithm did not have enough time to evaluate first generation and was not fitted.")
+                return self
+
+            self.pareto.update(evaluated_inds)
 
         tree = self.pareto[0]
         self.fitted_wf = self._toolbox.compile(tree)

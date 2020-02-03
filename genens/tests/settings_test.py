@@ -4,7 +4,7 @@ import random
 
 from genens import GenensClassifier
 from genens.workflow.evaluate import SampleCrossValEvaluator, CrossValEvaluator
-from .datasets.load_datasets import load_dataset
+from genens.tests.load_datasets import load_dataset
 
 
 def run_test(kwarg_dict):

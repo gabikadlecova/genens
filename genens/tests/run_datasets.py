@@ -19,7 +19,7 @@ from genens.workflow.evaluate import get_evaluator_cls
 from genens.config import clf_config
 from genens.render.plot import export_plot
 from genens.render.graph import create_graph
-from genens.tests.datasets.load_datasets import load_dataset
+from genens.tests.load_datasets import load_dataset
 
 
 def run_tests(estimators, train_X, train_y, out_dir, test_X=None, test_y=None):
