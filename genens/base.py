@@ -132,17 +132,9 @@ class GenensBase(BaseEstimator):
                            multiple_nodes=self.mut_multiple_nodes,
                            multiple_args=self.mut_multiple_args)
 
-        if self.hc_repeat > 0:
-            print("TEST - hc parameter used elsewhere")
-            self._toolbox.register("gradual_hillclimbing", mutate_gradual_hillclimbing,
-                                   self._toolbox, self.config,
-                                   hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
-            #self._toolbox.register("mutate_args", perform_hillclimbing,
-            #                       self._toolbox,
-            #                       mut_func=mut_func,
-            #                       hc_repeat=self.hc_repeat,
-            #                       keep_last=self.hc_keep_last)
-        #else:
+        self._toolbox.register("gradual_hillclimbing", mutate_gradual_hillclimbing,
+                               self._toolbox, self.config,
+                               hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
         self._toolbox.register("mutate_args", mut_func)
 
     def _setup_toolbox(self):

@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="genens",
-    version="0.1.2",
+    version="0.1.5",
     author="Gabriela Suchoparova",
     author_email="gabi.suchoparova@gmail.com",
     description="A genetic AutoML system for ensemble methods",
@@ -18,6 +18,9 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
+    package_data={
+        '': ['.logging_config.json']
+    },
     python_requires='>=3.7',
     install_requires=[
         'deap',

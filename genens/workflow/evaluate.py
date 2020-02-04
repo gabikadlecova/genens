@@ -138,7 +138,7 @@ class EvaluatorBase(ABC):
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
 
-                return self.evaluate(workflow, scorer)
+                return self.evaluate(workflow, scorer=scorer)
         except Exception as e:
             logger = logging.getLogger("genens")
             logger.debug(f"Workflow failed:\n {e}\nWorkflow: {workflow}.")
