@@ -8,6 +8,7 @@ import json
 import logging
 import logging.config
 import warnings
+from queue import Queue
 
 import numpy as np
 import os
@@ -27,7 +28,7 @@ from genens.workflow.model_creation import create_workflow
 
 from deap import base, tools
 from functools import partial
-from joblib import delayed
+from joblib import delayed, Parallel
 from multiprocessing import Manager
 from logging.handlers import QueueListener, QueueHandler
 
@@ -170,8 +171,11 @@ class GenensBase(BaseEstimator):
         logging.config.dictConfig(config)
         self.log_format = config['format']
 
-        mp_manager = Manager()
-        self._log_queue = mp_manager.Queue()
+        if self.n_jobs != 1:
+            mp_manager = Manager()
+            self._log_queue = mp_manager.Queue()
+        else:
+            self._log_queue = Queue()
 
         handl = QueueHandler(self._log_queue)
         logger = logging.getLogger("genens")
@@ -327,8 +331,5 @@ class GenensBase(BaseEstimator):
         return s
 
 
-def _map_parallel(func, population, parallel=None):
-    if parallel is None:
-        return list(map(func, population))
-
-    return parallel(delayed(func)(ind) for ind in population)
+def _map_parallel(func, population, n_jobs=1, **kwargs):
+    return Parallel(n_jobs=n_jobs, **kwargs)(delayed(func)(ind) for ind in population)

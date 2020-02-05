@@ -7,7 +7,7 @@ from genens.gp.tree import swap_subtrees
 from genens.gp.types import GpFunctionTemplate, GpTreeIndividual
 
 
-def mutate_subtree(toolbox, gp_tree, eps=0.2, min_node_depth=0):
+def mutate_subtree(toolbox, gp_tree, eps=0.2, min_node_depth=1):
     """
     Replaces a randomly chosen subtree with a new random tree. The height of the generated subtree
     is between 1 and previous subtree height + ``eps``.

@@ -17,7 +17,7 @@ class GenensClassifier(GenensBase, ClassifierMixin):
                  mut_multiple_args=False, mut_multiple_nodes=False,
                  weighted=True, use_groups=True,
                  max_height=None, max_arity=None, timeout=None, evaluator=None, hc_n_nodes=3, hc_mut_pb=0.2,
-                 max_evo_seconds=None,
+                 max_evo_seconds=None, log_path=None,
                  **kwargs):
         if config is None:
             config = clf_config()
@@ -44,6 +44,7 @@ class GenensClassifier(GenensBase, ClassifierMixin):
                          timeout=timeout,
                          evaluator=evaluator,
                          max_evo_seconds=max_evo_seconds,
+                         log_path=log_path,
                          **kwargs)
 
 

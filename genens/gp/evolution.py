@@ -158,8 +158,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
             logger.debug(f"Generation 0, individual {i}:\n{tree_str(ind, with_hyperparams=True)}")
 
         # evaluate first gen
-        with Parallel(n_jobs=n_jobs, timeout=_get_time_left(start_time, timeout=timeout)) as parallel:
-            scores = toolbox.map(evaluate_func, population, parallel=parallel)
+        scores = toolbox.map(evaluate_func, population,
+                             n_jobs=n_jobs, timeout=_get_time_left(start_time, timeout=timeout))
 
         for ind, score in zip(population, scores):
             if score is None:
@@ -264,7 +264,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 offs_to_eval = [ind for ind in all_offspring if not ind.fitness.valid]
 
                 # evaluation of changed offspring
-                scores = toolbox.map(evaluate_func, offs_to_eval, parallel=parallel)
+                scores = toolbox.map(evaluate_func, offs_to_eval,
+                                     n_jobs=n_jobs, timeout=_get_time_left(start_time, timeout=timeout))
                 for off, score in zip(offs_to_eval, scores):
                     if score is None:
                         continue
