@@ -76,22 +76,25 @@ def clf_config(group_weights=None):
 
     ensemble_kwargs = {
         'voting': {
-            # 'soft' not included - a lot of classifiers does not support predict_proba
             'voting': ['hard', 'soft']
         },
         'stacking': {
-            'stack_method': ['auto', 'predict_proba', 'predict'],
-            'cv': [3, 5]
+            'cv': [None, 3, 7],
+            'passthrough': [True, False]
         }
     }
 
     clf_kwargs = {
         'ada': {
             'n_estimators': [5, 10, 50, 100, 200],
-            'algorithm': ['SAMME', 'SAMME.R']
+            'algorithm': ['SAMME', 'SAMME.R'],
+            'learning_rate': [0.001, 0.01, 0.1, 0.5, 1.0]
         },
         'bagging': {
-            'n_estimators': [5, 10, 50, 100, 200]
+            'n_estimators': [5, 10, 50, 100, 200],
+            'oob_score': [True, False],
+            'max_samples': [0.2, 0.5, 0.8, 1.0],
+            'max_features': [0.2, 0.5, 0.8, 1.0]
         },
         'KNeighbors': {
             'n_neighbors': [1, 2, 5],
@@ -166,33 +169,53 @@ def clf_config(group_weights=None):
         'gaussianNB': {},
         'gradBoosting': {
             'loss': ['deviance', 'exponential'],
-            'n_estimators': [20, 50, 100, 200],
-            'subsample': [0.3, 0.5, 0.75, 1.0]
-            # TODO
+            'learning_rate': [0.0001, 0.001, 0.01, 0.1, 0.2, 0.3],
+            'n_estimators': [20, 50, 100],
+            'subsample': [0.3, 0.5, 0.75, 1.0],
+            'max_depth': [None, 3, 5, 10, 20, 50, 100],
+            'min_samples_split': [2, 5, 10, 15, 20],
+            'min_samples_leaf': [1, 2, 5, 10, 20],
         },
         'randomForest': {
-            'n_estimators': [10, 50, 100, 150, 200]
-            # TODO
+            'n_estimators': [10, 50, 100, 150],
+            'criterion': ['gini', 'entropy'],
+            'max_features': [None, 'sqrt', 0.05, 0.2, 0.5, 0.8],
+            'max_depth': [None, 3, 5, 10, 20, 50, 100],
+            'min_samples_split': [2, 5, 10, 15, 20],
+            'min_samples_leaf': [1, 2, 5, 10, 20],
+            'bootstrap': [True, False],
+            'ccp_alpha': [0.0, 0.001, 0.01, 0.03, 0.05],
+            'oob_score': [True, False]
         },
         'extraTrees': {
-            'n_estimators': [10, 50, 100, 150, 200]
+            'n_estimators': [10, 50, 100, 150],
+            'criterion': ['gini', 'entropy'],
+            'max_features': [None, 'sqrt', 0.05, 0.2, 0.5, 0.8],
+            'max_depth': [None, 3, 5, 10, 20, 50, 100],
+            'min_samples_split': [2, 5, 10, 15, 20],
+            'min_samples_leaf': [1, 2, 5, 10, 20],
+            'bootstrap': [True, False],
+            'ccp_alpha': [0.0, 0.001, 0.01, 0.03, 0.05],
+            'oob_score': [True, False]
         }
     }
 
     transform_kwargs = {
         'NMF': {
-            'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
-            'solver': ['cd', 'mu']
+            'feat_frac': [0.1, 0.5, 0.8, None],
+            'solver': ['cd', 'mu'],
+            'tol': [0.0001, 0.001, 0.01]
         },
         'FA': {
-            'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
+            'feat_frac': [0.1, 0.5, 0.8, None]
         },
         'FastICA': {
-            'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
-
+            'feat_frac': [0.1, 0.5, 0.8, None],
+            'algorithm': ['parallel', 'deflation']
         },
         'PCA': {
-            'feat_frac': [0.01, 0.05, 0.1, 0.25, 0.5, 0.75, 1],
+            'feat_frac': [None, 0.01, 0.1, 0.25, 0.5, 0.75, 1],
+            'n_components': ['mle', 2, 3],
             'whiten': [False, True],
         },
         # 'KernelPCA': {

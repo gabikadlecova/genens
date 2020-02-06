@@ -50,14 +50,15 @@ class RelativeTransformer(BaseEstimator, TransformerMixin):
         return "Transformer ({}): ".format(self.feat_frac) + self.transformer.__repr__()
 
     def fit(self, X, y):
-        param = int(math.ceil(self.feat_frac * X.shape[1]))
+        if self.feat_frac is not None:
+            param = int(math.ceil(self.feat_frac * X.shape[1]))
 
-        if self.param_name == 'k':
-            self.transformer.set_params(k=param)
-        elif self.param_name == 'n_components':
-            self.transformer.set_params(n_components=param)
-        else:
-            raise ValueError("Invalid feature transformer.")  # TODO specific
+            if self.param_name == 'k':
+                self.transformer.set_params(k=param)
+            elif self.param_name == 'n_components':
+                self.transformer.set_params(n_components=param)
+            else:
+                raise ValueError("Invalid feature transformer.")  # TODO specific
 
         self.transformer.fit(X, y)
         return self
