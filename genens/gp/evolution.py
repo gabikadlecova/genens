@@ -235,6 +235,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 all_offspring += offspring
 
                 # for large new offspring, perform hc to make them competitive
+                @set_log_handler
                 def apply_gradual(offs, mut_pb, n_nodes):
                     if offs.max_height < min_large_tree_height:
                         return offs
@@ -243,7 +244,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
                 all_offspring = parallel(
                     delayed(apply_gradual)(
-                        off, hc_mut_pb, hc_n_nodes
+                        off, hc_mut_pb, hc_n_nodes, log_setup=toolbox.log_setup
                     )
                     for off in all_offspring
                 )

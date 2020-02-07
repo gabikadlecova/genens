@@ -73,8 +73,8 @@ def clf_config(group_weights=None):
 
     ensemble_kwargs = {
         'voting': {
-            # 'soft' not included - a lot of classifiers does not support predict_proba
-            'voting': ['hard', 'soft']
+            'voting': ['soft']
+            #'voting': ['hard', 'soft']
         }
     }
 
