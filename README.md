@@ -1,5 +1,5 @@
-# genEns
-genEns is an AutoML system for pipeline optimization based on developmental genetic programming.
+# genens
+genens is an AutoML system for pipeline optimization based on developmental genetic programming.
 
 ## Installation
 Clone the repository.
