@@ -4,24 +4,20 @@
 This module contains the base estimator of Genens.
 """
 
-import json
-import logging
-import logging.config
-import warnings
-from queue import Queue
 
 import numpy as np
 import os
+import warnings
 
 from genens.gp.tree import gen_tree
 from genens.gp.evolution import gen_individual
 from genens.gp.mutation import mutate_subtree, mutate_gradual_hillclimbing
-from genens.gp.mutation import perform_hillclimbing, mutate_args
+from genens.gp.mutation import mutate_args
 from genens.gp.mutation import mutate_node_swap
 from genens.gp.crossover import crossover_one_point
 from genens.gp.evolution import ea_run
 
-from genens.log_utils import set_log_handler
+from genens.log_utils import set_log_handler, GenensLogger
 
 from genens.workflow.evaluate import CrossValEvaluator, TrainTestEvaluator, default_score
 from genens.workflow.model_creation import create_workflow
@@ -29,8 +25,6 @@ from genens.workflow.model_creation import create_workflow
 from deap import base, tools
 from functools import partial
 from joblib import delayed, Parallel
-from multiprocessing import Manager
-from logging.handlers import QueueListener, QueueHandler
 
 from sklearn.base import BaseEstimator, is_classifier
 from sklearn.utils.validation import check_X_y, check_array, check_is_fitted
@@ -48,7 +42,7 @@ class GenensBase(BaseEstimator):
                  n_gen=15, hc_repeat=0, hc_keep_last=False, hc_mut_pb=0.2, hc_n_nodes=3,
                  weighted=True, use_groups=True, max_height=None,
                  max_arity=None, timeout=None, evaluator=None,
-                 log_path=None, max_evo_seconds=None):
+                 logging_config=None, max_evo_seconds=None):
         """
         Creates a new Genens estimator.
 
@@ -122,9 +116,9 @@ class GenensBase(BaseEstimator):
         self.fitted_wf = None
         self._population = None
 
-        self._log_path = log_path
-        self._logging_config = DEFAULT_LOGGING_CONFIG
-        self._setup_debug_logging()
+        logging_config = logging_config if logging_config is not None else DEFAULT_LOGGING_CONFIG
+        self.logger = GenensLogger(logging_config, n_jobs=self.n_jobs)
+
         self._setup_stats_logging()
         self._setup_toolbox()
 
@@ -159,37 +153,7 @@ class GenensBase(BaseEstimator):
         self._toolbox.register("evaluate", self._eval_tree_individual)
 
         self._toolbox.register("update", self._update_population)
-        self._toolbox.register("log_setup", self._setup_child_logging)
-
-    def _load_log_config(self):
-        if self._logging_config is not None:
-            with open(self._logging_config, 'r') as f:
-                return json.load(f)
-
-    def _setup_debug_logging(self):
-        config = self._load_log_config()
-        logging.config.dictConfig(config)
-        self.log_format = config['format']
-
-        if self.n_jobs != 1:
-            mp_manager = Manager()
-            self._log_queue = mp_manager.Queue()
-        else:
-            self._log_queue = Queue()
-
-        handl = QueueHandler(self._log_queue)
-        logger = logging.getLogger("genens")
-
-        logger.addHandler(handl)
-
-    def _setup_child_logging(self):
-        config = self._load_log_config()
-        logging.config.dictConfig(config)
-
-        handl = QueueHandler(self._log_queue)
-        logger = logging.getLogger("genens")
-        logger.addHandler(handl)
-        return handl
+        self._toolbox.register("log_setup", self.logger.setup_child_logging)
 
     def _setup_stats_logging(self):
         score_stats = tools.Statistics(lambda ind: ind.fitness.values[0])
@@ -269,29 +233,11 @@ class GenensBase(BaseEstimator):
 
         self._population = self._toolbox.population(n=self.pop_size)
 
-        # handlers do not work well with pickling (required for multiprocessing)
-        formatter = logging.Formatter(fmt=self.log_format)
-        if self._log_path is not None:
-            handl = logging.FileHandler(self._log_path)
-        else:
-            handl = logging.StreamHandler()
-
-        handl.setFormatter(formatter)
-        log_queue_listener = QueueListener(self._log_queue, handl)
-
-        try:
-            log_queue_listener.start()
+        with self.logger:
             ea_run(self._population, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
                    mut_pb=self.mut_pb, hc_mut_pb=self.hc_mut_pb, hc_n_nodes=self.hc_n_nodes,
                    mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs,
                    timeout=self.max_evo_seconds, verbose=verbose)
-
-        finally:
-            # close local logging handlers
-            log_queue_listener.stop()
-            handl.close()
-            del log_queue_listener
-            del handl
 
         if not len(self.pareto):
             # try to get individuals that were evaluated before time limit end

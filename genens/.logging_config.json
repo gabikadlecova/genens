@@ -1,9 +1,26 @@
 {
 	"version": 1,
-	"format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+	"formatters": {
+		"default": {"format": "%(asctime)s - %(name)s - %(levelname)s - %(message)s"}
+	},
 	"loggers": {
 		"genens": {
-			"level": "DEBUG"
+			"level": "WARNING",
+			"handlers": ["file", "console"]
+		}
+	},
+	"handlers": {
+		"console": {
+                "level": "INFO",
+                "class": "logging.StreamHandler",
+                "formatter": "default",
+                "stream": "ext://sys.stdout"
+		},
+		"file": {
+			"level": "DEBUG",
+			"class": "logging.FileHandler",
+			"formatter": "default",
+			"filename": "C:/Users/Gabi/Documents/genens-test/genens/testlog.txt"
 		}
 	}
 }
