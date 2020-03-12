@@ -5,16 +5,17 @@
 	},
 	"loggers": {
 		"genens": {
-			"level": "WARNING",
-			"handlers": ["file", "console"]
+			"handlers": ["file", "console"],
+			"level": "DEBUG",
+			"propagate": false
 		}
 	},
 	"handlers": {
 		"console": {
-                "level": "INFO",
-                "class": "logging.StreamHandler",
-                "formatter": "default",
-                "stream": "ext://sys.stdout"
+			"level": "ERROR",
+			"class": "logging.StreamHandler",
+			"formatter": "default",
+			"stream": "ext://sys.stdout"
 		},
 		"file": {
 			"level": "DEBUG",

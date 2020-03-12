@@ -233,11 +233,16 @@ class GenensBase(BaseEstimator):
 
         self._population = self._toolbox.population(n=self.pop_size)
 
-        with self.logger:
+
+        try:
+            log_context = self.logger.listen()
+
             ea_run(self._population, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
                    mut_pb=self.mut_pb, hc_mut_pb=self.hc_mut_pb, hc_n_nodes=self.hc_n_nodes,
                    mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs,
                    timeout=self.max_evo_seconds, verbose=verbose)
+        finally:
+            self.logger.close(log_context)
 
         if not len(self.pareto):
             # try to get individuals that were evaluated before time limit end

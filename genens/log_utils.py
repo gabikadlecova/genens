@@ -24,20 +24,26 @@ class GenensLogger:
         self.n_jobs = n_jobs
 
         with open(config_path, 'r') as f:
-            self.config = json.load(f)
+            config = json.load(f)
 
         self._log_queue = None
-        self._logging_config = self.config
-        logging.config.dictConfig(self.config)
+        self._logging_config = config
+        logging.config.dictConfig(config)
+
+        logger = logging.getLogger("genens")
+        for handler in logger.handlers:
+            print(handler.level)
 
         # special setup for multiprocessing
         if self.n_jobs != 1:
             mp_manager = Manager()
             self._log_queue = mp_manager.Queue()
 
-            if "handlers" in self.config:
-                self.config.pop("handlers")
-                self._logging_config = self.config
+            if "handlers" in config:
+                config.pop("handlers")
+                self._logging_config = config
+
+            config["loggers"]["genens"].pop("handlers")
 
             handler = QueueHandler(self._log_queue)
             logger = logging.getLogger("genens")
@@ -59,24 +65,25 @@ class GenensLogger:
         for handler in handlers:
             logger.handlers.remove(handler)
 
-        queue_listener = QueueListener(self._log_queue, *handlers)
+        queue_listener = QueueListener(self._log_queue, *handlers, respect_handler_level=True)
         queue_listener.start()
-        return queue_listener
+        return queue_listener, handlers
 
-    def close(self, queue_listener: QueueListener = None):
+    def close(self, log_handlers=None):
+        if log_handlers is None:
+            return
+
+        queue_listener, queue_handlers = log_handlers
         if queue_listener is None:
             return
 
         queue_listener.stop()
 
-        handlers = []
         # set handlers back
         logger = logging.getLogger("genens")
-        for handler in queue_listener.:
+        for handler in queue_handlers:
+            print(handler.level)
             logger.addHandler(handler)
-
-        for handler in handlers:
-            logger.removeHandler(handler)
 
     def setup_child_logging(self):
         if self.n_jobs == 1:
