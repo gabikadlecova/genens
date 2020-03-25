@@ -43,6 +43,7 @@ class GenensBase(BaseEstimator):
                  weighted=True, use_groups=True, max_height=None,
                  max_arity=None, timeout=None, evaluator=None,
                  logging_config=None, max_evo_seconds=None):
+
         """
         Creates a new Genens estimator.
 
@@ -157,9 +158,8 @@ class GenensBase(BaseEstimator):
 
     def _setup_stats_logging(self):
         score_stats = tools.Statistics(lambda ind: ind.fitness.values[0])
-        test_stats = tools.Statistics(lambda ind: self._compute_test(ind))
 
-        self._mstats = tools.MultiStatistics(score=score_stats, test_score=test_stats)
+        self._mstats = tools.MultiStatistics(score=score_stats)
 
         self._mstats.register("avg", np.mean)
         self._mstats.register("std", np.std)
@@ -168,9 +168,8 @@ class GenensBase(BaseEstimator):
 
         self.logbook = tools.Logbook()
 
-        self.logbook.header = "gen", "score", "test_score"
+        self.logbook.header = "gen", "score"
         self.logbook.chapters["score"].header = "min", "avg", "max", "std"
-        self.logbook.chapters["test_score"].header = "min", "avg", "max", "std"
 
     def _update_population(self, population, gen_i):
         self._fitness_evaluator.reset()
@@ -190,23 +189,6 @@ class GenensBase(BaseEstimator):
     def can_log_score(self):
         return self.test_evaluator is not None
 
-    def setup_test_stats(self, train_X, train_y, test_X, test_y):
-        self.test_evaluator = TrainTestEvaluator(test_X, test_y, timeout_s=self._timeout)
-        self.test_evaluator.fit(train_X, train_y)
-
-    def _compute_test(self, ind):
-        if not self.can_log_score:
-            return 0.0  # TODO, warn
-
-        if ind.test_stats is not None:
-            return ind.test_stats
-
-        wf = self._toolbox.compile(ind)
-        res = self.test_evaluator.score(wf, scorer=self.scorer)
-
-        ind.test_stats = res
-        return res if res is not None else 0.0  # TODO
-
     def _log_pop_stats(self, population, gen_id):
         self.pareto.update(population)
 
@@ -217,10 +199,9 @@ class GenensBase(BaseEstimator):
         check_is_fitted(self, 'is_fitted_')
 
         if as_individuals:
-            [self._compute_test(ind) for ind in self.pareto]
             return self.pareto
-        else:
-            return list(map(self._toolbox.compile, self.pareto))
+
+        return list(map(self._toolbox.compile, self.pareto))
 
     def fit(self, train_X, train_y, verbose=1):
         train_X, train_y = check_X_y(train_X, train_y, accept_sparse=True)
@@ -233,7 +214,7 @@ class GenensBase(BaseEstimator):
 
         self._population = self._toolbox.population(n=self.pop_size)
 
-
+        log_context = None
         try:
             log_context = self.logger.listen()
 
@@ -265,10 +246,7 @@ class GenensBase(BaseEstimator):
         test_X = check_array(test_X, accept_sparse=True)
         check_is_fitted(self, 'is_fitted_')
 
-        # TODO clf/regr specific
-
-        res = self.fitted_wf.predict(test_X)
-        return res
+        return self.fitted_wf.predict(test_X)
 
     def score(self, test_X, test_y):
         test_X, test_y = check_X_y(test_X, test_y, accept_sparse=True)
@@ -277,7 +255,7 @@ class GenensBase(BaseEstimator):
         if self.scorer is not None:
             s = self.scorer(self.fitted_wf, test_X, test_y)
         else:
-            s = default_score(self.fitted_wf, test_X, test_y)
+            s = default_score(self.fitted_wf, test_X, test_y)  # TODO remove this one
 
         return s
 

@@ -5,23 +5,8 @@
 	},
 	"loggers": {
 		"genens": {
-			"handlers": ["file", "console"],
-			"level": "DEBUG",
+			"level": "INFO",
 			"propagate": false
-		}
-	},
-	"handlers": {
-		"console": {
-			"level": "ERROR",
-			"class": "logging.StreamHandler",
-			"formatter": "default",
-			"stream": "ext://sys.stdout"
-		},
-		"file": {
-			"level": "DEBUG",
-			"class": "logging.FileHandler",
-			"formatter": "default",
-			"filename": "C:/Users/Gabi/Documents/genens-test/genens/testlog.txt"
 		}
 	}
 }

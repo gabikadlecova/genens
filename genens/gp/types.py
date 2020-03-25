@@ -16,25 +16,28 @@ The primitive templates defined in this file are
 """
 
 
-import random
 import functools
-from copy import deepcopy
+import random
 
+from copy import deepcopy
 from deap import base
+from typing import Callable, List, Any, Dict
 
 
 class GpTreeIndividual:
-    """Represents a tree individual used in the GP.
+    """Represents a tree individual used in GP.
     The individual is a tree encoded as a list of ``GpPrimitive`` nodes.
 
     The list is a post-order representation of the tree. The tree can be
     uniquely reconstructed using the arity (and types) of primitives.
     """
-    def __init__(self, prim_list, max_height):
+    def __init__(self, prim_list: List['GpPrimitive'], max_height: int):
         """
         Construct a GP tree from a list of primitives.
 
-        :param list of GpPrimitive prim_list: Post-order representation of the tree.
+        Args:
+            prim_list: list of GpPrimitive prim_list: Post-order representation of the tree.
+            max_height: Height of the tree - maximum of all node depths + 1
         """
         self.primitives = prim_list
         self.max_height = max_height
@@ -61,10 +64,9 @@ class GpTreeIndividual:
         return True
 
     def __repr__(self):
-        return 'GpTreePrimitive(height={}, '.format(self.max_height)\
-               + 'primitives=' + self.primitives.__repr__() + ')'
+        return f'GpTreeIndividual(height={self.max_height} primitives={self.primitives.__repr__()})'
 
-    def run_tree(self, node_func):
+    def run_tree(self, node_func: Callable[['GpPrimitive', List[(str, Any)]], Any]) -> Any:
         """
         Applies a function with the signature ``func(node, child_list)`` on all
         nodes in the tree. The tree is traversed in post-order.
@@ -82,6 +84,10 @@ class GpTreeIndividual:
             else:
                 args = stack[-node.arity:]
                 stack = stack[:-node.arity]
+
+                for t in node.in_type:
+                    t = GpPrimitive.InputType(t)
+                    # TODO split by arity
 
                 stack.append(node_func(node, args))
 
@@ -122,10 +128,10 @@ class GpTreeIndividual:
                 raise ValueError("Invalid number of children.")  # TODO specific
 
             child_id = 0
-            for in_type in node.node_type[0]:
+            for in_type in node.in_type:
                 for i in range(in_type.arity):
                     child = child_list[child_id + i]
-                    if child.node_type[1] != in_type.name:
+                    if child.out_type != in_type.name:
                         raise ValueError("Invalid child type.")  # TODO specific
 
                     if child.depth != node.depth + 1:
@@ -172,7 +178,7 @@ class GpPrimitive:
     or object, which is associated with the node.
     """
 
-    def __init__(self, name, obj_kwargs, node_type, arity, depth):
+    def __init__(self, name, obj_kwargs, in_type, out_type, arity, depth):
         """
         Creates an instance of a GP tree node. Number of its children
         is specified by its arity, types of children are determined by its
@@ -181,7 +187,7 @@ class GpPrimitive:
 
         :param str name: Name key associated with the node.
         :param dict obj_kwargs: Keyword arguments associated with the node.
-        :param (list of PrimType, str) node_type:
+        :param in_type:
             A tuple, where first item is a list of input types with arities
             and the second item is output type name.
         :param int arity: Sum of all arities of types.
@@ -189,7 +195,8 @@ class GpPrimitive:
         """
         self.name = name
         self.obj_kwargs = obj_kwargs
-        self.node_type = node_type
+        self.in_type = in_type
+        self.out_type = out_type
         self.arity = arity
         self.depth = depth
 
@@ -210,7 +217,7 @@ class GpPrimitive:
         if self.name != other.name:
             return False
 
-        if self.arity != other.arity or self.node_type != other.node_type:
+        if self.arity != other.arity or self.in_type != other.in_type or self.out_type != other.out_type:
             return False
 
         if self.obj_kwargs != other.obj_kwargs:
@@ -222,11 +229,7 @@ class GpPrimitive:
         return 'GpPrimitive(name=' + self.name + ", arity={}".format(self.arity)\
                + ", height={})".format(self.depth)
 
-    @property
-    def out_type(self):
-        return self.node_type[1]
-
-    class PrimType:
+    class InputType:
         """
         Represents the input type which must match the output type of
         a certain number of children (determined by ``arity``).
@@ -242,7 +245,7 @@ class GpPrimitive:
             self.arity = arity
 
         def __eq__(self, other):
-            if not isinstance(other, GpPrimitive.PrimType):
+            if not isinstance(other, GpPrimitive.InputType):
                 return False
 
             if self.name != other.name or self.arity != other.arity:
@@ -286,9 +289,7 @@ class GpTerminalTemplate:
         """
         prim_kwargs = _choose_kwargs(kwargs_dict)
 
-        prim_type = ([], self.out_type)
-
-        return GpPrimitive(self.name, prim_kwargs, prim_type, 0, curr_height)
+        return GpPrimitive(self.name, prim_kwargs, [], self.out_type, 0, curr_height)
 
 
 class TypeArity:
@@ -404,36 +405,31 @@ class GpFunctionTemplate:
             if arity == 0:
                 return None
 
-            return GpPrimitive.PrimType(t.prim_type, arity)
+            return GpPrimitive.InputType(t.prim_type, arity)
 
         if in_type is None:
             # ordered list of final typed arities
             in_type = [create_type(t_a) for t_a in self.type_arities]
             in_type = [t for t in in_type if t is not None]
 
-        # TODO check the provided in_type (and maybe change it a bit)
-
         # sum of all arities
         arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)
         
-        return GpPrimitive(self.name, prim_kwargs, (in_type, self.out_type), arity_sum, curr_height)
+        return GpPrimitive(self.name, prim_kwargs, in_type, self.out_type, arity_sum, curr_height)
 
 
-def _choose_kwargs(kwargs_dict):
+def _choose_kwargs(kwargs_dict: Dict[str, List]) -> Dict[str, Any]:
     """
-    Chooses keyword argument values from the argument dictionary, which contains
-    list of possible values for every key.
+    Chooses keyword argument values from the argument dictionary `kwargs_dict`.
+    For every keyword argument, it contains a list of possible values for every key.
 
-    :param dict kwargs_dict: Dictionary of possible key values.
-    :return dict: Dictionary with one value selected per key.
+    Args:
+        kwargs_dict: Dict of possible kwarg values.
+
+    Returns: Dict with one value selected per key.
+
     """
     if kwargs_dict is None:
         return {}
 
-    chosen_kwargs = {}
-
-    for keyword, arg_list in kwargs_dict.items():
-        arg = random.choice(arg_list)
-        chosen_kwargs[keyword] = arg
-
-    return chosen_kwargs
+    return {k: random.choice(arg_list) for k, arg_list in kwargs_dict.items()}

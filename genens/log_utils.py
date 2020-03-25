@@ -49,7 +49,6 @@ class GenensLogger:
             logger = logging.getLogger("genens")
             logger.addHandler(handler)
 
-    # TODO need the queue so that I dont remove the handlers (does not work well)
     def listen(self):
         if self.n_jobs == 1:
             return None

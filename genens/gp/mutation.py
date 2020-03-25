@@ -59,11 +59,11 @@ def _node_types_match(node, node_template):
     :return bool: True if the types of the nodes match.
     """
     # out types match?
-    if node.node_type[1] != node_template.out_type:
+    if node.out_type != node_template.out_type:
         return False
 
     # in types (and arities) match?
-    in_types = node.node_type[0]
+    in_types = node.in_type
     template_types = node_template.type_arities
 
     if len(in_types) != len(template_types):
@@ -93,7 +93,7 @@ def mutate_node_swap(config, gp_tree):
     swap_ind = random.randrange(len(gp_tree.primitives))
     swap_node = gp_tree.primitives[swap_ind]
 
-    out_type = swap_node.node_type[1]
+    out_type = swap_node.out_type
 
     possible_templates = [tm for tm in config.full_config[out_type]
                           if _node_types_match(swap_node, tm)]
@@ -106,7 +106,7 @@ def mutate_node_swap(config, gp_tree):
     if isinstance(chosen_tm, GpFunctionTemplate):
         new_node = chosen_tm.create_primitive(swap_node.depth, config.max_arity,
                                               config.kwargs_config[chosen_tm.name],
-                                              in_type=swap_node.node_type[0])
+                                              in_type=swap_node.in_type)
     else:
         new_node = chosen_tm.create_primitive(swap_node.depth, config.max_arity,
                                               config.kwargs_config[chosen_tm.name])

@@ -52,11 +52,11 @@ def create_ensemble(ens_cls, const_kwargs, child_list, evolved_kwargs):
     :return: A new ensemble.
     """
     if not len(child_list):
-        raise ValueError("No base estimator provided to the ensemble.")  # TODO specific
+        raise ValueError("No base estimator provided to the ensemble.")
 
     if 'base_estimator' in inspect.signature(ens_cls).parameters:
         if len(child_list) != 1:
-            raise ValueError("Incorrect number of base estimators.")  # TODO specific
+            raise ValueError("Incorrect number of base estimators.")
 
         ens = ens_cls(**const_kwargs, **evolved_kwargs, base_estimator=child_list[0])
     elif 'estimators' in inspect.signature(ens_cls).parameters:
@@ -66,7 +66,7 @@ def create_ensemble(ens_cls, const_kwargs, child_list, evolved_kwargs):
 
         ens = ens_cls(**const_kwargs, **evolved_kwargs, estimators=est_list)
     else:
-        raise ValueError("Invalid ensemble - missing constructor parameters.")  # TODO specific
+        raise ValueError("Invalid ensemble - missing constructor parameters.")
 
     return ens
 
@@ -83,7 +83,7 @@ def create_estimator(est_cls, const_kwargs, child_list, evolved_kwargs):
     """
 
     if len(child_list) > 0:
-        raise ValueError("Estimator cannot have sub-estimators.")  # TODO specific
+        raise ValueError("Estimator cannot have sub-estimators.")
 
     if 'feat_frac' in evolved_kwargs.keys():
         feat_frac = evolved_kwargs['feat_frac']
@@ -116,7 +116,7 @@ def create_empty_data(child_list, evolved_kwargs):
     :return:
     """
     if len(child_list) > 0:
-        raise ValueError("This can be assigned only to terminals.")  # TODO specific
+        raise ValueError("This can be assigned only to terminals.")
 
     return []
 
@@ -130,7 +130,7 @@ def create_pipeline(child_list, evolved_kwargs):
     :return: A scikit-learn pipeline.
     """
     if len(child_list) > 2 or not len(child_list):
-        raise ValueError("Invalid child list for pipeline.")  # TODO specific
+        raise ValueError("Invalid child list for pipeline.")
 
     predictor = child_list[0]
 
@@ -161,7 +161,7 @@ def create_data_union(child_list, evolved_kwargs):
     :return: A scikit-learn FeatureUnion
     """
     if not len(child_list):
-        raise ValueError("No base estimator provided to the feature union.")  # TODO specific
+        raise ValueError("No base estimator provided to the feature union.")
 
     def add_or_concat(res, child):
         if isinstance(child, list):

@@ -89,7 +89,7 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out', weighted
 
         # append child types and arities to the stack
         if prim.arity > 0:
-            for child_type in prim.node_type[0]:
+            for child_type in prim.in_type:
                 type_stack.append((child_type.name, child_type.arity, h + 1))
 
         tree_list.append(prim)

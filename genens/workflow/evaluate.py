@@ -54,7 +54,7 @@ def eval_time(fn):
         logger = logging.getLogger("genens")
         logger.debug(f"Score: {res}, evaluation time - {elapsed_time / 10e9}s,\n{workflow}")
 
-        return res, np.log(elapsed_time)
+        return res, np.log(elapsed_time + np.finfo(float).eps)
 
     return with_time
 
