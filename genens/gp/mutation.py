@@ -64,7 +64,7 @@ def _node_types_match(node, node_template):
 
     # in types (and arities) match?
     in_types = node.in_type
-    template_types = node_template.type_arities
+    template_types = node_template.type_arity_template
 
     if len(in_types) != len(template_types):
         return False

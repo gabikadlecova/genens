@@ -21,45 +21,10 @@ from ..gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
 from ..workflow.model_creation import create_pipeline, create_stacking
 from ..workflow.model_creation import create_data_union
 from ..workflow.model_creation import create_transform_list
-from ..workflow.model_creation import create_empty_data
 from ..workflow.model_creation import create_estimator
 from ..workflow.model_creation import create_ensemble
 
 from warnings import warn
-
-
-def default_group_weights(*args, groups=None):
-    """
-    Verifies whether all GpPrimitive instances contained in ``args`` (dictionaries of lists) belong to
-    a particular group in ``groups``. If a GpPrimitive does not have a group specified, creates a new
-    group for it with default weight.
-
-    :param args: Dictionaries of lists of GpPrimitive (grouped by output types as in GenensConfig)
-    :param groups: Dictionary of groups with weights
-    :return: Adjusted groups
-    """
-    checked_groups = groups if groups is not None else {}
-    for prim_list in args:
-        # primitives are grouped by output nodes
-        for out_prim_list in prim_list.values():
-            for prim in out_prim_list:
-
-                if prim.group is None:
-                    # warn only if user provided config with missing values
-                    if groups is not None:
-                        warn("Primitive {} has no group, using its name as the group.".format(prim.name))
-
-                    prim.group = prim.name
-
-                if prim.group not in checked_groups.keys():
-                    # warn only if user provided config with missing values
-                    if groups is not None:
-                        warn("Group {} is not present in the group list, adding with default"
-                             "weight (1.0).".format(prim.group))
-
-                    checked_groups[prim.group] = 1.0
-
-    return checked_groups
 
 
 class GenensConfig:
@@ -67,17 +32,17 @@ class GenensConfig:
     Configuration of Genens estimators. Contains settings of GP and configuration of
     methods which decode nodes into scikit-learn methods.
     """
-    def __init__(self, func, full, term, kwargs_config, min_height=1, max_height=4, min_arity=2, max_arity=3,
-                 group_weights=None):
+    def __init__(self, function_config=None, full_config=None, term_config=None, kwargs_config=None, min_height=1,
+                 max_height=4, min_arity=2, max_arity=3, group_weights=None):
         """
         Creates a new instance of a Genens configuration. If ``group_weights`` are specified,
         validity check is performed.
 
-        :param dict func: Function configuration dictionary, keys correspond do a particular primitive name.
-        :param dict full: Node configuration dictionary, nodes are grouped by output types,
+        :param dict function_config: Function configuration dictionary, keys correspond do a particular primitive name.
+        :param dict full_config: Node configuration dictionary, nodes are grouped by output types,
                           contains node templates used during the grow phase.
 
-        :param dict term: Node configuration dictionary, nodes are grouped by output types,
+        :param dict term_config: Node configuration dictionary, nodes are grouped by output types,
                           contains node templates used to terminate a tree (in the last height level).
 
         :param kwargs_config: Keyword arguments for nodes, which are passed to functions during the decoding.
@@ -90,93 +55,46 @@ class GenensConfig:
         :param max_arity: Maximum arity of a function node.
         :param group_weights: Group weight configuration.
         """
-        self.func_config = func
-
-        self.full_config = full
-        self.term_config = term
-
-        self.kwargs_config = kwargs_config
+        self.func_config = function_config if function_config is not None else {}
+        self.full_config = full_config if full_config is not None else {}
+        self.term_config = term_config if term_config is not None else {}
+        self.kwargs_config = kwargs_config if kwargs_config is not None else {}
 
         self.min_height = min_height
         self.max_height = max_height
         self.min_arity = min_arity
         self.max_arity = max_arity
 
-        # perform check if specified
-        if group_weights is None:
-            self._group_weights = None
-        else:
-            self.group_weights = group_weights
+        self.group_weights = group_weights if group_weights is not None else {}
 
     def __repr__(self):
         res = "max_height: {}, max_arity: {}".format(self.max_height, self.max_arity)
-        res += ", group_weights: {}".format(str(self._group_weights))
+        res += ", group_weights: {}".format(str(self.group_weights))
         return res
 
-    @property
-    def group_weights(self):
-        return self._group_weights
-
-    @group_weights.setter
-    def group_weights(self, value):
-        """
-        Sets the group weight and performs validity check, possibly adds a new group for primitives
-        without a group specified.
-
-        :param dict value: Dictionary of weights, keys are group names.
-        """
-        self._group_weights = default_group_weights(self.full_config, self.term_config,
-                                                    groups=value)
-
-    @group_weights.deleter
-    def group_weights(self):
-        del self._group_weights
-
-    def add_primitive(self, prim, term_only=False):
+    def add_terminal(self, prim, leaf_only=False):
         """
         Adds a new primitive to the configuration. If ``term_only`` is True,
         it is added only to the terminal set. If the primitive is a GpFunctionTemplate,
         it is added only to the grow set.
 
         :param GpPrimitive prim: Primitive to be added.
-        :param bool term_only: Specifies whether the primitive should be added only to the terminal set.
+        :param bool leaf_only: Specifies whether the primitive should be added only to the terminal set.
         """
-        if term_only and not isinstance(prim, GpTerminalTemplate):
-            warn("Primitive is added neither to function nor terminal set.")
 
-        if not term_only:
+        if not leaf_only:
             out_list = self.full_config.setdefault(prim.out_type, [])
             out_list.append(prim)
 
-        if isinstance(prim, GpTerminalTemplate):
-            out_list = self.term_config.setdefault(prim.out_type, [])
-            out_list.append(prim)
+        out_list = self.term_config.setdefault(prim.out_type, [])
+        out_list.append(prim)
 
-    def add_functions_args(self, func_dict, kwarg_dict):
-        """
-        Adds functions that decode a node along with keyword arguments for the node.
-        The function has the signature ``func(child_list, kwargs)``, where child_list contains
-        decoded values of child nodes, and kwargs are
-        specific keyword arguments set during the evolution.
-
-        :param func_dict: Dictionary of functions, the keys are names which should correspond to a node.
-                          Every function must have a keyword argument dictionary specified.
-
-        :param kwarg_dict: Dictionary of keyword argument dictionaries, the keys (names) corresponds to nodes
-                           from grow/terminals sets and also to methods in the ``func_dict``.
-        """
-        for key, val in func_dict.items():
-            if key in self.func_config.keys():
-                raise ValueError("Cannot insert to func - duplicate value.")  # TODO specific
-
-            kwarg_val = kwarg_dict.get(key, None)
-            if kwarg_val is None:
-                raise ValueError("Must provide keyword arguments for all names.")  # TODO specific
-
-            self.func_config[key] = val
-            self.kwargs_config[key] = kwarg_val
+    def add_function(self, prim):
+        out_list = self.full_config.setdefault(prim.out_type, [])
+        out_list.append(prim)
 
 
+# TODO this from json/yaml
 def get_default_config(group_weights=None):
     """
     Creates the default config with pipeline construction nodes and functions.
@@ -191,8 +109,7 @@ def get_default_config(group_weights=None):
         # 'dUnion': create_data_union,
         'cData': create_transform_list,
         'cFeatSelect': create_transform_list,
-        'cScale': create_transform_list,
-        'dTerm': create_empty_data
+        'cScale': create_transform_list
     }
 
     kwargs_config = {
@@ -201,8 +118,7 @@ def get_default_config(group_weights=None):
         'cData': {},
         'cFeatSelect': {},
         'cScale': {},
-        # 'dUnion': {},
-        'dTerm': {}
+        # 'dUnion': {}
     }
 
     full_config = {

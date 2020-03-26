@@ -21,7 +21,7 @@ import random
 
 from copy import deepcopy
 from deap import base
-from typing import Callable, List, Any, Dict
+from typing import Callable, List, Any, Dict, Union, Tuple
 
 
 class GpTreeIndividual:
@@ -66,7 +66,7 @@ class GpTreeIndividual:
     def __repr__(self):
         return f'GpTreeIndividual(height={self.max_height} primitives={self.primitives.__repr__()})'
 
-    def run_tree(self, node_func: Callable[['GpPrimitive', List[(str, Any)]], Any]) -> Any:
+    def run_tree(self, node_func, group_children: bool = False) -> Any:
         """
         Applies a function with the signature ``func(node, child_list)`` on all
         nodes in the tree. The tree is traversed in post-order.
@@ -85,23 +85,31 @@ class GpTreeIndividual:
                 args = stack[-node.arity:]
                 stack = stack[:-node.arity]
 
-                for t in node.in_type:
-                    t = GpPrimitive.InputType(t)
-                    # TODO split by arity
+                if group_children:
+                    children_by_type = []
+                    for t in node.in_type:
+                        t_children, args = args[-t.arity:], args[:-t.arity]
+                        children_by_type.append((t.name, t_children))
+
+                    args = children_by_type
 
                 stack.append(node_func(node, args))
 
         if len(stack) > 1:
-            raise ValueError("Bad tree")  # TODO specific
+            raise ValueError("Bad tree - invalid primitive list.")
 
         return stack.pop()
 
-    def subtree(self, root_ind):
+    def subtree(self, root_ind: int) -> Tuple[int, int]:
         """
-        Returns the end position of the subtree in the tree individual.
+        Returns the start position of the subtree with primitive `self.primitives[root_ind]` as root. Note
+        that the returned value is in fact the index of one of the leaves, as the node list is post-order.
+        As so, the whole subtree is extracted with `self.primitives[subtree(root_ind), root_ind + 1]`.
 
-        :param root_ind: Position of the root (index of the beginning).
-        :return: The end index of the subtree.
+        Args:
+            root_ind: Position of the root (index of the beginning).
+
+        Returns: A tuple `(s, h)`, where `s` is the start index and `h` is the height of the subtree.
         """
         curr = self.primitives[root_ind]
 
@@ -125,17 +133,17 @@ class GpTreeIndividual:
 
         def validate_node(node, child_list):
             if node.arity != len(child_list):
-                raise ValueError("Invalid number of children.")  # TODO specific
+                raise ValueError("Invalid number of children.")
 
             child_id = 0
             for in_type in node.in_type:
                 for i in range(in_type.arity):
                     child = child_list[child_id + i]
                     if child.out_type != in_type.name:
-                        raise ValueError("Invalid child type.")  # TODO specific
+                        raise ValueError("Invalid child type.")
 
                     if child.depth != node.depth + 1:
-                        raise ValueError("Invalid child height.")  # TODO specific
+                        raise ValueError("Invalid child height.")
 
                 child_id += in_type.arity
 
@@ -144,18 +152,18 @@ class GpTreeIndividual:
         self.run_tree(validate_node)
 
         if self.max_height != max(prim.depth + 1 for prim in self.primitives):
-            raise ValueError("Invalid tree height.")  # TODO specific
+            raise ValueError("Invalid tree height.")
 
 
 class DeapTreeIndividual(GpTreeIndividual):
     """
-    Represents an individual which contains DEAP defined fitness.
+    Represents an individual with DEAP-compatible fitness.
     """
-    def __init__(self, prim_list, max_height):
+    def __init__(self, prim_list: List['GpPrimitive'], max_height: int):
         super().__init__(prim_list, max_height)
-        self.fitness = DeapTreeIndividual.Fitness()
+
+        self.fitness = DeapTreeIndividual.Fitness()  # (score, log(evaluation_time))
         self.compiled_pipe = None
-        self.test_stats = None
 
     class Fitness(base.Fitness):
         def __init__(self, values=()):
@@ -166,32 +174,35 @@ class DeapTreeIndividual(GpTreeIndividual):
         del self.fitness.values
 
         self.compiled_pipe = None
-        self.test_stats = None
 
 
 class GpPrimitive:
     """
-    Represents a node in the GP tree. It is defined by its type and
-    arity values.
+    Represents a typed node in the GP tree.
 
     Its name and keyword dictionary hold information about the function
     or object, which is associated with the node.
     """
 
-    def __init__(self, name, obj_kwargs, in_type, out_type, arity, depth):
+    def __init__(self,
+                 name: str,
+                 obj_kwargs: Dict[str, Any],
+                 in_type: List['GpPrimitive.InputType'],
+                 out_type: str,
+                 arity: int,
+                 depth: int):
         """
-        Creates an instance of a GP tree node. Number of its children
-        is specified by its arity, types of children are determined by its
-        PrimType type. Its children must be ordered according to the input
-        type list.
+        Creates an instance of a GP tree node. The number and output types as well as the ordering of its children
+        is specified by `in_type`.
 
-        :param str name: Name key associated with the node.
-        :param dict obj_kwargs: Keyword arguments associated with the node.
-        :param in_type:
-            A tuple, where first item is a list of input types with arities
-            and the second item is output type name.
-        :param int arity: Sum of all arities of types.
-        :param int height: Depth of the node.
+        Args:
+            name: Name of the node.
+            obj_kwargs: Keyword arguments associated with the node.
+            in_type:
+                List of input types with arity. The subtypes are ordered - e.g. [('data', 2), ('ens', 1)] is not the
+                same as [('ens', 1), ('data', 2)].
+            arity: Sum of arity of subtypes.
+            depth: Depth of the node.
         """
         self.name = name
         self.obj_kwargs = obj_kwargs
@@ -231,15 +242,15 @@ class GpPrimitive:
 
     class InputType:
         """
-        Represents the input type which must match the output type of
-        a certain number of children (determined by ``arity``).
+        Represents the input type of a primitive. It determines how many children with a specific output type
+        should the node have.
         """
-        def __init__(self, name, arity):
+        def __init__(self, name: str, arity: int):
             """
-            Construct a new instance of the type associated with an arity.
+            Construct a new instance of input type with arity.
 
             :param name: Name of the type.
-            :param arity: Arity associated with this type.
+            :param arity: Arity of this type.
             """
             self.name = name
             self.arity = arity
@@ -256,36 +267,37 @@ class GpPrimitive:
 
 class GpTerminalTemplate:
     """
-    Represents a leaf of the GP tree.
-    Creates a primitive with no inputs. The output type is specified.
-
-    The ``arity`` of the primitive will be set to 0 and ``node_type`` is set to ``([], out_type)``.
+    Represents a terminal of the GP tree, or a primitive with no inputs.
+    The output type is fixed.
 
     The keyword arguments are chosen from lists of possible values.
     """
-    def __init__(self, name, out_type, group=None):
+    def __init__(self, name: str, out_type: str, group: str = None):
         """
         Creates a new instance of a terminal template.
 
-        :param str name: Name key associated with the node.
-        :param str out_type: Name of the node output type.
+        Args:
+            name: Name of the node.
+            out_type: Name of the output type.
         """
         self.name = name
-        self.type_arities = []
+        self.type_arity_template = []
         self.out_type = out_type
         self.group = group
 
-    def create_primitive(self, curr_height, max_arity, kwargs_dict):
+    def create_primitive(self, curr_height: int, max_arity: int, kwargs_dict: Dict[str, List[Any]]) -> GpPrimitive:
         """
-        Creates an instance of a ``GpPrimitive`` from the template.
+        Creates an instance of a `GpPrimitive` from the template.
 
-        Selects keyword arguments from ``kwargs_dict``. For every key,
-        the dict should contain a list of possible values.
+        Selects keyword arguments from `kwargs_dict`. For every key,
+        the dict contains a list of possible values.
 
-        :param int curr_height: Height at which the node is generated.
-        :param int max_arity: Maximum arity of all nodes in the tree, not used.
-        :param dict kwargs_dict: Dictionary which contains possible keyword argument values.
-        :return: A new instance of GpPrimitive.
+        Args:
+            curr_height: Height at which the node is generated.
+            max_arity: Only for compatibility, not used for terminals.
+            kwargs_dict: Dictionary which contains possible keyword argument values.
+
+        Return: A new instance of `GpPrimitive`.
         """
         prim_kwargs = _choose_kwargs(kwargs_dict)
 
@@ -296,105 +308,135 @@ class TypeArity:
     """
     Represents a variable node arity associated with a type.
     """
-    def __init__(self, prim_type, arity_range):
+    def __init__(self,
+                 prim_type: str,
+                 arity_template: Union[int, Tuple[int, int], Tuple[int, str]]):
         """
-        Constructs a new instance of the typed arity.
-
-        :param str prim_type: Type associated with the arity.
-        :param int or (int, int) or (int, 'n') arity_range:
-            Arity of input nodes, either a constant, or a range (inclusive), or a range
-            without a specified upper bound (in the case of (int, 'n')).
+        Constructs a new instance of a type template - with a fixed type, but possibly variable arity.
+        Args:
+            prim_type: Name of the type.
+            arity_template: Either a fixed arity value, or a bounded interval (a, b) where a and b are integers,
+                or an interval (a, 'n') that has only a lower bound a ('n' is a string).
         """
         self.prim_type = prim_type
-        self.arity_range = arity_range
+        self.arity_template = arity_template
 
-        if isinstance(self.arity_range, tuple):
-            if self.arity_range[1] != 'n' and self.arity_range[0] > self.arity_range[1]:
-                raise ValueError("Invalid arity range.")  # TODO specific
-        elif isinstance(self.arity_range, int):
-            if self.arity_range <= 0:
-                raise ValueError("Arity must be greater than 0.")  # TODO specific
+        # check arity range
+        if isinstance(self.arity_template, tuple):
+            lower_invalid = self.arity_template[0] < 0
+            upper_invalid = self.arity_template[1] != 'n' and self.arity_template[0] > self.arity_template[1]
+
+            if lower_invalid or upper_invalid:
+                raise ValueError("Invalid arity range.")
+
+        # check fixed arity
+        elif isinstance(self.arity_template, int):
+            if self.arity_template <= 0:
+                raise ValueError("Arity must be greater than 0.")
         else:
-            raise ValueError("Invalid arity type.")  # TODO specific
+            raise ValueError("Invalid arity type.")
 
-    def is_valid_arity(self, arity):
-        if isinstance(self.arity_range, tuple):
-            if arity < self.arity_range[0]:
+    def is_valid_arity(self, arity: int):
+        """
+        Determines whether `self.choose_arity` could possibly result in `arity`.
+        Args:
+            arity: Input arity to compare with this template.
+
+        Returns: True if `arity` can be created from this template.
+
+        """
+        if isinstance(self.arity_template, tuple):
+            # out of range
+            if arity < self.arity_template[0]:
                 return False
 
-            if self.arity_range[1] != 'n' and arity > self.arity_range[1]:
+            if self.arity_template[1] != 'n' and arity > self.arity_template[1]:
                 return False
 
+            # inside range
             return True
 
-        if isinstance(self.arity_range, int):
-            return self.arity_range == arity
+        # match fixed arity
+        if isinstance(self.arity_template, int):
+            return self.arity_template == arity
 
-        raise ValueError("Invalid arity object.")  # TODO specific
+        return False
 
-    def choose_arity(self, max_arity):
+    def choose_arity(self, max_arity: int) -> int:
         """
         Chooses an integer arity from the arity range or
-        returns the arity in case of a single int.
+        returns the arity if it is already a fixed value.
 
-        :param int max_arity:
-            The upper bound of arities. Is applied for variable upper bounds and for
-            ranges where the lower bound is less than this parameter.
-        :return int: Returns a number from the range of possible arities.
+        Args:
+            max_arity: The upper bound of arities. It is an upper bound for all ranges, even when the arity
+                upper bound is greater. If the lower bound is greater than this value, `max_arity` is not applied
+                and the value is chosen from the original interval.
+
+        Returns: A fixed arity value.
         """
-        if not isinstance(self.arity_range, tuple):
-            return self.arity_range
+        if not isinstance(self.arity_template, tuple):
+            return self.arity_template
 
-        a_from, a_to = self.arity_range
+        a_from, a_to = self.arity_template
 
-        # is not applied for ranges which are greater than ``max_arity`` as it could break them
+        # is not applied for ranges which are greater than ``max_arity`` as it could result in invalid behavior
         if a_to == 'n' or a_to > max_arity >= a_from:
-            a_to = max_arity
-            
+            a_to = max(max_arity, a_from)
+
         return random.randint(a_from, a_to)
         
 
 class GpFunctionTemplate:
     """
     Represents an inner node of the GP tree.
-    Creates a primitive which accepts inputs. The output type is also specified.
+    This class is a template of a function node - the input type may have variable arity which is decided when
+    an instance of `GpPrimitive` is created from this template. During this process, keyword arguments are decided
+    as well.
 
-    The ``arity`` of the primitive is determined by arities associated with types. These
-    are ordered (the node children must maintain the same order from left to right). The
-    final arities are chosen when a primitive is created from the template.
+    The template input type is an ordered list of subtypes. These may have a variable arity (a range) and the
+    final arity is chosen during the instantiation.
 
     The keyword arguments are chosen from lists of possible values.
     """
-    def __init__(self, name, type_arities, out_type, group=None):
+    def __init__(self, name: str, type_arity_template: List[TypeArity], out_type: str, group: str = None):
         """
-        Creates a new instance of a function template.
 
-        :param str name: Name key associated with the node.
-        :param list of TypeArity type_arities:
-            Ordered list of children arity ranges (associated with a type).
-        :param str out_type: Name of the output type.
+        Args:
+            name: Name key associated with the node.
+            type_arity_template: Ordered list of children subtypes with variable arity.
+            out_type: Name of the output type.
+            group: Name of group of the node.
         """
+
         self.name = name
-        self.type_arities = type_arities
+        self.type_arity_template = type_arity_template
         self.out_type = out_type
         self.group = group
         
-    def create_primitive(self, curr_height, max_arity, kwargs_dict, in_type=None):
+    def create_primitive(self,
+                         curr_height: int,
+                         max_arity: int,
+                         kwargs_dict: Dict[str, List],
+                         in_type: GpPrimitive.InputType = None) -> GpPrimitive:
         """
         Creates an instance of a ``GpPrimitive`` from the template.
 
         Selects keyword arguments from ``kwargs_dict``. For every key,
-        the dict should contain a list of possible values.
+        the dict contains a list of possible values.
 
-        Select final arities of every TypeArity in the list. If some of
-        the arities result in 0, they are not added into the final input type.
+        Select final arities of every TypeArity in `self.type_arities` - that is, if a function node has
+        a variable number of input arguments (possibly of different types), for every subtype a fixed arity
+        is chosen.
 
-        :param int curr_height: Height at which the node is generated
-        :param int max_arity: Maximum arity value which can be chosen for a single TypeArity.
-        :param dict kwargs_dict: Dictionary which contains possible keyword argument values.
-        :param in_type: Input type; if provided, it is used instead of generating a new random type.
+        TODO add example
 
-        :return: A new instance of GpPrimitive
+        Args:
+            curr_height: Height at which the node is generated
+            max_arity: Maximum arity value which can be chosen for a single TypeArity.
+            kwargs_dict: Dictionary which contains possible keyword argument values.
+            in_type: Input type; if provided, it is used instead of generating a new random type.
+
+        Returns: A new instance of GpPrimitive
         """
         prim_kwargs = _choose_kwargs(kwargs_dict)
 
@@ -408,11 +450,11 @@ class GpFunctionTemplate:
             return GpPrimitive.InputType(t.prim_type, arity)
 
         if in_type is None:
-            # ordered list of final typed arities
-            in_type = [create_type(t_a) for t_a in self.type_arities]
+            # ordered list of final arity of types
+            in_type = [create_type(t_a) for t_a in self.type_arity_template]
             in_type = [t for t in in_type if t is not None]
 
-        # sum of all arities
+        # total arity of the node
         arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)
         
         return GpPrimitive(self.name, prim_kwargs, in_type, self.out_type, arity_sum, curr_height)

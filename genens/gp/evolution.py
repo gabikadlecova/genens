@@ -148,6 +148,8 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
     try:
         start_time = time.monotonic()
 
+        toolbox.clone(population[0])
+
         evaluate_func = partial(_perform_eval, toolbox.evaluate, log_setup=toolbox.log_setup)
 
         if verbose >= 1:

@@ -87,7 +87,7 @@ def gen_tree(config, max_height=None, max_arity=None, first_type='out', weighted
         prim = next_prim_t.create_primitive(node_depth, max_arity,
                                             config.kwargs_config[next_prim_t.name])
 
-        # append child types and arities to the stack
+        # append child types with arity to the stack
         if prim.arity > 0:
             for child_type in prim.in_type:
                 type_stack.append((child_type.name, child_type.arity, h + 1))
@@ -134,14 +134,14 @@ def swap_subtrees(tree_1, tree_2, ind_1, ind_2, keep_2=True):
 
     # insert into tree_1 - copy subtree from tree_2
     subtree_2 = [move_node(prim, height_diff)
-                 for prim in tree_2.primitives[ind_begin_2 : ind_end_2]]
+                 for prim in tree_2.primitives[ind_begin_2:ind_end_2]]
 
     # insert into tree_2
     if keep_2:
         subtree_1 = (move_node(prim, -height_diff)
-                     for prim in tree_1.primitives[ind_begin_1 : ind_end_1])
+                     for prim in tree_1.primitives[ind_begin_1:ind_end_1])
 
-        tree_2.primitives[ind_begin_2 : ind_end_2] = subtree_1
+        tree_2.primitives[ind_begin_2:ind_end_2] = subtree_1
         tree_2.max_height = max(prim.depth + 1 for prim in tree_2.primitives)  # update height
 
     # insert into tree_1 - insert subtree
