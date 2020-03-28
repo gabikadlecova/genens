@@ -454,6 +454,7 @@ class GpFunctionTemplate:
             in_type = [create_type(t_a) for t_a in self.type_arity_template]
             in_type = [t for t in in_type if t is not None]
 
+        #
         # total arity of the node
         arity_sum = functools.reduce(lambda s, t: s + t.arity, in_type, 0)
         

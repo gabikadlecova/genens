@@ -1,5 +1,6 @@
 import yaml
 from genens.config.utils import GenensConfig
+from genens.gp.types import TypeArity
 
 
 def parse_config(config_path):
@@ -33,3 +34,15 @@ def parse_primitives(primitives):
         # TODO add to propre groups
 
     return func_dict, full_dict, term_dict
+
+
+def parse_primitive(prim_name, prim_data):
+    # TODO parse in type only for func
+    for subtype in prim_data['in']:
+        type_name = subtype['name']
+        if 'arity' in subtype:
+            ta = TypeArity(type_name, subtype['arity'])
+        elif 'from' in subtype and 'to' in subtype:
+            ta = TypeArity(type_name, (subtype['from'], subtype['to']))
+        else:
+            raise ValueError("Invalid arity in config file.")
