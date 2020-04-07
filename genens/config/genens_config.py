@@ -1,16 +1,91 @@
-import importlib
 import json
 import warnings
 import yaml
 
 from functools import partial
-from genens.config.utils import GenensConfig
+from genens.config.utils import import_custom_func
 from genens.gp.types import TypeArity, GpTerminalTemplate, GpFunctionTemplate
 
 from typing import Union, Dict
 
 
-# TODO provide a base config
+class GenensConfig:
+    """
+    Configuration of Genens estimators. Contains settings of GP algorithm and individuals
+    and configuration of methods that decode nodes into scikit-learn models.
+    """
+    def __init__(self, function_config=None, full_config=None, term_config=None, kwargs_config=None, min_height=1,
+                 max_height=4, min_arity=2, max_arity=3, group_weights=None):
+        """
+        Creates a instance of genens configuration.
+
+        Args:
+            function_config: Function configuration dictionary, keys correspond do a particular primitive name.
+            full_config: Node configuration dictionary, nodes are grouped by output types,
+                contains node templates used during the grow phase.
+
+            term_config: Node configuration dictionary, nodes are grouped by output types,
+                contains node templates used to terminate a tree.
+
+            kwargs_config: Keyword arguments for nodes, which are passed to functions during the decoding.
+                For every argument, there is a list of possibles values to choose from during the evolution.
+
+            min_height: Minimum height of trees.
+            max_height: Maximum height of trees.
+            min_arity: Lower arity limit on any subtype.
+            max_arity: Upper arity limit on any subtype. A node may have a larger total arity than this
+                limit, but none of its subtypes can exceed it.
+                E.g. for `max_arity` == 2 the node type (out^2, data^1) is valid - the arity of the node
+                is 3, but its subtypes do not exceed the limit.
+
+            group_weights: Weights of node groups, used during node selection. Nodes with a higher weight
+                have a greater probability to appear in trees.
+        """
+        self.func_config = function_config if function_config is not None else {}
+        self.full_config = full_config if full_config is not None else {}
+        self.term_config = term_config if term_config is not None else {}
+        self.kwargs_config = kwargs_config if kwargs_config is not None else {}
+
+        self.min_height = min_height
+        self.max_height = max_height
+        self.min_arity = min_arity
+        self.max_arity = max_arity
+
+        self.group_weights = group_weights if group_weights is not None else {}
+
+    def __repr__(self):
+        res = "max_height: {}, max_arity: {}".format(self.max_height, self.max_arity)
+        res += ", group_weights: {}".format(str(self.group_weights))
+        return res
+
+    def add_terminal(self, prim: GpTerminalTemplate, leaf_only: bool = False):
+        """
+        Adds a new primitive to the configuration - to both full and term dictionaries.
+        If `term_only` is True, it is added only to the terminal set.
+
+        Args:
+            prim: Primitive to be added.
+            leaf_only: Specifies whether the primitive should be added only to the terminal set.
+        """
+
+        if not leaf_only:
+            out_list = self.full_config.setdefault(prim.out_type, [])
+            out_list.append(prim)
+
+        out_list = self.term_config.setdefault(prim.out_type, [])
+        out_list.append(prim)
+
+    def add_function(self, prim):
+        """
+        Add a function to the configuration - to the full set.
+
+        Args:
+            prim: Primitive to be added.
+        """
+        out_list = self.full_config.setdefault(prim.out_type, [])
+        out_list.append(prim)
+
+
 def parse_config(config_path: str, base_config: GenensConfig = None, evo_kwargs_json_path: str = None):
     config = base_config if base_config is not None else GenensConfig()
 
@@ -102,11 +177,7 @@ def _parse_func(func_data: Union[str, Dict]):
         func_path = func_data.pop('func')
         func_kwargs = func_data
 
-    func_path = func_path.split('.')
-    func_name = func_path.pop()
-    module_path = '.'.join(func_path)
-    func = getattr(importlib.import_module(module_path), func_name)
-
+    func = import_custom_func(func_path)
     return partial(func, **func_kwargs) if func_kwargs is not None else func
 
 

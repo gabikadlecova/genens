@@ -14,7 +14,7 @@ Wrapper functions have the signature ``func(child_list, kwarg_dict)``, where ``c
 of other wrapper functions applied on child nodes and ``kwarg_dict`` is a dictionary of evolved keyword
 arguments.
 """
-
+import importlib
 from functools import partial
 
 from ..gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
@@ -25,73 +25,6 @@ from ..workflow.model_creation import create_estimator
 from ..workflow.model_creation import create_ensemble
 
 from warnings import warn
-
-
-class GenensConfig:
-    """
-    Configuration of Genens estimators. Contains settings of GP and configuration of
-    methods which decode nodes into scikit-learn methods.
-    """
-    def __init__(self, function_config=None, full_config=None, term_config=None, kwargs_config=None, min_height=1,
-                 max_height=4, min_arity=2, max_arity=3, group_weights=None):
-        """
-        Creates a new instance of a Genens configuration. If ``group_weights`` are specified,
-        validity check is performed.
-
-        :param dict function_config: Function configuration dictionary, keys correspond do a particular primitive name.
-        :param dict full_config: Node configuration dictionary, nodes are grouped by output types,
-                          contains node templates used during the grow phase.
-
-        :param dict term_config: Node configuration dictionary, nodes are grouped by output types,
-                          contains node templates used to terminate a tree (in the last height level).
-
-        :param kwargs_config: Keyword arguments for nodes, which are passed to functions during the decoding.
-                              For every argument, there is a list of possibles values to choose from during the
-                              evolution.
-
-        :param min_height: Minimum height of trees.
-        :param max_height: Maximum height of trees.
-        :param min_arity: Minimum arity of a function node.
-        :param max_arity: Maximum arity of a function node.
-        :param group_weights: Group weight configuration.
-        """
-        self.func_config = function_config if function_config is not None else {}
-        self.full_config = full_config if full_config is not None else {}
-        self.term_config = term_config if term_config is not None else {}
-        self.kwargs_config = kwargs_config if kwargs_config is not None else {}
-
-        self.min_height = min_height
-        self.max_height = max_height
-        self.min_arity = min_arity
-        self.max_arity = max_arity
-
-        self.group_weights = group_weights if group_weights is not None else {}
-
-    def __repr__(self):
-        res = "max_height: {}, max_arity: {}".format(self.max_height, self.max_arity)
-        res += ", group_weights: {}".format(str(self.group_weights))
-        return res
-
-    def add_terminal(self, prim, leaf_only=False):
-        """
-        Adds a new primitive to the configuration. If ``term_only`` is True,
-        it is added only to the terminal set. If the primitive is a GpFunctionTemplate,
-        it is added only to the grow set.
-
-        :param GpPrimitive prim: Primitive to be added.
-        :param bool leaf_only: Specifies whether the primitive should be added only to the terminal set.
-        """
-
-        if not leaf_only:
-            out_list = self.full_config.setdefault(prim.out_type, [])
-            out_list.append(prim)
-
-        out_list = self.term_config.setdefault(prim.out_type, [])
-        out_list.append(prim)
-
-    def add_function(self, prim):
-        out_list = self.full_config.setdefault(prim.out_type, [])
-        out_list.append(prim)
 
 
 # TODO this from json/yaml
@@ -148,6 +81,14 @@ def get_default_config(group_weights=None):
 
     return GenensConfig(func_config, full_config, term_config, kwargs_config,
                         group_weights=group_weights)
+
+
+def import_custom_func(func_path: str):
+    func_path = func_path.split('.')
+    func_name = func_path.pop()
+    module_path = '.'.join(func_path)
+
+    return getattr(importlib.import_module(module_path), func_name)
 
 
 def estimator_func(est_cls, **kwargs):
