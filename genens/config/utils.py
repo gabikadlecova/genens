@@ -16,6 +16,9 @@ arguments.
 """
 import importlib
 from functools import partial
+from typing import Union, Callable
+
+from genens.config.genens_config import GenensConfig
 
 from ..gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
 from ..workflow.model_creation import create_pipeline, create_stacking
@@ -91,6 +94,13 @@ def import_custom_func(func_path: str):
     return getattr(importlib.import_module(module_path), func_name)
 
 
+def _get_estimator_func(est_cls: Union[str, Callable]):
+    if isinstance(est_cls, str):
+        return import_custom_func(est_cls)
+
+    return est_cls
+
+
 def estimator_func(est_cls, **kwargs):
     """
     Creates a wrapper function which returns an instance of the argument estimator class.
@@ -105,7 +115,7 @@ def estimator_func(est_cls, **kwargs):
     :param kwargs: Keyword arguments of the estimator.
     :return: Function which constructs a new instance of the estimator.
     """
-    return partial(create_estimator, est_cls, kwargs)
+    return partial(create_estimator, _get_estimator_func(est_cls), kwargs)
 
 
 def ensemble_func(ens_cls, **kwargs):
@@ -122,11 +132,11 @@ def ensemble_func(ens_cls, **kwargs):
     :param kwargs: Keyword arguments of the ensemble.
     :return: Function which constructs a new instance of the ensemble.
     """
-    return partial(create_ensemble, ens_cls, kwargs)
+    return partial(create_ensemble, _get_estimator_func(ens_cls), kwargs)
 
 
 def stacking_func(ens_cls, **kwargs):
-    return partial(create_stacking, ens_cls, kwargs)
+    return partial(create_stacking, _get_estimator_func(ens_cls), kwargs)
 
 
 def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens', group='ensemble'):

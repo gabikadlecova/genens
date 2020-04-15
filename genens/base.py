@@ -70,7 +70,7 @@ class GenensBase(BaseEstimator):
         :param max_height: Maximum height of tree individuals.
         :param max_arity: Maximum arity of all nodes.
         :param timeout: Timeout for a single method evaluation.
-        :param evaluator: Evaluator to be used (see genens.worflow.evaluate)
+        :param evaluator: Evaluator to be used (see genens.workflow.evaluate)
 
         """
 
@@ -111,10 +111,8 @@ class GenensBase(BaseEstimator):
 
         self.max_evo_seconds = max_evo_seconds
 
-        self.test_evaluator = None
-
         self.pareto = tools.ParetoFront()
-        self.fitted_wf = None
+        self.fitted_workflow = None
         self._population = None
 
         logging_config = logging_config if logging_config is not None else DEFAULT_LOGGING_CONFIG
@@ -185,10 +183,6 @@ class GenensBase(BaseEstimator):
         wf = self._toolbox.compile(gp_tree)
         return self._fitness_evaluator.score(wf, scorer=self.scorer)
 
-    @property
-    def can_log_score(self):
-        return self.test_evaluator is not None
-
     def _log_pop_stats(self, population, gen_id):
         self.pareto.update(population)
 
@@ -236,8 +230,8 @@ class GenensBase(BaseEstimator):
             self.pareto.update(evaluated_inds)
 
         tree = self.pareto[0]
-        self.fitted_wf = self._toolbox.compile(tree)
-        self.fitted_wf.fit(train_X, train_y)
+        self.fitted_workflow = self._toolbox.compile(tree)
+        self.fitted_workflow.fit(train_X, train_y)
 
         self.is_fitted_ = True
         return self
@@ -246,16 +240,16 @@ class GenensBase(BaseEstimator):
         test_X = check_array(test_X, accept_sparse=True)
         check_is_fitted(self, 'is_fitted_')
 
-        return self.fitted_wf.predict(test_X)
+        return self.fitted_workflow.predict(test_X)
 
     def score(self, test_X, test_y):
         test_X, test_y = check_X_y(test_X, test_y, accept_sparse=True)
         check_is_fitted(self, 'is_fitted_')
 
         if self.scorer is not None:
-            s = self.scorer(self.fitted_wf, test_X, test_y)
+            s = self.scorer(self.fitted_workflow, test_X, test_y)
         else:
-            s = default_score(self.fitted_wf, test_X, test_y)  # TODO remove this one
+            s = default_score(self.fitted_workflow, test_X, test_y)  # TODO remove this one
 
         return s
 
