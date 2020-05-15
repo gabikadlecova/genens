@@ -101,7 +101,7 @@ def _get_estimator_func(est_cls: Union[str, Callable]):
     return est_cls
 
 
-def estimator_func(est_cls, **kwargs):
+def estimator_func(cls, **kwargs):
     """
     Creates a wrapper function which returns an instance of the argument estimator class.
 
@@ -111,14 +111,14 @@ def estimator_func(est_cls, **kwargs):
     The ``child_list`` argument of the resulting function must be empty,
     as simple estimators cannot have sub-estimators.
 
-    :param est_cls: Estimator class.
+    :param cls: Estimator class.
     :param kwargs: Keyword arguments of the estimator.
     :return: Function which constructs a new instance of the estimator.
     """
-    return partial(create_estimator, _get_estimator_func(est_cls), kwargs)
+    return partial(create_estimator, _get_estimator_func(cls), kwargs)
 
 
-def ensemble_func(ens_cls, **kwargs):
+def ensemble_func(cls, **kwargs):
     """
     Creates a wrapper function which returns an instance of the argument ensemble class.
 
@@ -128,15 +128,15 @@ def ensemble_func(ens_cls, **kwargs):
     The ``child_list`` argument contains estimators (or pipelines) which will be
     set as the ``base_estimator`` or ``estimators`` of the ensemble.
 
-    :param ens_cls: Ensemble class.
+    :param cls: Ensemble class.
     :param kwargs: Keyword arguments of the ensemble.
     :return: Function which constructs a new instance of the ensemble.
     """
-    return partial(create_ensemble, _get_estimator_func(ens_cls), kwargs)
+    return partial(create_ensemble, _get_estimator_func(cls), kwargs)
 
 
-def stacking_func(ens_cls, **kwargs):
-    return partial(create_stacking, _get_estimator_func(ens_cls), kwargs)
+def stacking_func(cls, **kwargs):
+    return partial(create_stacking, _get_estimator_func(cls), kwargs)
 
 
 def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens', group='ensemble'):

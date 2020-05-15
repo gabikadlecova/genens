@@ -53,11 +53,6 @@ class GenensConfig:
 
         self.group_weights = group_weights if group_weights is not None else {}
 
-    def __repr__(self):
-        res = "max_height: {}, max_arity: {}".format(self.max_height, self.max_arity)
-        res += ", group_weights: {}".format(str(self.group_weights))
-        return res
-
     def add_terminal(self, prim: GpTerminalTemplate, leaf_only: bool = False):
         """
         Adds a new primitive to the configuration - to both full and term dictionaries.

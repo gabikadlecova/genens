@@ -1,1 +1,58 @@
-# TODO min/max height and arity to ctor only
+min_height: 2
+max_height: 6
+min_arity: 1
+max_arity: 3
+
+group_weights:
+  pipeline: 1.0
+  prepro: 1.0
+  ensemble: 2.0
+  predictor: 1.0
+  transform: 1.0
+
+primitives:
+  cPred:
+    in:
+      - name: ens
+        arity: 1
+    out: out
+    group: pipeline
+    set: grow
+    function: create_workflow
+
+  cData:
+    in:
+      - name: featsel
+        arity: 1
+      - name: scale
+        arity: 1
+    out: data
+    group: prepro
+    set: grow
+    function: create_transform_list
+
+  stacking:
+    in:
+      - name: out
+        from: 1
+        to: n
+      - name: out
+        arity: 1
+    out: ens
+    group: ensemble
+    set: grow
+    function:
+      func: stacking_func
+      cls: sklearn.ensemble.StackingClassifier
+
+  voting:
+    in:
+      - name: out
+        from: 2
+        to: n
+    out: ens
+    group: ensemble
+    set: grow
+    function:
+      func: ensemble_func
+      cls: sklearn.ensemble.VotingClassifier

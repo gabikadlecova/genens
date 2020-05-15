@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
-from ..config.utils import ensemble_func
-from ..config.utils import estimator_func
-from ..config.utils import get_default_config
-from ..config.utils import ensemble_primitive
-from ..config.utils import predictor_primitive
-from ..config.utils import predictor_terminal
-from ..config.utils import transformer_primitive
+from genens.config.utils import ensemble_func
+from genens.config.utils import estimator_func
+from genens.config.utils import get_default_config
+from genens.config.utils import ensemble_primitive
+from genens.config.utils import predictor_primitive
+from genens.config.utils import predictor_terminal
+from genens.config.utils import transformer_primitive
 
 from sklearn import decomposition
 from sklearn import feature_selection

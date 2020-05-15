@@ -69,7 +69,7 @@ def clf_config(group_weights=None):
             # "KernelPCA" : estimator_func(decomposition.KernelPCA),
             "kBest": estimator_func(feature_selection.SelectKBest),
             "MaxAbsScaler": estimator_func(preprocessing.MaxAbsScaler),
-            "MinMaxScaler":estimator_func(preprocessing.MinMaxScaler),
+            "MinMaxScaler": estimator_func(preprocessing.MinMaxScaler),
             "Normalizer": estimator_func(preprocessing.Normalizer),
             "StandardScaler": estimator_func(preprocessing.StandardScaler)
     }

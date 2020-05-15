@@ -40,8 +40,7 @@ class GenensBase(BaseEstimator):
                  mut_node_pb=0.9, scorer=None, pop_size=100,
                  mut_multiple_args=False, mut_multiple_nodes=False,
                  n_gen=15, hc_repeat=0, hc_keep_last=False, hc_mut_pb=0.2, hc_n_nodes=3,
-                 weighted=True, use_groups=True, max_height=None,
-                 max_arity=None, timeout=None, evaluator=None,
+                 weighted=True, use_groups=True, timeout=None, evaluator=None,
                  logging_config=None, max_evo_seconds=None):
 
         """
@@ -67,8 +66,6 @@ class GenensBase(BaseEstimator):
         :param weighted: Determines whether the selection of nodes is weighted (according to groups).
 
         :param bool use_groups: If false, primitive groups are ignored.
-        :param max_height: Maximum height of tree individuals.
-        :param max_arity: Maximum arity of all nodes.
         :param timeout: Timeout for a single method evaluation.
         :param evaluator: Evaluator to be used (see genens.workflow.evaluate)
 
@@ -76,12 +73,6 @@ class GenensBase(BaseEstimator):
 
         # accept config/load default config
         self.config = config
-        if max_height is not None:
-            config.max_height = max_height
-
-        if max_arity is not None:
-            config.max_arity = max_arity
-
         self.n_jobs = n_jobs
 
         self.cx_pb = cx_pb
@@ -104,10 +95,12 @@ class GenensBase(BaseEstimator):
 
         self.scorer = scorer
 
-        self._timeout = timeout
-        self._fitness_evaluator = evaluator if evaluator is not None \
-            else CrossValEvaluator(timeout_s=timeout)
+        self._fitness_evaluator = evaluator if evaluator is not None else CrossValEvaluator(timeout_s=timeout)
         self._fitness_evaluator.timeout = timeout
+        if timeout is not None and evaluator is not None:
+            warnings.warn("Setting timeout on a different evaluator than the default. If there was a timeout set"
+                          " before, it has been discarded. Set timeout=None when instantiating this class to avoid"
+                          " this behavior.")
 
         self.max_evo_seconds = max_evo_seconds
 

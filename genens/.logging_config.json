@@ -5,7 +5,7 @@
 	},
 	"loggers": {
 		"genens": {
-			"level": "INFO",
+			"level": "DEBUG",
 			"propagate": false
 		}
 	}
