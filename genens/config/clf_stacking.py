@@ -277,8 +277,8 @@ def clf_config(group_weights=None):
     config.add_primitive(predictor_primitive("extraTrees"))
 
     # terminals used only as leaves
-    config.add_primitive(predictor_primitive('ada'), term_only=True)
-    config.add_primitive(predictor_primitive('bagging'), term_only=True)
+    config.add_primitive(predictor_terminal('ada'), term_only=True)
+    config.add_primitive(predictor_terminal('bagging'), term_only=True)
     config.add_primitive(predictor_terminal("KNeighbors"), term_only=True)
     config.add_primitive(predictor_terminal("LinearSVC"), term_only=True)
     config.add_primitive(predictor_terminal("SVC"), term_only=True)

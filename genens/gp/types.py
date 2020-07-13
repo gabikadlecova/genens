@@ -285,6 +285,9 @@ class GpTerminalTemplate:
         self.out_type = out_type
         self.group = group
 
+    def __repr__(self):
+        return f"GpTerminalTemplate: {self.name} - {self.group}"
+
     def create_primitive(self, curr_height: int, max_arity: int, kwargs_dict: Dict[str, List[Any]]) -> GpPrimitive:
         """
         Creates an instance of a `GpPrimitive` from the template.
@@ -412,7 +415,10 @@ class GpFunctionTemplate:
         self.type_arity_template = type_arity_template
         self.out_type = out_type
         self.group = group
-        
+
+    def __repr__(self):
+        return f"GpFunctionTemplate: {self.name} - {self.group}"
+
     def create_primitive(self,
                          curr_height: int,
                          max_arity: int,

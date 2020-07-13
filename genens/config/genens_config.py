@@ -123,7 +123,7 @@ def parse_primitives(primitives, parse_evo_kwargs=True):
 
     evo_kwargs_dict = {}
 
-    for prim_key, values in primitives:
+    for prim_key, values in primitives.items():
         prim, func, set = parse_primitive(prim_key, values)
 
         # optionally parse kwargs that are changed during evolution
@@ -132,13 +132,15 @@ def parse_primitives(primitives, parse_evo_kwargs=True):
                 warnings.warn("The parameter evo_kwargs is present yaml config, but it won't be loaded."
                               "Possibly there was a separate config file with evo_kwargs provided.")
             else:
-                evo_kwargs_dict[prim_key] = values['evo_kwargs']
+                evo_kwargs_dict[prim_key] = values.get('evo_kwargs', {})
 
         # add to primitive sets
         if 'grow' in set:
             _add_to_primset(prim, full_dict)
         if 'terminal' in set:
             _add_to_primset(prim, term_dict)
+
+        func_dict[prim.name] = func
 
     return func_dict, full_dict, term_dict, evo_kwargs_dict
 
@@ -149,7 +151,6 @@ def _add_to_primset(prim: Union[GpFunctionTemplate, GpTerminalTemplate], prim_di
 
 
 def parse_primitive(prim_name, prim_data):
-    # TODO parse in type only for func
     in_type = _parse_in_type(prim_data['in']) if 'in' in prim_data else None
     out_type = prim_data['out']
 
@@ -161,7 +162,7 @@ def parse_primitive(prim_name, prim_data):
     else:
         prim = GpFunctionTemplate(prim_name, in_type, out_type, group=group)
 
-    return prim, func, prim_data['set']
+    return prim, func, prim_data['set'].replace(' ', '').split(',')
 
 
 def _parse_func(func_data: Union[str, Dict]):

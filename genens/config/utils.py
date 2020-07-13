@@ -18,7 +18,7 @@ import importlib
 from functools import partial
 from typing import Union, Callable
 
-from genens.config.genens_config import GenensConfig
+#from genens.config.genens_config import GenensConfig
 
 from ..gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
 from ..workflow.model_creation import create_pipeline, create_stacking
@@ -26,8 +26,6 @@ from ..workflow.model_creation import create_data_union
 from ..workflow.model_creation import create_transform_list
 from ..workflow.model_creation import create_estimator
 from ..workflow.model_creation import create_ensemble
-
-from warnings import warn
 
 
 # TODO this from json/yaml
@@ -82,8 +80,9 @@ def get_default_config(group_weights=None):
         'ens': []
     }
 
-    return GenensConfig(func_config, full_config, term_config, kwargs_config,
-                        group_weights=group_weights)
+    return None
+    #return GenensConfig(func_config, full_config, term_config, kwargs_config,
+    #                    group_weights=group_weights)
 
 
 def import_custom_func(func_path: str):
