@@ -24,7 +24,7 @@ def create_workflow(gp_tree, function_config):
     :return: A scikit-learn pipeline.
     """
     def wf_step_from_node(node: GpPrimitive, child_list):
-        return function_config[node.name](node, child_list)
+        return function_config[node.name](node=node, child_list=child_list)
 
     return gp_tree.run_tree(wf_step_from_node)
 

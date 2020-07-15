@@ -3,30 +3,35 @@
 """
 This module contains the Genens estimators.
 """
+import os
+from typing import Union
 
-from .base import GenensBase
-from .config import clf_config
-from .config import regr_config
+from genens.base import GenensBase
+from genens.config.config_templates import clf_default_config, default_raw_config
+from genens.config.genens_config import GenensConfig, parse_config
+from genens.workflow.evaluate import EvaluatorBase
 
 from sklearn.base import ClassifierMixin, RegressorMixin
 
 
 class GenensClassifier(GenensBase, ClassifierMixin):
-    def __init__(self, config=None, n_jobs=1,
-                 scorer=None, pop_size=100, n_gen=15,
-                 max_height=None, max_arity=None, timeout=None, evaluator=None,
-                 max_evo_seconds=None, **kwargs):
+    def __init__(self, config: Union[GenensConfig, str] = None, use_base_config: bool = True, evo_kwargs: dict = None,
+                 n_jobs: int = 1, scorer=None, pop_size: int = 100, n_gen: int = 15,
+                 timeout: int = None, evaluator: EvaluatorBase = None,
+                 max_evo_seconds: int = None, **kwargs):
 
         if config is None:
-            config = clf_config()
+            config = clf_default_config()
+
+        if isinstance(config, str):
+            base_config = default_raw_config() if use_base_config else None
+            config = parse_config(config, base_config=base_config, evo_kwargs=evo_kwargs)
 
         super().__init__(config,
                          n_jobs=n_jobs,
                          scorer=scorer,
                          pop_size=pop_size,
                          n_gen=n_gen,
-                         max_height=max_height,
-                         max_arity=max_arity,
                          timeout=timeout,
                          evaluator=evaluator,
                          max_evo_seconds=max_evo_seconds,
@@ -34,21 +39,22 @@ class GenensClassifier(GenensBase, ClassifierMixin):
 
 
 class GenensRegressor(GenensBase, RegressorMixin):
-    def __init__(self, config=None, n_jobs=1,
-                 scorer=None, pop_size=100, n_gen=15,
-                 max_height=None, max_arity=None, timeout=None, evaluator=None,
-                 max_evo_seconds=None, **kwargs):
+    def __init__(self, config: Union[GenensConfig, str] = None, use_base_config: bool = True, evo_kwargs: dict = None,
+                 n_jobs: int = 1, scorer=None, pop_size: int = 100, n_gen: int = 15,
+                 timeout: int = None, evaluator: EvaluatorBase = None,
+                 max_evo_seconds: int = None, **kwargs):
         if config is None:
-            config = regr_config()
+            raise ValueError("Regressor default config is not available yet.")
+
+        if isinstance(config, str):
+            base_config = default_raw_config() if use_base_config else None
+            config = parse_config(config, base_config=base_config, evo_kwargs=evo_kwargs)
 
         super().__init__(config,
-                         config,
                          n_jobs=n_jobs,
                          scorer=scorer,
                          pop_size=pop_size,
                          n_gen=n_gen,
-                         max_height=max_height,
-                         max_arity=max_arity,
                          timeout=timeout,
                          evaluator=evaluator,
                          max_evo_seconds=max_evo_seconds,

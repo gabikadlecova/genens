@@ -18,71 +18,10 @@ import importlib
 from functools import partial
 from typing import Union, Callable
 
-#from genens.config.genens_config import GenensConfig
-
-from ..gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
-from ..workflow.model_creation import create_pipeline, create_stacking
-from ..workflow.model_creation import create_data_union
-from ..workflow.model_creation import create_transform_list
-from ..workflow.model_creation import create_estimator
-from ..workflow.model_creation import create_ensemble
-
-
-# TODO this from json/yaml
-def get_default_config(group_weights=None):
-    """
-    Creates the default config with pipeline construction nodes and functions.
-    
-    :param group_weights: Group weights of the config.
-    :return: The default configuration.
-    """
-    
-    func_config = {
-        'cPred': create_pipeline,
-        'cPipe': create_pipeline,
-        # 'dUnion': create_data_union,
-        'cData': create_transform_list,
-        'cFeatSelect': create_transform_list,
-        'cScale': create_transform_list
-    }
-
-    kwargs_config = {
-        'cPred': {},
-        'cPipe': {},
-        'cData': {},
-        'cFeatSelect': {},
-        'cScale': {},
-        # 'dUnion': {}
-    }
-
-    full_config = {
-        'out': [
-            GpFunctionTemplate('cPred', [TypeArity('ens', 1)], 'out',
-                               group='pipeline'),
-            GpFunctionTemplate('cPipe', [TypeArity('ens', 1), TypeArity('data', 1)], 'out',
-                               group='pipeline'),
-        ],
-        'data': [
-            # GpFunctionTemplate('dUnion', [TypeArity('data', (2,3))], 'data', group='union'),
-            GpFunctionTemplate('cData', [TypeArity('featsel', 1), TypeArity('scale', 1)], 'data',
-                               group='prepro'),
-            GpFunctionTemplate('cFeatSelect', [TypeArity('featsel', 1)], 'data',
-                               group='prepro'),
-            GpFunctionTemplate('cScale', [TypeArity('scale', 1)], 'data',
-                               group='prepro')
-        ],
-        'ens': []
-    }
-
-    term_config = {
-        'out': [],
-        'data': [],
-        'ens': []
-    }
-
-    return None
-    #return GenensConfig(func_config, full_config, term_config, kwargs_config,
-    #                    group_weights=group_weights)
+from genens.gp.types import GpFunctionTemplate, GpTerminalTemplate, TypeArity
+from genens.workflow.model_creation import create_stacking
+from genens.workflow.model_creation import create_estimator
+from genens.workflow.model_creation import create_ensemble
 
 
 def import_custom_func(func_path: str):
@@ -100,7 +39,12 @@ def _get_estimator_func(est_cls: Union[str, Callable]):
     return est_cls
 
 
-def estimator_func(cls, **kwargs):
+def _call_func_with_cls(func, cls, cls_kwargs=None, *args, **kwargs):
+    cls_kwargs = cls_kwargs if cls_kwargs is not None else {}
+    return func(_get_estimator_func(cls), cls_kwargs, *args, **kwargs)
+
+
+def estimator_func(cls, cls_kwargs=None, *args, **kwargs):
     """
     Creates a wrapper function which returns an instance of the argument estimator class.
 
@@ -114,10 +58,10 @@ def estimator_func(cls, **kwargs):
     :param kwargs: Keyword arguments of the estimator.
     :return: Function which constructs a new instance of the estimator.
     """
-    return partial(create_estimator, _get_estimator_func(cls), kwargs)
+    return _call_func_with_cls(create_estimator, cls, cls_kwargs=cls_kwargs, *args, **kwargs)
 
 
-def ensemble_func(cls, **kwargs):
+def ensemble_func(cls, cls_kwargs=None, *args, **kwargs):
     """
     Creates a wrapper function which returns an instance of the argument ensemble class.
 
@@ -131,78 +75,8 @@ def ensemble_func(cls, **kwargs):
     :param kwargs: Keyword arguments of the ensemble.
     :return: Function which constructs a new instance of the ensemble.
     """
-    return partial(create_ensemble, _get_estimator_func(cls), kwargs)
+    return _call_func_with_cls(create_ensemble, cls, cls_kwargs=cls_kwargs, *args, **kwargs)
 
 
-def stacking_func(cls, **kwargs):
-    return partial(create_stacking, _get_estimator_func(cls), kwargs)
-
-
-def ensemble_primitive(ens_name, in_arity, in_type='out', out_type='ens', group='ensemble'):
-    """
-    Creates a function template which represents an ensemble. The template can be used
-    to create GP primitives with variable arity and different keyword argument dictionaries.
-
-    The node must have child nodes of a type ``in_type``, their count is specified
-    by ``in_arity``. The ``out_type`` is 'ens' by default, which is the output type
-    of predictors.
-
-    :param group:
-    :param str ens_name: Name of the ensemble.
-    :param int, (int, int), (int, 'n') in_arity:
-        Arity of input nodes, either a constant, or a range (inclusive), or a range
-        without a specified upper bound (in the case of (int, 'n')).
-
-    :param str in_type: Type of all child nodes.
-    :param str out_type: Node output type.
-    :return: Function template which can be used to create an ensemble primitive.
-    """
-    return GpFunctionTemplate(ens_name, [TypeArity(in_type, in_arity)], out_type,
-                              group=group)
-
-
-def predictor_primitive(p_name, group='predictor'):
-    """
-    Creates a terminal template which represents a simple predictor. The template
-    can be used to create GP primitives with different keyword argument dictionaries.
-
-    The node has the output type 'ens', which is the output type of predictors.
-
-    :param group:
-    :param str p_name: Name of the predictor.
-    :return: Terminal template which can be used to create a predictor primitive.
-    """
-    return GpTerminalTemplate(p_name, 'ens', group=group)
-
-
-def predictor_terminal(p_name, group='predictor'):
-    """
-    Creates a terminal template which represents a simple predictor. The template
-    can be used to create GP primitives with different keyword argument dictionaries.
-
-    The node has the output type 'out', which is the output type of pipelines.
-    This node should be used when maximum tree height would be exceeded; in other
-    cases, nodes returned by ``predictor_primitive`` should be used.
-
-    :param group:
-    :param str p_name: Name of the predictor.
-    :return: Terminal template which can be used to create a predictor primitive.
-    """
-    return GpTerminalTemplate(p_name, 'out', group=group)
-
-
-def transformer_primitive(t_name, out_type, group='transform'):
-    """
-    Creates a terminal template which represents a simple transformer. The template
-    can be used to create GP primitives with different keyword argument dictionaries.
-
-    The node has the output type 'data', which is the output type of transformer nodes.
-
-    :param group:
-    :param str t_name: Name of the transformer.
-    :param str out_type:
-        Name of the transformer output type (most common are 'featsel' for feature
-        selectors and 'scale' for scaling transformers.
-    :return: Terminal template which can be used to create a transformer primitive.
-    """
-    return GpTerminalTemplate(t_name, out_type, group=group)
+def stacking_func(cls, cls_kwargs=None, *args, **kwargs):
+    return _call_func_with_cls(create_stacking, cls, cls_kwargs=cls_kwargs, *args, **kwargs)

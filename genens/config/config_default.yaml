@@ -1,0 +1,62 @@
+min_height: 2
+max_height: 6
+min_arity: 1
+max_arity: 3
+
+group_weights:
+  pipeline: 1.0
+  prepro: 1.0
+  ensemble: 2.0
+  predictor: 1.0
+  transform: 1.0
+
+primitives:
+  # defaults
+  cPred:
+    in:
+      - name: ens
+        arity: 1
+    out: out
+    group: pipeline
+    set: grow
+    function: genens.workflow.model_creation.create_pipeline
+
+  cPipe:
+    in:
+      - name: ens
+        arity: 1
+      - name: data
+        arity: 1
+    out: out
+    group: pipeline
+    set: grow
+    function: genens.workflow.model_creation.create_pipeline
+
+  cData:
+    in:
+      - name: featsel
+        arity: 1
+      - name: scale
+        arity: 1
+    out: data
+    group: prepro
+    set: grow
+    function: genens.workflow.model_creation.create_transform_list
+
+  cFeatSelect:
+    in:
+      - name: featsel
+        arity: 1
+    out: data
+    group: prepro
+    set: grow
+    function: genens.workflow.model_creation.create_transform_list
+
+  cScale:
+    in:
+      - name: scale
+        arity: 1
+    out: data
+    group: prepro
+    set: grow
+    function: genens.workflow.model_creation.create_transform_list
