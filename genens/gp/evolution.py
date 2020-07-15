@@ -14,6 +14,7 @@ from functools import partial, wraps
 from itertools import chain
 from joblib import Parallel, delayed
 
+from genens.config.genens_config import GenensConfig
 from genens.log_utils import set_log_handler
 from genens.render.graph import tree_str
 
@@ -123,8 +124,7 @@ def _get_time_left(start_time, timeout=None):
 
 
 @evolution_timeout
-def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut_node_pb,
-           hc_mut_pb=0.2, hc_n_nodes=3, n_jobs=1, timeout=None,
+def ea_run(population, toolbox, n_gen, pop_size, config: GenensConfig, n_jobs=1, timeout=None,
            min_large_tree_height=3, verbose=1):
     """
     Performs a run of the evolutionary algorithm.
@@ -204,7 +204,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 offspring = parallel(
                     delayed(_perform_cx)(
                         toolbox.cx_one_point,  # func
-                        cx_pb, ch1, ch2, min_node_depth=min_large_tree_height - 1, log_setup=toolbox.log_setup  # args
+                        config.cx_pb, ch1, ch2, min_node_depth=min_large_tree_height - 1, log_setup=toolbox.log_setup  # args
                     )
                     for ch1, ch2 in zip(offspring[::2], offspring[1::2])
                 )
@@ -219,7 +219,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 offspring = parallel(
                     delayed(_perform_mut)(
                         toolbox.mutate_subtree,  # func
-                        mut_pb, mut, log_setup=toolbox.log_setup  # args
+                        config.mut_pb, mut, log_setup=toolbox.log_setup  # args
                     )
                     for mut in offspring
                 )
@@ -230,7 +230,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 offspring = parallel(
                     delayed(_perform_mut)(
                         toolbox.mutate_node_swap,  # func
-                        mut_node_pb, mut, log_setup=toolbox.log_setup  # args
+                        config.mut_node_pb, mut, log_setup=toolbox.log_setup  # args
                     )
                     for mut in offspring
                 )
@@ -246,7 +246,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
 
                 all_offspring = parallel(
                     delayed(apply_gradual)(
-                        off, hc_mut_pb, hc_n_nodes, log_setup=toolbox.log_setup
+                        off, config.hc_mut_pb, config.hc_n_nodes, log_setup=toolbox.log_setup
                     )
                     for off in all_offspring
                 )
@@ -258,7 +258,7 @@ def ea_run(population, toolbox, n_gen, pop_size, cx_pb, mut_pb, mut_args_pb, mut
                 offspring = parallel(
                     delayed(_perform_mut)(
                         toolbox.mutate_args,  # func
-                        mut_args_pb, mut, log_setup=toolbox.log_setup  # args
+                        config.mut_args_pb, mut, log_setup=toolbox.log_setup  # args
                     )
                     for mut in offspring
                 )

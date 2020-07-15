@@ -36,11 +36,8 @@ DEFAULT_LOGGING_CONFIG = file_dir + '/.logging_config.json'
 
 
 class GenensBase(BaseEstimator):
-    def __init__(self, config, n_jobs=1, cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.9,
-                 mut_node_pb=0.9, scorer=None, pop_size=100,
-                 mut_multiple_args=False, mut_multiple_nodes=False,
-                 n_gen=15, hc_repeat=0, hc_keep_last=False, hc_mut_pb=0.2, hc_n_nodes=3,
-                 weighted=True, use_groups=True, timeout=None, evaluator=None,
+    def __init__(self, config, n_jobs=1, scorer=None, pop_size=100,
+                 n_gen=15, weighted=True, use_groups=True, timeout=None, evaluator=None,
                  logging_config=None, max_evo_seconds=None):
 
         """
@@ -48,20 +45,9 @@ class GenensBase(BaseEstimator):
 
         :param GenensConfig config: Configuration of Genens.
         :param n_jobs: The n_jobs parameter for the process of evolution.
-        :param cx_pb: Crossover probability.
-        :param mut_pb: Subtree mutation probability.
-        :param mut_args_pb: Argument mutation probability.
-        :param mut_node_pb: Point (node) mutation probability.
         :param scorer: Scorer to be used during all evaluation (must comply to scikit-learn scorer API).
         :param pop_size: Population size.
         :param n_gen: Number of generations.
-        :param hc_repeat: Number of hill-climbing iteration. If set to 0, hill-climbing is not performed.
-        :param hc_keep_last:
-            Whether the last individual should be mutated if the hill-climbing did not find a better individual.
-
-        :param hc_mut_pb: Probability of additional hillclimbing performed on offspring.
-        :param hc_n_nodes: Number of nodes mutated during hillclimbing (`hc_repeat` times, `hc_keep_last` has effect)
-
 
         :param weighted: Determines whether the selection of nodes is weighted (according to groups).
 
@@ -75,21 +61,9 @@ class GenensBase(BaseEstimator):
         self.config = config
         self.n_jobs = n_jobs
 
-        self.cx_pb = cx_pb
-        self.mut_pb = mut_pb
-        self.mut_args_pb = mut_args_pb
-        self.mut_node_pb = mut_node_pb
-
         self.pop_size = pop_size
         self.n_gen = n_gen
 
-        self.mut_multiple_args = mut_multiple_args
-        self.mut_multiple_nodes = mut_multiple_nodes
-
-        self.hc_repeat = hc_repeat
-        self.hc_keep_last = hc_keep_last
-        self.hc_n_nodes = hc_n_nodes
-        self.hc_mut_pb = hc_mut_pb
         self.weighted = weighted
         self.use_groups = use_groups
 
@@ -116,12 +90,12 @@ class GenensBase(BaseEstimator):
 
     def _setup_arg_mut(self):
         mut_func = partial(mutate_args, self.config,
-                           multiple_nodes=self.mut_multiple_nodes,
-                           multiple_args=self.mut_multiple_args)
+                           multiple_nodes=self.config.mut_multiple_nodes,
+                           multiple_args=self.config.mut_multiple_args)
 
         self._toolbox.register("gradual_hillclimbing", mutate_gradual_hillclimbing,
                                self._toolbox, self.config,
-                               hc_repeat=self.hc_repeat, keep_last=self.hc_keep_last)
+                               hc_repeat=self.config.hc_repeat, keep_last=self.config.hc_keep_last)
         self._toolbox.register("mutate_args", mut_func)
 
     def _setup_toolbox(self):
@@ -205,10 +179,8 @@ class GenensBase(BaseEstimator):
         try:
             log_context = self.logger.listen()
 
-            ea_run(self._population, self._toolbox, n_gen=self.n_gen, pop_size=self.pop_size, cx_pb=self.cx_pb,
-                   mut_pb=self.mut_pb, hc_mut_pb=self.hc_mut_pb, hc_n_nodes=self.hc_n_nodes,
-                   mut_args_pb=self.mut_args_pb, mut_node_pb=self.mut_node_pb, n_jobs=self.n_jobs,
-                   timeout=self.max_evo_seconds, verbose=verbose)
+            ea_run(self._population, self._toolbox, self.n_gen, self.pop_size, self.config,
+                   n_jobs=self.n_jobs, timeout=self.max_evo_seconds, verbose=verbose)
         finally:
             self.logger.close(log_context)
 

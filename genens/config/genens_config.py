@@ -14,8 +14,11 @@ class GenensConfig:
     Configuration of Genens estimators. Contains settings of GP algorithm and individuals
     and configuration of methods that decode nodes into scikit-learn models.
     """
-    def __init__(self, function_config=None, full_config=None, term_config=None, kwargs_config=None, min_height=1,
-                 max_height=4, min_arity=2, max_arity=3, group_weights=None):
+    def __init__(self, function_config=None, full_config=None, term_config=None, kwargs_config=None,
+                 cx_pb=0.5, mut_pb=0.3, mut_args_pb=0.9, mut_node_pb=0.9,
+                 hc_repeat=0, hc_keep_last=False, hc_mut_pb=0.2, hc_n_nodes=3,
+                 mut_multiple_args=False, mut_multiple_nodes=False,
+                 min_height=1, max_height=4, min_arity=2, max_arity=3, group_weights=None):
         """
         Creates a instance of genens configuration.
 
@@ -50,6 +53,19 @@ class GenensConfig:
         self.max_height = max_height
         self.min_arity = min_arity
         self.max_arity = max_arity
+
+        self.cx_pb = cx_pb
+        self.mut_pb = mut_pb
+        self.mut_args_pb = mut_args_pb
+        self.mut_node_pb = mut_node_pb
+
+        self.hc_repeat = hc_repeat
+        self.hc_keep_last = hc_keep_last
+        self.hc_mut_pb = hc_mut_pb
+        self.hc_n_nodes = hc_n_nodes
+
+        self.mut_multiple_nodes = mut_multiple_nodes
+        self.mut_multiple_args = mut_multiple_args
 
         self.group_weights = group_weights if group_weights is not None else {}
 

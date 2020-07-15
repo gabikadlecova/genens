@@ -1,3 +1,4 @@
+# tree shape
 min_height: 2
 max_height: 6
 min_arity: 1
@@ -9,6 +10,21 @@ group_weights:
   ensemble: 2.0
   predictor: 1.0
   transform: 1.0
+
+# probabilities
+cx_pb: 0.5
+mut_pb: 0.3
+mut_args_pb: 0.9
+mut_node_pb: 0.9
+
+mut_multiple_args: False
+mut_multiple_nodes: False
+
+# hillclimbing
+hc_repeat: 0
+hc_keep_last: False
+hc_mut_pb: 0.2
+hc_n_nodes: 3
 
 primitives:
   # defaults
