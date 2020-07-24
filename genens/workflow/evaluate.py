@@ -43,16 +43,16 @@ def timeout(fn):
 def eval_time(fn):
     @wraps(fn)
     def with_time(self, workflow, *args, **kwargs):
-        start_time = time.process_time_ns()
+        start_time = time.process_time()
 
         res = fn(self, workflow, *args, **kwargs)
         if res is None or np.isnan(res):
             return None
 
-        elapsed_time = time.process_time_ns() - start_time
+        elapsed_time = time.process_time() - start_time
 
         logger = logging.getLogger("genens")
-        logger.debug(f"Score: {res}, evaluation time - {elapsed_time / 10e9}s,\n{workflow}")
+        logger.debug(f"Score: {res}, evaluation time - {elapsed_time}s,\n{workflow}")
 
         return res, np.log(elapsed_time + np.finfo(float).eps)
 

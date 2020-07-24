@@ -10,7 +10,7 @@ pip install genens
 
 
 -----
-## Using genEns
+## Using genens
 As for now, the GenensClassifier is ready to be used. It has an interface similar to other scikit-learn estimators. When `fit()` is called, the evolutionary optimization is run. After it finishes, `predict()` produces a prediction with the best of optimized pipelines. Alternatively, you can call `get_best_pipelines()` to get pipelines from the pareto front.
 
 ```
