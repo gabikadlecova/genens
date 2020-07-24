@@ -1,6 +1,6 @@
 # tree shape
 min_height: 2
-max_height: 6
+max_height: 5
 min_arity: 1
 max_arity: 3
 
@@ -21,7 +21,7 @@ mut_multiple_args: False
 mut_multiple_nodes: False
 
 # hillclimbing
-hc_repeat: 0
+hc_repeat: 3
 hc_keep_last: False
 hc_mut_pb: 0.2
 hc_n_nodes: 3
