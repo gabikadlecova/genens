@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="genens",
-    version="0.1.9",
+    version="0.1.10",
     author="Gabriela Suchoparova",
     author_email="gabi.suchoparova@gmail.com",
     description="A genetic AutoML system for ensemble methods",

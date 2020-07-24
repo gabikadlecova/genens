@@ -44,7 +44,7 @@ class RelativeTransformer(BaseEstimator, TransformerMixin):
         elif hasattr(self.transformer, 'n_components'):
             self.param_name = 'n_components'
         else:
-            raise ValueError("Invalid feature transformer.")  # TODO specific
+            raise ValueError("Invalid feature transformer.")
 
     def __repr__(self):
         return "Transformer ({}): ".format(self.feat_frac) + self.transformer.__repr__()
@@ -58,7 +58,7 @@ class RelativeTransformer(BaseEstimator, TransformerMixin):
             elif self.param_name == 'n_components':
                 self.transformer.set_params(n_components=param)
             else:
-                raise ValueError("Invalid feature transformer.")  # TODO specific
+                raise ValueError("Invalid feature transformer.")
 
         self.transformer.fit(X, y)
         return self

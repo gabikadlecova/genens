@@ -1,0 +1,263 @@
+primitives:
+# ensembles
+  stacking:
+    in:
+      - name: out
+        from: 1
+        to: n
+      - name: out
+        arity: 1
+    out: ens
+    group: ensemble
+    set: grow
+    function:
+      func: genens.config.utils.stacking_func
+      cls: sklearn.ensemble.StackingClassifier
+
+  voting:
+    in:
+      - name: out
+        from: 2
+        to: n
+    out: ens
+    group: ensemble
+    set: grow
+    function:
+      func: genens.config.utils.ensemble_func
+      cls: sklearn.ensemble.VotingClassifier
+
+# classifiers
+  ada:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.ensemble.AdaBoostClassifier
+
+  bagging:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.ensemble.BaggingClassifier
+
+  KNeighbors:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.neighbors.KNeighborsClassifier
+
+  LinearSVC:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.svm.LinearSVC
+
+  SVC:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.svm.SVC
+
+  logR:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.linear_model.LogisticRegression
+
+  Perceptron:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.linear_model.Perceptron
+
+  SGD:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.linear_model.SGDClassifier
+
+  PAC:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.linear_model.PassiveAggressiveClassifier
+
+  LDA:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.discriminant_analysis.LinearDiscriminantAnalysis
+
+  QDA:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.discriminant_analysis.QuadraticDiscriminantAnalysis
+
+  MLP:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.neural_network.MLPClassifier
+
+  gaussianNB:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.naive_bayes.GaussianNB
+
+  DT:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.tree.DecisionTreeClassifier
+
+  gradBoosting:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.ensemble.GradientBoostingClassifier
+
+  randomForest:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.ensemble.RandomForestClassifier
+
+  extraTrees:
+    out: ens
+    terminal_out: out
+    group: predictor
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.ensemble.ExtraTreesClassifier
+
+  # preprocessors
+  NMF:
+    out: featsel
+    terminal_out: data
+    group: transform
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.decomposition.NMF
+
+  FA:
+    out: featsel
+    terminal_out: data
+    group: transform
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.decomposition.FactorAnalysis
+
+  FastICA:
+    out: featsel
+    terminal_out: data
+    group: transform
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.decomposition.FastICA
+
+  PCA:
+    out: featsel
+    terminal_out: data
+    group: transform
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.decomposition.PCA
+
+  kBest:
+    out: featsel
+    terminal_out: data
+    group: transform
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.feature_selection.SelectKBest
+
+  MaxAbsScaler:
+    out: scale
+    terminal_out: data
+    group: transform
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.preprocessing.MaxAbsScaler
+
+  MinMaxScaler:
+    out: scale
+    terminal_out: data
+    group: transform
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.preprocessing.MinMaxScaler
+
+  Normalizer:
+    out: scale
+    terminal_out: data
+    group: transform
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.preprocessing.Normalizer
+
+  StandardScaler:
+    out: scale
+    terminal_out: data
+    group: transform
+    set: grow, terminal
+    function:
+      func: genens.config.utils.estimator_func
+      cls: sklearn.preprocessing.StandardScaler
