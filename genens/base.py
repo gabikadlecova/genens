@@ -38,7 +38,7 @@ DEFAULT_LOGGING_CONFIG = file_dir + '/.logging_config.json'
 class GenensBase(BaseEstimator):
     def __init__(self, config, n_jobs=1, scorer=None, pop_size=100,
                  n_gen=15, weighted=True, use_groups=True, timeout=None, evaluator=None,
-                 logging_config=None, max_evo_seconds=None):
+                 logging_config=None, log_path=None, disable_logging=True, max_evo_seconds=None):
 
         """
         Creates a new Genens estimator.
@@ -83,7 +83,8 @@ class GenensBase(BaseEstimator):
         self._population = None
 
         logging_config = logging_config if logging_config is not None else DEFAULT_LOGGING_CONFIG
-        self.logger = GenensLogger(logging_config, n_jobs=self.n_jobs)
+        self.logger = GenensLogger(logging_config, log_file_name=log_path, n_jobs=self.n_jobs,
+                                   disable_logging=disable_logging)
 
         self._setup_stats_logging()
         self._setup_toolbox()

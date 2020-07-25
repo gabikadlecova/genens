@@ -10,7 +10,7 @@ from multiprocessing import Manager
 def set_log_handler(func):
     @wraps(func)
     def with_set_log_handler(*args, **kwargs):
-        log_setup = kwargs.pop('log_setup', None)
+        log_setup = kwargs.pop('log_setupon', None)
         if log_setup is not None:
             log_setup()
 
@@ -20,8 +20,12 @@ def set_log_handler(func):
 
 
 class GenensLogger:
-    def __init__(self, config_path, n_jobs=1):
+    def __init__(self, config_path, log_file_name=None, n_jobs=1, disable_logging=True):
         self.n_jobs = n_jobs
+
+        self.disable_logging = disable_logging
+        if disable_logging:
+            return
 
         with open(config_path, 'r') as f:
             config = json.load(f)
@@ -32,6 +36,10 @@ class GenensLogger:
         logging.config.dictConfig(config)
 
         logger = logging.getLogger("genens")
+
+        if log_file_name is not None:
+            logger.addHandler(logging.FileHandler(log_file_name))
+
         for handler in logger.handlers:
             print(handler.level)
 
@@ -40,18 +48,17 @@ class GenensLogger:
             mp_manager = Manager()
             self._log_queue = mp_manager.Queue()
 
-            if "handlers" in config:
-                config.pop("handlers", None)
-                self._logging_config = config
-
+            config.pop("handlers", None)
             config["loggers"]["genens"].pop("handlers", None)
+
+            self._logging_config = config
 
             handler = QueueHandler(self._log_queue)
             logger = logging.getLogger("genens")
             logger.addHandler(handler)
 
     def listen(self):
-        if self.n_jobs == 1:
+        if self.n_jobs == 1 or self.disable_logging:
             return None
 
         logger = logging.getLogger("genens")
@@ -86,7 +93,7 @@ class GenensLogger:
             logger.addHandler(handler)
 
     def setup_child_logging(self):
-        if self.n_jobs == 1:
+        if self.n_jobs == 1 or self.disable_logging:
             return
 
         logger = logging.getLogger("genens")
