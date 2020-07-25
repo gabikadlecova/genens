@@ -10,7 +10,7 @@ from multiprocessing import Manager
 def set_log_handler(func):
     @wraps(func)
     def with_set_log_handler(*args, **kwargs):
-        log_setup = kwargs.pop('log_setupon', None)
+        log_setup = kwargs.pop('log_setup', None)
         if log_setup is not None:
             log_setup()
 
