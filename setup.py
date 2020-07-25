@@ -5,7 +5,7 @@ with open("README.md", "r") as f:
 
 setuptools.setup(
     name="genens",
-    version="0.1.12",
+    version="0.1.13",
     author="Gabriela Suchoparova",
     author_email="gabi.suchoparova@gmail.com",
     description="A genetic AutoML system for ensemble methods",
@@ -20,8 +20,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ],
     package_data={
-        '': ['.logging_config.json'],
-        'config': ['config_clf.yaml', 'config_default.yaml']
+        '': ['.logging_config.json', '*.yaml']
     },
     python_requires='>=3.6',
     install_requires=[
@@ -34,6 +33,7 @@ setuptools.setup(
         'pygraphviz',
         'scikit-learn>=0.22',
         'seaborn',
-        'stopit'
+        'stopit',
+        'pyyaml'
     ]
 )

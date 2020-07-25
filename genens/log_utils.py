@@ -28,6 +28,7 @@ class GenensLogger:
 
         self._log_queue = None
         self._logging_config = config
+
         logging.config.dictConfig(config)
 
         logger = logging.getLogger("genens")
@@ -40,10 +41,10 @@ class GenensLogger:
             self._log_queue = mp_manager.Queue()
 
             if "handlers" in config:
-                config.pop("handlers")
+                config.pop("handlers", None)
                 self._logging_config = config
 
-            config["loggers"]["genens"].pop("handlers")
+            config["loggers"]["genens"].pop("handlers", None)
 
             handler = QueueHandler(self._log_queue)
             logger = logging.getLogger("genens")
