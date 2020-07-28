@@ -264,7 +264,7 @@ def ea_run(population, toolbox, n_gen, pop_size, config: GenensConfig, n_jobs=1,
 
             # evaluation of changed offspring
             scores = toolbox.map(evaluate_func, offs_to_eval,
-                                 n_jobs=n_jobs, timeout=timeout(start_time))
+                                 n_jobs=n_jobs, timeout=timeout_func())
             for off, score in zip(offs_to_eval, scores):
                 if score is None:
                     continue
