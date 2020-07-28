@@ -133,10 +133,6 @@ def ea_run(population, toolbox, n_gen, pop_size, config: GenensConfig, n_jobs=1,
     :param toolbox: Toolbox with methods to use in the evolution.
     :param n_gen: Number of generations.
     :param pop_size: Population size.
-    :param cx_pb:
-    :param mut_pb:
-    :param mut_args_pb:
-    :param mut_node_pb:
     :param n_jobs: Number of jobs for multiprocessing
                    ``n_jobs = k, k processors are used
                    ``n_jobs`` = 1, multiprocessing is not used
@@ -147,6 +143,7 @@ def ea_run(population, toolbox, n_gen, pop_size, config: GenensConfig, n_jobs=1,
     """
     try:
         start_time = time.monotonic()
+        timeout_func = partial(_get_time_left, start_time, timeout=timeout)
 
         toolbox.clone(population[0])
 
@@ -161,7 +158,7 @@ def ea_run(population, toolbox, n_gen, pop_size, config: GenensConfig, n_jobs=1,
 
         # evaluate first gen
         scores = toolbox.map(evaluate_func, population,
-                             n_jobs=n_jobs, timeout=_get_time_left(start_time, timeout=timeout))
+                             n_jobs=n_jobs, timeout=timeout_func())
 
         for ind, score in zip(population, scores):
             if score is None:
@@ -174,7 +171,7 @@ def ea_run(population, toolbox, n_gen, pop_size, config: GenensConfig, n_jobs=1,
 
         # remove individuals which threw exceptions and generate new valid individuals
         population[:] = [ind for ind in population if ind.fitness.valid]
-        valid = Parallel(n_jobs=n_jobs, timeout=_get_time_left(start_time, timeout=timeout))(
+        valid = Parallel(n_jobs=n_jobs, timeout=timeout_func())(
                 delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
                 for _ in range(pop_size - len(population))
         )
@@ -195,91 +192,92 @@ def ea_run(population, toolbox, n_gen, pop_size, config: GenensConfig, n_jobs=1,
             larger_trees = [tree for tree in population if tree.max_height >= min_large_tree_height]
             all_offspring = []
 
-            with Parallel(n_jobs=n_jobs, timeout=_get_time_left(start_time, timeout=timeout)) as parallel:
-                if verbose >= 2:
-                    print(f"Gen {g} - crossover")
+            if verbose >= 2:
+                print(f"Gen {g} - crossover")
 
-                # crossover - subtree
-                offspring = toolbox.map(toolbox.clone, larger_trees)
-                offspring = parallel(
-                    delayed(_perform_cx)(
-                        toolbox.cx_one_point,  # func
-                        config.cx_pb, ch1, ch2, min_node_depth=min_large_tree_height - 1, log_setup=toolbox.log_setup  # args
-                    )
-                    for ch1, ch2 in zip(offspring[::2], offspring[1::2])
+            # crossover - subtree
+            offspring = toolbox.map(toolbox.clone, larger_trees)
+            offspring = Parallel(n_jobs=n_jobs, timeout=timeout_func())(
+                delayed(_perform_cx)(
+                    toolbox.cx_one_point,  # func
+                    config.cx_pb, ch1, ch2, min_node_depth=min_large_tree_height - 1, log_setup=toolbox.log_setup  # args
                 )
-                offspring = list(chain.from_iterable(offspring))  # chain cx tuples to list of offspring
-                all_offspring += offspring
+                for ch1, ch2 in zip(offspring[::2], offspring[1::2])
+            )
+            offspring = list(chain.from_iterable(offspring))  # chain cx tuples to list of offspring
+            all_offspring += offspring
 
-                if verbose >= 2:
-                    print(f"Gen {g} - mutation")
+            if verbose >= 2:
+                print(f"Gen {g} - mutation")
 
-                # mutation - subtree
-                offspring = toolbox.map(toolbox.clone, larger_trees)
-                offspring = parallel(
-                    delayed(_perform_mut)(
-                        toolbox.mutate_subtree,  # func
-                        config.mut_pb, mut, log_setup=toolbox.log_setup  # args
-                    )
-                    for mut in offspring
+            # mutation - subtree
+            offspring = toolbox.map(toolbox.clone, larger_trees)
+            offspring = Parallel(n_jobs=n_jobs, timeout=timeout_func())(
+                delayed(_perform_mut)(
+                    toolbox.mutate_subtree,  # func
+                    config.mut_pb, mut, log_setup=toolbox.log_setup  # args
                 )
-                all_offspring += offspring
+                for mut in offspring
+            )
+            all_offspring += offspring
 
-                # mutation - node swap
-                offspring = toolbox.map(toolbox.clone, population)
-                offspring = parallel(
-                    delayed(_perform_mut)(
-                        toolbox.mutate_node_swap,  # func
-                        config.mut_node_pb, mut, log_setup=toolbox.log_setup  # args
-                    )
-                    for mut in offspring
+            # mutation - node swap
+            offspring = toolbox.map(toolbox.clone, population)
+            offspring = Parallel(n_jobs=n_jobs, timeout=timeout_func())(
+                delayed(_perform_mut)(
+                    toolbox.mutate_node_swap,  # func
+                    config.mut_node_pb, mut, log_setup=toolbox.log_setup  # args
                 )
-                all_offspring += offspring
+                for mut in offspring
+            )
+            all_offspring += offspring
 
-                # for large new offspring, perform hc to make them competitive
-                @set_log_handler
-                def apply_gradual(offs, mut_pb, n_nodes):
-                    if offs.max_height < min_large_tree_height:
-                        return offs
+            # for large new offspring, perform hc to make them competitive
+            @set_log_handler
+            def apply_gradual(offs, mut_pb, n_nodes):
+                if offs.max_height < min_large_tree_height:
+                    return offs
 
-                    return _perform_mut(toolbox.gradual_hillclimbing, mut_pb, offs, n_nodes=n_nodes)
+                return _perform_mut(toolbox.gradual_hillclimbing, mut_pb, offs, n_nodes=n_nodes)
 
-                all_offspring = parallel(
-                    delayed(apply_gradual)(
-                        off, config.hc_mut_pb, config.hc_n_nodes, log_setup=toolbox.log_setup
-                    )
-                    for off in all_offspring
+            all_offspring = Parallel(n_jobs=n_jobs, timeout=timeout_func())(
+                delayed(apply_gradual)(
+                    off, config.hc_mut_pb, config.hc_n_nodes, log_setup=toolbox.log_setup
                 )
+                for off in all_offspring
+            )
 
-                # ----------------
+            # ----------------
 
-                # mutation - node args
-                offspring = toolbox.map(toolbox.clone, population)
-                offspring = parallel(
-                    delayed(_perform_mut)(
-                        toolbox.mutate_args,  # func
-                        config.mut_args_pb, mut, log_setup=toolbox.log_setup  # args
-                    )
-                    for mut in offspring
+            # mutation - node args
+            offspring = toolbox.map(toolbox.clone, population)
+            offspring = Parallel(n_jobs=n_jobs, timeout=timeout_func())(
+                delayed(_perform_mut)(
+                    toolbox.mutate_args,  # func
+                    config.mut_args_pb, mut, log_setup=toolbox.log_setup  # args
                 )
-                all_offspring += offspring
+                for mut in offspring
+            )
+            all_offspring += offspring
 
-                offs_to_eval = [ind for ind in all_offspring if not ind.fitness.valid]
+            offs_to_eval = [ind for ind in all_offspring if not ind.fitness.valid]
 
-                # evaluation of changed offspring
-                scores = toolbox.map(evaluate_func, offs_to_eval,
-                                     n_jobs=n_jobs, timeout=_get_time_left(start_time, timeout=timeout))
-                for off, score in zip(offs_to_eval, scores):
-                    if score is None:
-                        continue
+            # evaluation of changed offspring
+            scores = toolbox.map(evaluate_func, offs_to_eval,
+                                 n_jobs=n_jobs, timeout=timeout(start_time))
+            for off, score in zip(offs_to_eval, scores):
+                if score is None:
+                    continue
 
-                    off.fitness.values = score
+                off.fitness.values = score
 
-                # remove offspring which threw exceptions
-                all_offspring[:] = [ind for ind in all_offspring if ind.fitness.valid]
-                valid = parallel(delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
-                                 for _ in range(pop_size - len(all_offspring)))
-                all_offspring += valid
+            # remove offspring which threw exceptions
+            all_offspring[:] = [ind for ind in all_offspring if ind.fitness.valid]
+            valid = Parallel(n_jobs=n_jobs, timeout=timeout_func())(
+                delayed(gen_valid)(toolbox, log_setup=toolbox.log_setup)
+                for _ in range(pop_size - len(all_offspring))
+            )
+            all_offspring += valid
 
             population[:] = toolbox.select(population + all_offspring, pop_size)
 
@@ -289,3 +287,5 @@ def ea_run(population, toolbox, n_gen, pop_size, config: GenensConfig, n_jobs=1,
             print("Evolution completed")
     except TimeoutError:
         print("Evolution timed out.")
+        logger = logging.getLogger("genens")
+        logger.debug("Evolution timed out.")
