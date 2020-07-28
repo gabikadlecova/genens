@@ -16,7 +16,7 @@ from joblib import Parallel, delayed
 
 from genens.config.genens_config import GenensConfig
 from genens.log_utils import set_log_handler
-from genens.render.graph import tree_str
+from genens.gp.types import tree_str
 
 from stopit import ThreadingTimeout as Timeout, TimeoutException
 

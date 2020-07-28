@@ -482,3 +482,23 @@ def _choose_kwargs(kwargs_dict: Dict[str, List]) -> Dict[str, Any]:
         return {}
 
     return {k: random.choice(arg_list) for k, arg_list in kwargs_dict.items()}
+
+
+def tree_str(gp_tree: GpTreeIndividual, with_hyperparams=False):
+
+    def get_tree(node, ch_l):
+        return node, ch_l
+
+    def print_node(node: GpPrimitive, ch_l, indent, str_res):
+        str_res += "  " * indent + node.name + "\n"
+        if with_hyperparams:
+            for k, val in node.obj_kwargs.items():
+                str_res += "  " * (indent + 1) + "| " + f"{k}: {val}\n"
+
+        for child, next_list in ch_l:
+            str_res = print_node(child, next_list, indent + 1, str_res)
+
+        return str_res
+
+    root, child_list = gp_tree.run_tree(get_tree)
+    return print_node(root, child_list, 0, "")
