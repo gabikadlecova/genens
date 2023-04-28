@@ -9,6 +9,9 @@ import itertools
 
 import os
 
+from genens.config.genens_config import GenensConfig, parse_config
+
+from genens.config.config_templates import clf_default_config
 from sklearn.metrics import make_scorer
 
 import pickle
@@ -16,7 +19,6 @@ import time
 
 from genens import GenensClassifier, GenensRegressor
 from genens.workflow.evaluate import get_evaluator_cls
-from genens.config import clf_config
 from genens.render.plot import export_plot
 from genens.render.graph import create_graph
 from genens.tests.load_datasets import load_dataset
@@ -86,8 +88,8 @@ def run_once(estimator, train_X, train_y, kwarg_dict, out_dir, test_X=None, test
         for i, val in enumerate(res):
             out_file.write("Pipeline {} score: {}\n".format(i, val))
 
-    # write config to output dir
-    with open(out_dir + '/config.txt', 'w+') as out_file:
+    # write run_config to output dir
+    with open(out_dir + '/run_config.txt', 'w+') as out_file:
         out_file.write(str(kwarg_dict) + '\n')
 
     # write logbook string representation to output dir
@@ -134,11 +136,11 @@ def create_scorer(scorer_path, scorer_kwargs):
 
 
 def load_config(cmd_args):
-    # read config
+    # read run_config
     with open(cmd_args.file) as f:
         config = json.load(f)
 
-    params = config['parameters']
+    params = {}
 
     # set up scorer
     if 'scorer' in config.keys():
@@ -173,17 +175,27 @@ def load_config(cmd_args):
         params['evaluator'] = list(obj_kwargs_product(eval_cls, config['evaluator']['kwargs']))
 
     if 'group_weights' in config.keys():
-        params['config'] = [clf_config(gweight) for gweight in
-                            product_dict(**config['group_weights'])]
+        params['group_weights'] = [gweights for gweights in product_dict(**config['group_weights'])]
 
+    params['parameters'] = [p for p in product_dict(**config['parameters'])]
+    params['run_parameters'] = [p for p in product_dict(**config['run_parameters'])]
     param_product = product_dict(**params)
 
     def clf_iterate(param_prod):
+        # loads base run_config from genens/run_config/
+        if cmd_args.regression:
+            raise NotImplementedError("Default configuration for regression not yet implemented.")
+        base_config = clf_default_config()
+
         for kwargs in param_prod:
+            config = parse_config({**kwargs['parameters'], 'group_weights': kwargs['group_weights']},
+                                  base_config=base_config)
+            run_params = kwargs['run_parameters']
+
             if cmd_args.regression:
-                yield GenensRegressor(**kwargs), {**kwargs}
+                yield GenensRegressor(config=config, **run_params), {**kwargs}
             else:
-                yield GenensClassifier(**kwargs), {**kwargs}
+                yield GenensClassifier(config=config, **run_params), {**kwargs}
 
     datasets = config['datasets']
 
@@ -200,63 +212,11 @@ def load_config(cmd_args):
                       cmd_args.out + '/' + dataset['dataset_name'])
 
 
-def load_from_args(cmd_args):
-    # TODO rewrite if needed (only for 'run' case)
-
-    arg_dict = vars(cmd_args)
-
-    if cmd_args.regression:
-        cls = GenensRegressor
-    else:
-        cls = GenensClassifier
-
-    cls_params = inspect.signature(cls.__init__).parameters
-    kwargs = dict((key, val) for key, val in arg_dict.items() if key in cls_params)
-
-    dataset = cmd_args.dataset
-    train_X, train_Y, test_X, test_Y = load_dataset(dataset, split_validation=True)
-
-    run_once(cls(**kwargs), train_X, train_Y, kwargs, cmd_args.out,
-             test_X=test_X, test_y=test_Y)
-
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Run Genens on datasets.")
     parser.add_argument('--out', required=True)
     parser.add_argument('--regression', action='store_true')
-
-    subparsers = parser.add_subparsers()
-
-    # pass arguments in a config file
-    parser_config = subparsers.add_parser('config')
-    parser_config.add_argument('file', type=str, help='Configuration file location.')
-
-    parser_config.set_defaults(func=load_config)
-
-    parser_run = subparsers.add_parser('run')
-
-    # pass arguments on command line
-    parser_run.add_argument('--dataset', type=str, help='Dataset name.', required=True)
-    parser_run.add_argument('--n_jobs', type=int, default=1, help='Sets n_jobs of Genens.')
-    parser_run.add_argument('--cx_pb', type=float, default=0.5, help='Sets crossover probability.')
-    parser_run.add_argument('--mut_pb', type=float, default=0.1, help='Sets mutation probability.')
-
-    parser_run.add_argument('--mut_args_pb', type=float, default=0.3,
-                            help='Sets argument mutation probability.')
-
-    parser_run.add_argument('--scorer', type=str, help='Sets a custom scorer.')
-    parser_run.add_argument('--pop_size', type=int, default=100, help='Sets population size.')
-
-    parser_run.add_argument('--n_gen', type=int, default=10,
-                            help='Sets the number of generations.')
-
-    parser_run.add_argument('--hc_repeat', type=int, default=0,
-                            help='Sets the number of hill-climbing repetitions.')
-
-    parser_run.add_argument('--hc_keep_last', action='store_true',
-                            help="If true, mutates the individual if hill-climbing hasn't been successful.")
-
-    parser_run.set_defaults(func=load_from_args)
+    parser.add_argument('--file', required=True, type=str, help='Configuration file location.')
 
     args = parser.parse_args()
-    args.func(args)
+    load_config(args)

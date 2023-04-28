@@ -44,7 +44,7 @@ class GenensRegressor(GenensBase, RegressorMixin):
                  timeout: int = None, evaluator: EvaluatorBase = None,
                  max_evo_seconds: int = None, **kwargs):
         if config is None:
-            raise ValueError("Regressor default config is not available yet.")
+            raise ValueError("Regressor default run_config is not available yet.")
 
         if isinstance(config, str):
             base_config = default_raw_config() if use_base_config else None

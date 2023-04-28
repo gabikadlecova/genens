@@ -8,6 +8,10 @@ git clone https://github.com/gabrielasuchopar/genens.git
 pip install genens
 ```
 
+Optionally, install from the local repository:
+```
+pip install -e .
+```
 
 -----
 ## Using genens
@@ -29,14 +33,17 @@ pred = clf.predict(test_X)
 
 ## Tests
 Directory ./genens/tests contains scripts for running dataset tests and produce data about evolution process along with pickle files of best optimized pipelines. 
-Sample config files are included in ``./genens/tests/config``.
+Sample config files are included in ``./genens/tests/run_config``. These enable grid search over parameters in the config file.
 
-- Run genEns on a dataset specified in the config file.
+- Quick test run.
+```
+cd genens/tests/
+python ./settings_test.py --dataset wilt --pop_size 4 --n_gen 1
+```
 
-``python ./genens/tests/run_datasets.py --out OUT_DIR config CONFIG``
-
-- Runs genEns on the [OpenML-CC18 benchmarking suite](https://www.openml.org/s/99)
-
-``python ./genens/tests/run_openml.py --out OUT_DIR --config CONFIG``
-
-More tests are to be included in later releases.
+- Run genens on a dataset specified in the config file.
+```
+cd genens/tests/
+python ./run_datasets.py --out OUT_DIR --file CONFIG
+python ./run_datasets.py --out . --file ./run_config/test_config.json
+```

@@ -57,7 +57,7 @@ class GenensBase(BaseEstimator):
 
         """
 
-        # accept config/load default config
+        # accept run_config/load default run_config
         self.config = config
         self.n_jobs = n_jobs
 

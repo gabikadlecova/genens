@@ -90,7 +90,7 @@ def _heuristic_sample_size(n_rows, n_cols):
     return 0.01
 
 
-def _conditional_imput(X, categorical):
+def _conditional_imput(categorical):
     categorical_id = [i for i, val in enumerate(categorical) if val]
     numerical_id = [i for i, val in enumerate(categorical) if not val]
 
@@ -112,7 +112,7 @@ def _conditional_imput(X, categorical):
     return imputer
 
 
-def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
+def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None, seed=42):
     dataset = openml.datasets.get_dataset(task.dataset_id)
 
     X, y, categorical = dataset.get_data(
@@ -120,11 +120,11 @@ def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
         return_categorical_indicator=True
     )
 
-    imputer = _conditional_imput(X, categorical)
+    imputer = _conditional_imput(categorical)
     X = imputer.fit_transform(X)
 
     # TODO hardcoded random state
-    X, y = shuffle(X, y, random_state=42)
+    X, y = shuffle(X, y, random_state=seed)
 
     sample_size = _heuristic_sample_size(X.shape[0], X.shape[1])
 
@@ -134,12 +134,10 @@ def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
     else:
         evaluator = CrossValEvaluator(cv_k=5, timeout_s=timeout)
 
-    # TODO bad practice warning - hardcoded height
     clf = GenensClassifier(
         n_jobs=n_jobs,
         timeout=timeout,
-        evaluator=evaluator,
-        max_height=5
+        evaluator=evaluator
     )
 
     start_time = time.time()
@@ -172,7 +170,7 @@ def run_task(task, out_dir, n_jobs=1, timeout=None, task_timeout=None):
         evaluate_pipeline(pipe, X, y, pipe_dir)
 
 
-def run_tests(task_ids=None, out_dir='.', n_jobs=1, timeout=None, task_timeout=None):
+def run_tests(task_ids=None, out_dir='.', n_jobs=1, timeout=None, task_timeout=None, seed=42):
     benchmark_suite = openml.study.get_study('OpenML-CC18', 'tasks')
 
     for task_id in benchmark_suite.tasks:
@@ -192,13 +190,15 @@ def run_tests(task_ids=None, out_dir='.', n_jobs=1, timeout=None, task_timeout=N
                  out_dir=out_dir + dataset_dir,
                  n_jobs=n_jobs,
                  timeout=timeout,
-                 task_timeout=task_timeout)
+                 task_timeout=task_timeout,
+                 seed=seed)
 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser("Run OpenML task tests.")
     parser.add_argument('--config', type=str, help='Configuration file location.', required=True)
     parser.add_argument('--out', help='Output directory', required=True)
+    parser.add_argument('--seed', help='Random seed', default=42)
 
     args = parser.parse_args()
 
@@ -210,4 +210,5 @@ if __name__ == '__main__':
 
     run_tests(task_ids=task_ids,
               out_dir=args.out,
+              seed=args.seed,
               **kwargs)

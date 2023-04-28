@@ -97,35 +97,39 @@ class GenensConfig:
         out_list.append(prim)
 
 
-def parse_config(config_path: str, base_config: GenensConfig = None, evo_kwargs: dict = None):
-    config = base_config if base_config is not None else GenensConfig()
+def parse_config(config: Union[str, dict], base_config: GenensConfig = None, evo_kwargs: dict = None):
+    base_config = base_config if base_config is not None else GenensConfig()
 
-    with open(config_path, 'r') as input_file:
-        yaml_config = yaml.safe_load(input_file)
+    if isinstance(config, str):
+        with open(config, 'r') as input_file:
+            config = yaml.safe_load(input_file)
 
-    min_height = yaml_config.get('min_height', config.min_height)
-    max_height = yaml_config.get('max_height', config.max_height)
-    min_arity = yaml_config.get('min_arity', config.min_arity)
-    max_arity = yaml_config.get('max_arity', config.max_arity)
+    min_height = config.get('min_height', base_config.min_height)
+    max_height = config.get('max_height', base_config.max_height)
+    min_arity = config.get('min_arity', base_config.min_arity)
+    max_arity = config.get('max_arity', base_config.max_arity)
 
-    group_weights = yaml_config.get('group_weights', {})
+    group_weights = config.get('group_weights', {})
 
     load_kwargs_from_yaml = evo_kwargs is None
     evo_kwargs = {} if evo_kwargs is None else evo_kwargs
 
-    primitives = yaml_config.get('primitives', None)
-    func_dict, full_dict, term_dict, evo_kwargs_dict = parse_primitives(primitives,
-                                                                        parse_evo_kwargs=load_kwargs_from_yaml)
+    primitives = config.get('primitives', None)
+    if primitives is not None:
+        func_dict, full_dict, term_dict, evo_kwargs_dict = parse_primitives(primitives,
+                                                                            parse_evo_kwargs=load_kwargs_from_yaml)
+    else:
+        func_dict, full_dict, term_dict, evo_kwargs_dict = [{} for _ in range(4)]
 
-    return GenensConfig(function_config={**config.func_config, **func_dict},
-                        full_config={**config.full_config, **full_dict},
-                        term_config={**config.term_config, **term_dict},
-                        kwargs_config={**config.kwargs_config, **evo_kwargs_dict, **evo_kwargs},
+    return GenensConfig(function_config={**base_config.func_config, **func_dict},
+                        full_config={**base_config.full_config, **full_dict},
+                        term_config={**base_config.term_config, **term_dict},
+                        kwargs_config={**base_config.kwargs_config, **evo_kwargs_dict, **evo_kwargs},
                         min_height=min_height,
                         max_height=max_height,
                         min_arity=min_arity,
                         max_arity=max_arity,
-                        group_weights={**config.group_weights, **group_weights})
+                        group_weights={**base_config.group_weights, **group_weights})
 
 
 def parse_primitives(primitives, parse_evo_kwargs=True):
@@ -141,7 +145,7 @@ def parse_primitives(primitives, parse_evo_kwargs=True):
         # optionally parse kwargs that are changed during evolution
         if 'evo_kwargs' in values:
             if not parse_evo_kwargs:
-                warnings.warn("The parameter evo_kwargs is present yaml config, but it won't be loaded, "
+                warnings.warn("The parameter evo_kwargs is present yaml run_config, but it won't be loaded, "
                               "possibly because a dict with hyperparameters has been provided.")
             else:
                 evo_kwargs_dict[prim_key] = values.get('evo_kwargs', {})
@@ -217,7 +221,7 @@ def _parse_in_type(in_type):
         elif 'from' in subtype and 'to' in subtype:
             ta = TypeArity(type_name, (subtype['from'], subtype['to']))
         else:
-            raise ValueError("Invalid arity in config file.")
+            raise ValueError("Invalid arity in run_config file.")
 
         result_type.append(ta)
 
